@@ -9,12 +9,7 @@
 <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
         background: linear-gradient(160deg, #ffffff 0%, #e0f2fe 100%);
@@ -23,10 +18,7 @@
         padding: 40px 20px;
         transition: background 0.5s ease;
     }
-    
-    body:hover {
-        background: linear-gradient(160deg, #fefefe 0%, #dbeafe 100%);
-    }
+    body:hover { background: linear-gradient(160deg, #fefefe 0%, #dbeafe 100%); }
 
     .container {
         max-width: 900px;
@@ -38,275 +30,72 @@
     }
 
     /* Header */
-    .header {
-        text-align: center;
-        padding: 40px 0 20px;
-        border-bottom: 3px solid #2563eb;
-        margin-bottom: 50px;
-        position: relative;
-    }
-
-    .profile-photo {
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 20px;
-        border: 3px solid #2563eb;
-        transition: transform 0.4s ease;
-    }
-
-    .profile-photo:hover {
-        transform: rotate(10deg) scale(1.1);
-    }
-
-    .header h1 {
-        font-size: 42px;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 10px;
-        animation: fadeInDown 1s ease forwards;
-    }
-
-    .header .subtitle {
-        font-size: 20px;
-        color: #2563eb;
-        font-weight: 600;
-        margin-bottom: 20px;
-        animation: fadeInUp 1s ease forwards;
-        animation-delay: 0.3s;
-    }
-
-    .contact-info {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-        font-size: 14px;
-        color: #64748b;
-        margin-top: 20px;
-        animation: fadeIn 1s ease forwards;
-        animation-delay: 0.6s;
-    }
-
-    .contact-info span {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .contact-info a {
-        color: #2563eb;
-        text-decoration: none;
-        transition: color 0.3s ease, transform 0.3s ease;
-    }
-
-    .contact-info a:hover {
-        text-decoration: underline;
-        color: #1e40af;
-        transform: scale(1.1);
-    }
+    .header { text-align: center; padding: 40px 0 20px; border-bottom: 3px solid #2563eb; margin-bottom: 50px; position: relative; }
+    .profile-photo { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid #2563eb; transition: transform 0.4s ease; }
+    .profile-photo:hover { transform: rotate(10deg) scale(1.1); }
+    .header h1 { font-size: 42px; font-weight: 700; color: #1e293b; margin-bottom: 10px; animation: fadeInDown 1s ease forwards; }
+    .header .subtitle { font-size: 20px; color: #2563eb; font-weight: 600; margin-bottom: 20px; animation: fadeInUp 1s ease forwards; animation-delay: 0.3s; }
+    .contact-info { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; font-size: 14px; color: #64748b; margin-top: 20px; animation: fadeIn 1s ease forwards; animation-delay: 0.6s; }
+    .contact-info span { display: flex; align-items: center; gap: 5px; }
+    .contact-info a { color: #2563eb; text-decoration: none; transition: color 0.3s ease, transform 0.3s ease; }
+    .contact-info a:hover { text-decoration: underline; color: #1e40af; transform: scale(1.1); }
 
     /* Section Titles */
-    .section-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        position: relative;
-        overflow: hidden;
-    }
+    .section-title { font-size: 24px; font-weight: 700; color: #1e293b; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden; }
+    .section-title::before { content: ''; width: 4px; height: 24px; background-color: #2563eb; animation: slideInLeft 0.8s ease forwards; }
 
-    .section-title::before {
-        content: '';
-        width: 4px;
-        height: 24px;
-        background-color: #2563eb;
-        animation: slideInLeft 0.8s ease forwards;
-    }
+    /* Introduction */
+    .introduction { background: #f8fafc; padding: 30px; border-radius: 8px; border-left: 4px solid #2563eb; font-size: 16px; line-height: 1.8; }
 
     /* Timeline */
-    .timeline-item {
-        margin-bottom: 30px;
-        padding-left: 20px;
-        border-left: 2px solid #e2e8f0;
-        position: relative;
-        opacity: 0;
-        transform: translateX(-50px);
-        transition: all 0.6s ease;
-    }
-
-    .timeline-item.show {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -6px;
-        top: 5px;
-        width: 10px;
-        height: 10px;
-        background: #2563eb;
-        border-radius: 50%;
-        transition: transform 0.3s ease, background 0.3s ease;
-    }
-
-    .timeline-item:hover::before {
-        transform: scale(1.5);
-        background: #1e40af;
-    }
-
-    .timeline-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 8px;
-        flex-wrap: wrap;
-    }
-
-    .timeline-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #1e293b;
-    }
-
-    .timeline-company {
-        font-size: 16px;
-        color: #2563eb;
-        font-weight: 500;
-        margin-bottom: 4px;
-    }
-
-    .timeline-period {
-        font-size: 14px;
-        color: #64748b;
-    }
-
-    .timeline-description {
-        margin-top: 10px;
-        color: #475569;
-        line-height: 1.7;
-    }
-
-    .timeline-description ul {
-        margin-top: 8px;
-        padding-left: 20px;
-    }
-
-    .timeline-description li {
-        margin-bottom: 6px;
-        transition: transform 0.3s ease;
-    }
-
-    .timeline-description li:hover {
-        transform: translateX(5px);
-        color: #1e40af;
-    }
+    .timeline-item { margin-bottom: 30px; padding-left: 20px; border-left: 2px solid #e2e8f0; position: relative; opacity: 0; transform: translateX(-50px); transition: all 0.6s ease; }
+    .timeline-item.show { opacity: 1; transform: translateX(0); }
+    .timeline-item::before { content: ''; position: absolute; left: -6px; top: 5px; width: 10px; height: 10px; background: #2563eb; border-radius: 50%; transition: transform 0.3s ease, background 0.3s ease; }
+    .timeline-item:hover::before { transform: scale(1.5); background: #1e40af; }
+    .timeline-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; }
+    .timeline-title { font-size: 18px; font-weight: 600; color: #1e293b; }
+    .timeline-company { font-size: 16px; color: #2563eb; font-weight: 500; margin-bottom: 4px; }
+    .timeline-period { font-size: 14px; color: #64748b; }
+    .timeline-description { margin-top: 10px; color: #475569; line-height: 1.7; }
+    .timeline-description ul { margin-top: 8px; padding-left: 20px; }
+    .timeline-description li { margin-bottom: 6px; transition: transform 0.3s ease; }
+    .timeline-description li:hover { transform: translateX(5px); color: #1e40af; }
 
     /* Skills */
-    .skills-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-    }
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .skill-category { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
+    .skill-category:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(37,99,235,0.15); }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skill-tag { background: #dbeafe; color: #1e40af; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; transition: transform 0.3s ease; }
+    .skill-tag:hover { transform: scale(1.1); }
 
-    .skill-category {
-        background: #f8fafc;
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        cursor: pointer;
-    }
+    /* Projects */
+    .projects-grid { display: grid; gap: 25px; }
+    .project-card { background: #ffffff; border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; transition: all 0.4s ease; cursor: pointer; }
+    .project-card:hover { border-color: #2563eb; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2); transform: translateY(-5px); }
+    .project-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .project-tag { background: #eff6ff; color: #1e40af; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; transition: transform 0.3s ease; }
+    .project-tag:hover { transform: scale(1.2); }
 
-    .skill-category:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(37,99,235,0.15);
-    }
+    /* Education */
+    .education-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 0; border-bottom: 1px solid #e2e8f0; }
+    .education-item:last-child { border-bottom: none; }
+    .education-info h3 { font-size: 17px; font-weight: 600; color: #1e293b; margin-bottom: 5px; }
+    .education-detail { font-size: 14px; color: #64748b; }
 
-    .skill-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
+    /* Certifications */
+    .cert-item { background: #f8fafc; padding: 15px 20px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #2563eb; }
+    .cert-title { font-size: 16px; font-weight: 600; color: #1e293b; }
+    .cert-issuer { font-size: 14px; color: #64748b; margin-top: 4px; }
 
-    .skill-tag {
-        background: #dbeafe;
-        color: #1e40af;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 500;
-        transition: transform 0.3s ease;
-    }
-
-    .skill-tag:hover {
-        transform: scale(1.1);
-    }
-
-    /* Project Cards */
-    .project-card {
-        background: #ffffff;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 25px;
-        transition: all 0.4s ease;
-        cursor: pointer;
-    }
-
-    .project-card:hover {
-        border-color: #2563eb;
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
-        transform: translateY(-5px);
-    }
-
-    .project-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .project-tag {
-        background: #eff6ff;
-        color: #1e40af;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-        transition: transform 0.3s ease;
-    }
-
-    .project-tag:hover {
-        transform: scale(1.2);
-    }
+    /* Footer */
+    .footer { margin-top: 60px; padding-top: 30px; border-top: 2px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 13px; }
 
     /* Animations Keyframes */
-    @keyframes fadeInDown {
-        0% { opacity: 0; transform: translateY(-20px);}
-        100% { opacity: 1; transform: translateY(0);}
-    }
-
-    @keyframes fadeInUp {
-        0% { opacity: 0; transform: translateY(20px);}
-        100% { opacity: 1; transform: translateY(0);}
-    }
-
-    @keyframes fadeIn {
-        0% { opacity: 0;}
-        100% { opacity: 1;}
-    }
-
-    @keyframes slideInLeft {
-        0% { transform: translateX(-30px);}
-        100% { transform: translateX(0);}
-    }
+    @keyframes fadeInDown { 0% { opacity: 0; transform: translateY(-20px);} 100% { opacity: 1; transform: translateY(0);} }
+    @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px);} 100% { opacity: 1; transform: translateY(0);} }
+    @keyframes fadeIn { 0% { opacity: 0;} 100% { opacity: 1;} }
+    @keyframes slideInLeft { 0% { transform: translateX(-30px);} 100% { transform: translateX(0);} }
 
     @media (max-width: 768px) {
         .header h1 { font-size: 32px; }
@@ -319,7 +108,7 @@
 
 <div class="container">
     <!-- Header -->
-    <header class="header">
+    <header class="header" data-aos="fade-down">
         <img src="IMG_2756.jpeg" alt="Photo de Chahnaz Alrifaii" class="profile-photo" data-aos="zoom-in">
         <h1>Chahnaz Alrifaii</h1>
         <div class="subtitle">Étudiante en mastère Humanités numériques, à la recherche d'un stage en Marketing Digital</div>
@@ -426,6 +215,41 @@
             </div>
         </div>
     </section>
+
+    <!-- Education -->
+    <section class="section" data-aos="fade-up" data-aos-delay="150">
+        <h2 class="section-title">Formation</h2>
+        <div class="education-item">
+            <div class="education-info">
+                <h3>Mastère Brand Content – Digital Campus Paris</h3>
+                <div class="education-detail">2025 – Présent</div>
+            </div>
+        </div>
+        <div class="education-item">
+            <div class="education-info">
+                <h3>Licence Humanités Numériques – Université Paris 8</h3>
+                <div class="education-detail">2023 – 2025</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certifications -->
+    <section class="section" data-aos="fade-up" data-aos-delay="200">
+        <h2 class="section-title">Certifications</h2>
+        <div class="cert-item">
+            <div class="cert-title">Meta Blueprint Certification</div>
+            <div class="cert-issuer">Meta – 2024</div>
+        </div>
+        <div class="cert-item">
+            <div class="cert-title">Google Ads Certification</div>
+            <div class="cert-issuer">Google – 2024</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" data-aos="fade-up">
+        © 2025 Chahnaz Alrifaii. Tous droits réservés.
+    </footer>
 </div>
 
 <!-- AOS JS -->
@@ -433,14 +257,12 @@
 <script>
   AOS.init({ duration: 800, once: true });
 
-  // Optional: timeline animation on scroll
+  // Timeline scroll animation
   const timelineItems = document.querySelectorAll('.timeline-item');
   window.addEventListener('scroll', () => {
       timelineItems.forEach(item => {
           const rect = item.getBoundingClientRect();
-          if(rect.top < window.innerHeight - 50){
-              item.classList.add('show');
-          }
+          if(rect.top < window.innerHeight - 50){ item.classList.add('show'); }
       });
   });
 </script>
