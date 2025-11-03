@@ -4,66 +4,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CV Chahnaz Alrifaii</title>
+
+<!-- AOS for animations -->
 <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-wpY5KDXYn6dF+wl5k9i8lX6QFf5cP7Ol2c0yK1u5g5PZl6iCm0kFhjwS+W1bE/dzK0kI0Q42UxLLjNLPc9kWg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <style>
-    * {margin:0; padding:0; box-sizing:border-box;}
-    body {font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif; background-color:#ffffff; color:#37352f; line-height:1.6; padding:40px 20px;}
-    .container {max-width:900px; margin:0 auto; background:#ffffff;}
-    .header {text-align:center; padding:60px 0 40px; border-bottom:2px solid #2563eb; margin-bottom:50px;}
-    .profile-photo {width:130px; height:130px; border-radius:50%; object-fit:cover; margin-bottom:20px; border:3px solid #2563eb;}
-    .header h1 {font-size:42px; font-weight:700; color:#1e293b; margin-bottom:10px;}
-    .header .subtitle {font-size:20px; color:#2563eb; font-weight:600; margin-bottom:20px;}
-    .contact-info {display:flex; justify-content:center; gap:20px; flex-wrap:wrap; font-size:14px; color:#64748b; margin-top:20px;}
-    .contact-info span {display:flex; align-items:center; gap:5px;}
-    .contact-info a {color:#2563eb; text-decoration:none; transition:color 0.3s ease;}
-    .contact-info a:hover {text-decoration:underline; color:#1e40af;}
-    .section {margin-bottom:50px;}
-    .section-title {font-size:24px; font-weight:700; color:#1e293b; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #e2e8f0; display:flex; align-items:center; gap:10px;}
-    .section-title::before {content:''; width:4px; height:24px; background-color:#2563eb;}
-    .introduction {background:#f8fafc; padding:30px; border-radius:8px; border-left:4px solid #2563eb; font-size:16px; line-height:1.8;}
-    .timeline-item {margin-bottom:30px; padding-left:20px; border-left:2px solid #e2e8f0; position:relative; opacity:0; transform:translateX(-50px); transition:0.6s;}
-    .timeline-item.show {opacity:1; transform:translateX(0);}
-    .timeline-item::before {content:''; position:absolute; left:-6px; top:5px; width:10px; height:10px; background:#2563eb; border-radius:50%;}
-    .timeline-header {display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap;}
-    .timeline-title {font-size:18px; font-weight:600; color:#1e293b;}
-    .timeline-company {font-size:16px; color:#2563eb; font-weight:500; margin-bottom:4px;}
-    .timeline-period {font-size:14px; color:#64748b;}
-    .timeline-description {margin-top:10px; color:#475569; line-height:1.7;}
-    .timeline-description ul {margin-top:8px; padding-left:20px;}
-    .timeline-description li {margin-bottom:6px;}
-    .skills-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px;}
-    .skill-category {background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; opacity:0; transform:translateY(50px); transition:0.6s;}
-    .skill-category.show {opacity:1; transform:translateY(0);}
-    .skill-category h3 {font-size:16px; font-weight:600; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; gap:8px;}
-    .skill-category h3::before {content:'▪'; color:#2563eb; font-size:20px;}
-    .skill-tags {display:flex; flex-wrap:wrap; gap:8px;}
-    .skill-tag {background:#dbeafe; color:#1e40af; padding:6px 12px; border-radius:20px; font-size:13px; font-weight:500;}
-    .projects-grid {display:grid; gap:25px;}
-    .project-card {background:#ffffff; border:2px solid #e2e8f0; border-radius:12px; padding:25px; transition:all 0.3s ease; opacity:0; transform:translateY(50px);}
-    .project-card.show {opacity:1; transform:translateY(0);}
-    .project-card:hover {border-color:#2563eb; box-shadow:0 4px 12px rgba(37,99,235,0.1);}
-    .project-header {display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;}
-    .project-title {font-size:20px; font-weight:600; color:#1e293b; margin-bottom:5px;}
-    .project-client {font-size:14px; color:#2563eb; font-weight:500;}
-    .project-period {font-size:13px; color:#64748b; white-space:nowrap;}
-    .project-description {color:#475569; margin-bottom:15px; line-height:1.7;}
-    .project-achievements {background:#f8fafc; padding:15px; border-radius:6px; margin-bottom:15px;}
-    .project-achievements h4 {font-size:14px; font-weight:600; color:#1e293b; margin-bottom:8px;}
-    .project-achievements ul {padding-left:20px; color:#475569;}
-    .project-achievements li {margin-bottom:4px; font-size:14px;}
-    .project-tags {display:flex; flex-wrap:wrap; gap:8px;}
-    .project-tag {background:#eff6ff; color:#1e40af; padding:5px 10px; border-radius:4px; font-size:12px; font-weight:500;}
-    .cert-item {background:#f8fafc; padding:15px 20px; border-radius:6px; margin-bottom:12px; border-left:3px solid #2563eb; opacity:0; transform:translateX(-50px); transition:0.6s;}
-    .cert-item.show {opacity:1; transform:translateX(0);}
-    .cert-title {font-size:16px; font-weight:600; color:#1e293b;}
-    .cert-issuer {font-size:14px; color:#64748b; margin-top:4px;}
-    .education-item {display:flex; justify-content:space-between; align-items:flex-start; padding:15px 0; border-bottom:1px solid #e2e8f0; opacity:0; transform:translateY(50px); transition:0.6s;}
-    .education-item.show {opacity:1; transform:translateY(0);}
-    .education-info h3 {font-size:17px; font-weight:600; color:#1e293b; margin-bottom:5px;}
-    .education-detail {font-size:14px; color:#64748b;}
-    .footer {margin-top:60px; padding-top:30px; border-top:2px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:13px;}
-    @media (max-width:768px){.header h1{font-size:32px;}.timeline-header{flex-direction:column;}.skills-grid{grid-template-columns:1fr;}}
+* {margin:0; padding:0; box-sizing:border-box;}
+body {font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif; background:#fefefe; color:#37352f; line-height:1.6; padding:40px 20px;}
+.container {max-width:900px; margin:0 auto; background:#ffffff; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.05);}
+.header {text-align:center; padding:40px 20px 60px; border-bottom:2px solid #2563eb; position:relative;}
+.profile-photo {width:130px; height:130px; border-radius:50%; object-fit:cover; margin-bottom:20px; border:3px solid #2563eb; transition:transform 0.4s;}
+.profile-photo:hover {transform: scale(1.1);}
+.header h1 {font-size:42px; font-weight:700; color:#1e293b; margin-bottom:10px; animation:fadeInDown 1s ease forwards;}
+.header .subtitle {font-size:20px; color:#2563eb; font-weight:600; margin-bottom:20px; animation:fadeInUp 1s ease forwards;}
+.contact-info {display:flex; justify-content:center; gap:25px; flex-wrap:wrap; font-size:14px; color:#64748b; margin-top:20px;}
+.contact-info span {display:flex; align-items:center; gap:8px; transition:color 0.3s;}
+.contact-info a {color:#2563eb; text-decoration:none; transition: color 0.3s;}
+.contact-info a:hover {color:#1e40af; text-decoration:underline;}
+.section {margin-bottom:50px;}
+.section-title {font-size:26px; font-weight:700; color:#1e293b; margin-bottom:25px; padding-bottom:10px; border-bottom:2px solid #e2e8f0; display:flex; align-items:center; gap:12px;}
+.section-title::before {content:''; width:5px; height:28px; background:#2563eb;}
+.introduction {background:#f8fafc; padding:25px; border-radius:8px; border-left:4px solid #2563eb; font-size:16px; line-height:1.8; animation:fadeIn 1s ease forwards;}
+.timeline-item {margin-bottom:30px; padding-left:25px; border-left:2px solid #e2e8f0; position:relative; opacity:0; transform:translateX(-50px); transition:0.7s;}
+.timeline-item::before {content:''; position:absolute; left:-7px; top:5px; width:12px; height:12px; background:#2563eb; border-radius:50%;}
+.timeline-header {display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap;}
+.timeline-title {font-size:18px; font-weight:600; color:#1e293b;}
+.timeline-company {font-size:16px; color:#2563eb; font-weight:500; margin-bottom:4px;}
+.timeline-period {font-size:14px; color:#64748b;}
+.timeline-description {margin-top:10px; color:#475569; line-height:1.7;}
+.timeline-description ul {margin-top:8px; padding-left:20px;}
+.timeline-description li {margin-bottom:6px;}
+.skills-grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px;}
+.skill-category {background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; opacity:0; transform:translateY(50px); transition:0.7s; cursor:pointer; position:relative;}
+.skill-category:hover {background:#e0f2fe; transform:translateY(0) scale(1.02);}
+.skill-category h3 {font-size:16px; font-weight:600; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; gap:8px;}
+.skill-category h3::before {content:'▪'; color:#2563eb; font-size:20px;}
+.skill-tags {display:flex; flex-wrap:wrap; gap:8px;}
+.skill-tag {background:#dbeafe; color:#1e40af; padding:6px 12px; border-radius:20px; font-size:13px; font-weight:500; transition:all 0.3s;}
+.skill-tag:hover {background:#2563eb; color:#fff; transform:scale(1.1);}
+.projects-grid {display:grid; gap:25px;}
+.project-card {background:#ffffff; border:2px solid #e2e8f0; border-radius:12px; padding:25px; transition:all 0.3s ease; opacity:0; transform:translateY(50px);}
+.project-card:hover {border-color:#2563eb; box-shadow:0 6px 20px rgba(37,99,235,0.15); transform:translateY(-5px);}
+.project-header {display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;}
+.project-title {font-size:20px; font-weight:600; color:#1e293b; margin-bottom:5px;}
+.project-client {font-size:14px; color:#2563eb; font-weight:500;}
+.project-period {font-size:13px; color:#64748b; white-space:nowrap;}
+.project-description {color:#475569; margin-bottom:15px; line-height:1.7;}
+.project-achievements {background:#f8fafc; padding:15px; border-radius:6px; margin-bottom:15px;}
+.project-achievements h4 {font-size:14px; font-weight:600; color:#1e293b; margin-bottom:8px;}
+.project-achievements ul {padding-left:20px; color:#475569;}
+.project-achievements li {margin-bottom:4px; font-size:14px;}
+.project-tags {display:flex; flex-wrap:wrap; gap:8px;}
+.project-tag {background:#eff6ff; color:#1e40af; padding:5px 10px; border-radius:4px; font-size:12px; font-weight:500;}
+.cert-item {background:#f8fafc; padding:15px 20px; border-radius:6px; margin-bottom:12px; border-left:3px solid #2563eb; opacity:0; transform:translateX(-50px); transition:0.7s;}
+.cert-title {font-size:16px; font-weight:600; color:#1e293b;}
+.cert-issuer {font-size:14px; color:#64748b; margin-top:4px;}
+.education-item {display:flex; justify-content:space-between; align-items:flex-start; padding:15px 0; border-bottom:1px solid #e2e8f0; opacity:0; transform:translateY(50px); transition:0.7s;}
+.education-info h3 {font-size:17px; font-weight:600; color:#1e293b; margin-bottom:5px;}
+.education-detail {font-size:14px; color:#64748b;}
+.footer {margin-top:60px; padding-top:30px; border-top:2px solid #e2e8f0; text-align:center; color:#94a3b8; font-size:13px;}
+
+/* Animations */
+@keyframes fadeIn {from{opacity:0;} to{opacity:1;}}
+@keyframes fadeInDown {from{opacity:0; transform:translateY(-20px);} to{opacity:1; transform:translateY(0);}}
+@keyframes fadeInUp {from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);}}
 </style>
 </head>
 <body>
@@ -71,30 +77,29 @@
 
 <!-- Header -->
 <header class="header">
-    <img src="IMG_2756.jpeg" alt="Photo de Chahnaz Alrifaii" class="profile-photo">
-    <h1>Chahnaz Alrifaii</h1>
-    <div class="subtitle">Étudiante en mastère Humanités numériques, à la recherche d'un stage en Marketing Digital</div>
-    <div class="contact-info">
-        <span>📧 <a href="mailto:rifaichahnaz@gmail.com">rifaichahnaz@gmail.com</a></span>
-        <span>📱 07 53 09 86 39</span>
-        <span>🔗 <a href="https://www.linkedin.com/in/alrifaiichahnaz" target="_blank">LinkedIn</a></span>
-        <span>📍 Le Vésinet, Ile de France, France</span>
+    <img src="IMG_2756.jpeg" alt="Photo de Chahnaz Alrifaii" class="profile-photo" data-aos="zoom-in">
+    <h1 data-aos="fade-down">Chahnaz Alrifaii</h1>
+    <div class="subtitle" data-aos="fade-up">Étudiante en mastère Humanités numériques, à la recherche d'un stage en Marketing Digital</div>
+    <div class="contact-info" data-aos="fade-up" data-aos-delay="200">
+        <span><i class="fas fa-envelope"></i> <a href="mailto:rifaichahnaz@gmail.com">rifaichahnaz@gmail.com</a></span>
+        <span><i class="fas fa-phone"></i> 07 53 09 86 39</span>
+        <span><i class="fab fa-linkedin"></i> <a href="https://www.linkedin.com/in/alrifaiichahnaz" target="_blank">LinkedIn</a></span>
+        <span><i class="fas fa-map-marker-alt"></i> Le Vésinet, Ile de France</span>
     </div>
 </header>
 
-<!-- Présentation -->
-<section class="section" data-aos="fade-up">
+<!-- Introduction -->
+<section class="section">
     <h2 class="section-title">Présentation</h2>
-    <div class="introduction">
-        À la recherche d’un Stage, je suis passionnée par la communication et le marketing. Engagée à l’écoute et curieuse, je souhaite évoluer dans un cadre où l’interaction, l’efficacité et la pensée créative guident les projets, tout en mettant mes compétences au service d’initiatives innovantes et stimulantes.
+    <div class="introduction" data-aos="fade-right">
+        À la recherche d’un stage, je suis passionnée par la communication et le marketing. Engagée à l’écoute et curieuse, je souhaite évoluer dans un cadre où l’interaction, l’efficacité et la pensée créative guident les projets, tout en mettant mes compétences au service d’initiatives innovantes et stimulantes.
     </div>
 </section>
 
 <!-- Expérience -->
 <section class="section">
     <h2 class="section-title">Expérience</h2>
-
-    <div class="timeline-item" data-aos="fade-right">
+    <div class="timeline-item" data-aos="fade-left">
         <div class="timeline-header">
             <div>
                 <div class="timeline-company">Loomi Gastronomie Libanaise</div>
@@ -106,7 +111,7 @@
             <ul>
                 <li>Planification et gestion de campagnes publicitaires digitales (Meta Ads)</li>
                 <li>Création de contenu et gestion de calendrier éditorial</li>
-                <li>Design des nouveaux menus, nouveau logo</li>
+                <li>Design des nouveaux menus et logo</li>
                 <li>Vidéaste et photographie</li>
                 <li>Accueil et service client</li>
                 <li>Gestion des commandes</li>
@@ -116,11 +121,11 @@
         </div>
     </div>
 
-    <div class="timeline-item" data-aos="fade-right" data-aos-delay="100">
+    <div class="timeline-item" data-aos="fade-left" data-aos-delay="100">
         <div class="timeline-header">
             <div>
                 <div class="timeline-company">Horizon Web Solution</div>
-                <div class="timeline-title">Stage Graphiste & Spécialiste Marketing Digital</div>
+                <div class="timeline-title">Stage Graphiste & Marketing Digital</div>
             </div>
             <div class="timeline-period">2024</div>
         </div>
@@ -128,13 +133,13 @@
             <ul>
                 <li>Conception de visuels et animation de réseaux sociaux</li>
                 <li>Storytelling et communication visuelle</li>
-                <li>Stratégie marketing</li>
-                <li>Gestion de projets marketing, optimisation des campagnes et analyse des performances</li>
+                <li>Stratégie marketing digitale</li>
+                <li>Gestion de projets marketing, optimisation des campagnes et reporting</li>
             </ul>
         </div>
     </div>
 
-    <div class="timeline-item" data-aos="fade-right" data-aos-delay="200">
+    <div class="timeline-item" data-aos="fade-left" data-aos-delay="200">
         <div class="timeline-header">
             <div>
                 <div class="timeline-company">ONG</div>
@@ -144,155 +149,117 @@
         </div>
         <div class="timeline-description">
             <ul>
-                <li>Participation à la stratégie de communication et analyse de l’impact visuel des campagnes</li>
-                <li>Création de visuels digitaux pour les campagnes de sensibilisation P-VAWG des organisations communautaires (CBOs)</li>
-                <li>Coordination avec les partenaires locaux et internationaux</li>
-                <li>Collecte de données, rédaction de rapports et référencement de cas vulnérables</li>
+                <li>Participation à la stratégie de communication et analyse des campagnes</li>
+                <li>Création de visuels digitaux pour campagnes de sensibilisation</li>
+                <li>Coordination avec partenaires locaux et internationaux</li>
+                <li>Collecte de données, rédaction de rapports et référencement</li>
             </ul>
         </div>
     </div>
 </section>
 
-<!-- Projets -->
-<section class="section">
-    <h2 class="section-title">Projets clés</h2>
-    <div class="projects-grid">
-        <div class="project-card" data-aos="fade-up">
-            <div class="project-header">
-                <div>
-                    <div class="project-title">Planification et gestion d’un projet d’incubation de restauration</div>
-                    <div class="project-client">Client : Malek El Tawook</div>
-                </div>
-                <div class="project-period">2024</div>
-            </div>
-            <div class="project-description">
-                Élaboration et mise en œuvre d'une stratégie marketing intégrée adaptée au marché libanais. Campagne 360° combinant réseaux sociaux, influenceurs, RP et événements offline.
-            </div>
-            <div class="project-achievements">
-                <h4>Résultats clés</h4>
-                <ul>
-                    <li>65 % de notoriété de marque atteinte en 3 mois</li>
-                    <li>Taux d’engagement sur les réseaux sociaux 3x supérieur à la moyenne</li>
-                    <li>180 % de l’objectif de ventes du premier mois atteint</li>
-                    <li>Valeur RP estimée à environ 30 millions KRW</li>
-                </ul>
-            </div>
-            <div class="project-tags">
-                <span class="project-tag">Stratégie de marque</span>
-                <span class="project-tag">Marketing intégré</span>
-                <span class="project-tag">Réseaux sociaux</span>
-                <span class="project-tag">Influenceurs</span>
-            </div>
-        </div>
-    </div>
-</section>
-
 <!-- Compétences -->
-<section class="section" data-aos="fade-up">
-    <h2 class="section-title">Compétences</h2>
-    <div class="skills-grid">
-        <div class="skill-category" data-aos="flip-left">
-            <h3>Stratégie marketing</h3>
-            <div class="skill-tags">
-                <span class="skill-tag">Stratégie de marque</span>
-                <span class="skill-tag">Marketing intégré</span>
-                <span class="skill-tag">Étude de marché</span>
-                <span class="skill-tag">Positionnement</span>
-                <span class="skill-tag">Planification de campagnes</span>
-            </div>
-        </div>
-        <div class="skill-category" data-aos="flip-left" data-aos-delay="100">
-            <h3>Marketing digital</h3>
-            <div class="skill-tags">
-                <span class="skill-tag">Google Ads</span>
-                <span class="skill-tag">Meta Ads</span>
-                <span class="skill-tag">SEO/SEM</span>
-                <span class="skill-tag">Marketing de performance</span>
-            </div>
-        </div>
-        <div class="skill-category" data-aos="flip-left" data-aos-delay="200">
-            <h3>Réseaux sociaux & contenu</h3>
-            <div class="skill-tags">
-                <span class="skill-tag">Stratégie réseaux sociaux</span>
-                <span class="skill-tag">Planification de contenu</span>
-                <span class="skill-tag">Marketing d’influence</span>
-                <span class="skill-tag">Gestion de communauté</span>
-            </div>
-        </div>
-        <div class="skill-category" data-aos="flip-left" data-aos-delay="300">
-            <h3>Données & Analyse</h3>
-            <div class="skill-tags">
-                <span class="skill-tag">Google Analytics</span>
-                <span class="skill-tag">Reporting</span>
-            </div>
-        </div>
-        <div class="skill-category" data-aos="flip-left" data-aos-delay="400">
-            <h3>Outils créatifs</h3>
-            <div class="skill-tags">
-                <span class="skill-tag">GitHub (Développement Web)</span>
-                <span class="skill-tag">Canva</span>
-                <span class="skill-tag">Capcut</span>
-                <span class="skill-tag">Adobe Creative Suite</span>
-                <span class="skill-tag">Montage vidéo</span>
-            </div>
-        </div>
-        <div class="skill-category" data-aos="flip-left" data-aos-delay="500">
-            <h3>Collaboration & gestion de projet</h3>
-            <div class="skill-tags">
-                <span class="skill-tag">Notion</span>
-                <span class="skill-tag">Leadership d'équipe</span>
-            </div>
+<section class="section">
+<h2 class="section-title">Compétences</h2>
+<div class="skills-grid">
+    <div class="skill-category" data-aos="fade-up">
+        <h3>Stratégie marketing</h3>
+        <div class="skill-tags">
+            <span class="skill-tag">Stratégie de marque</span>
+            <span class="skill-tag">Marketing intégré</span>
+            <span class="skill-tag">Étude de marché</span>
+            <span class="skill-tag">Positionnement</span>
+            <span class="skill-tag">Planification de campagnes</span>
         </div>
     </div>
+    <div class="skill-category" data-aos="fade-up" data-aos-delay="100">
+        <h3>Marketing digital</h3>
+        <div class="skill-tags">
+            <span class="skill-tag">Google Ads</span>
+            <span class="skill-tag">Meta Ads</span>
+            <span class="skill-tag">SEO/SEM</span>
+            <span class="skill-tag">Marketing de performance</span>
+        </div>
+    </div>
+    <div class="skill-category" data-aos="fade-up" data-aos-delay="200">
+        <h3>Réseaux sociaux & contenu</h3>
+        <div class="skill-tags">
+            <span class="skill-tag">Stratégie réseaux sociaux</span>
+            <span class="skill-tag">Planification de contenu</span>
+            <span class="skill-tag">Marketing d’influence</span>
+            <span class="skill-tag">Gestion de communauté</span>
+        </div>
+    </div>
+    <div class="skill-category" data-aos="fade-up" data-aos-delay="300">
+        <h3>Données & Analyse</h3>
+        <div class="skill-tags">
+            <span class="skill-tag">Google Analytics</span>
+            <span class="skill-tag">Reporting</span>
+        </div>
+    </div>
+    <div class="skill-category" data-aos="fade-up" data-aos-delay="400">
+        <h3>Outils créatifs</h3>
+        <div class="skill-tags">
+            <span class="skill-tag">GitHub</span>
+            <span class="skill-tag">Canva</span>
+            <span class="skill-tag">Capcut</span>
+            <span class="skill-tag">Adobe Suite</span>
+            <span class="skill-tag">Montage vidéo</span>
+        </div>
+    </div>
+    <div class="skill-category" data-aos="fade-up" data-aos-delay="500">
+        <h3>Collaboration & gestion</h3>
+        <div class="skill-tags">
+            <span class="skill-tag">Notion</span>
+            <span class="skill-tag">Leadership</span>
+        </div>
+    </div>
+</div>
 </section>
 
 <!-- Formation -->
 <section class="section">
-    <h2 class="section-title">Formation</h2>
-    <div class="education-item" data-aos="fade-up">
-        <div class="education-info">
-            <h3>Université Paris 8</h3>
-            <div class="education-detail">Mastère 1 | Humanités Numériques</div>
-        </div>
-        <div class="timeline-period">2025 - 2026</div>
+<h2 class="section-title">Formation</h2>
+<div class="education-item" data-aos="fade-right">
+    <div class="education-info">
+        <h3>Université Paris 8</h3>
+        <div class="education-detail">Mastère 1 | Humanités Numériques</div>
     </div>
-    <div class="education-item" data-aos="fade-up" data-aos-delay="100">
-        <div class="education-info">
-            <h3>Lebanese International University</h3>
-            <div class="education-detail">Licence | Graphisme</div>
-        </div>
-        <div class="timeline-period">2024 - 2025</div>
+    <div class="timeline-period">2025 - 2026</div>
+</div>
+<div class="education-item" data-aos="fade-right" data-aos-delay="100">
+    <div class="education-info">
+        <h3>Lebanese International University</h3>
+        <div class="education-detail">Licence | Graphisme</div>
     </div>
+    <div class="timeline-period">2024 - 2025</div>
+</div>
 </section>
 
 <!-- Certifications -->
 <section class="section">
-    <h2 class="section-title">Certifications</h2>
-    <div class="cert-item" data-aos="fade-right">
-        <div class="cert-title">Certification En Marketing Digital</div>
-        <div class="cert-issuer">Hubspot | 2025</div>
-    </div>
-    <div class="cert-item" data-aos="fade-right" data-aos-delay="100">
-        <div class="cert-title">Publicité Google Ads</div>
-        <div class="cert-issuer">Google | 2024</div>
-    </div>
+<h2 class="section-title">Certifications & Formation</h2>
+<div class="cert-item" data-aos="fade-left">
+    <div class="cert-title">Certification Marketing Digital</div>
+    <div class="cert-issuer">Hubspot | 2025</div>
+</div>
+<div class="cert-item" data-aos="fade-left" data-aos-delay="100">
+    <div class="cert-title">Français langue étrangère (DUEF) et DELF B1-B2</div>
+    <div class="cert-issuer">Université d'Avignon | 2025</div>
+</div>
 </section>
 
 <!-- Footer -->
-<footer class="footer">
+<footer class="footer" data-aos="fade-up">
     &copy; 2025 Chahnaz Alrifaii. Tous droits réservés.
 </footer>
+
 </div>
 
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-    AOS.init({duration:800, once:true});
-    // animation timeline show
-    const items = document.querySelectorAll('.timeline-item, .skill-category, .project-card, .cert-item, .education-item');
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => { if(entry.isIntersecting){entry.target.classList.add('show');}});
-    }, {threshold:0.1});
-    items.forEach(item => observer.observe(item));
+AOS.init({duration:800, once:true});
 </script>
 </body>
 </html>
