@@ -278,6 +278,49 @@ const config = {
 
 new Phaser.Game(config);
 </script>
+import { useState, useEffect } from "react";
+
+export default function AnimatedText() {
+  const [text, setText] = useState("Your Text Here");
+  const [displayed, setDisplayed] = useState("");
+
+  useEffect(() => {
+    let index = 0;
+    setDisplayed("");
+
+    const interval = setInterval(() => {
+      setDisplayed((prev) => prev + text[index]);
+      index++;
+      if (index === text.length) clearInterval(interval);
+    }, 120);
+
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-8">
+      <div className="flex gap-10 items-start">
+
+        {/* --- LEFT: Horizontal animation --- */}
+        <div className="text-3xl font-bold whitespace-nowrap">
+          {displayed}
+        </div>
+
+        {/* --- RIGHT: Input area --- */}
+        <div className="p-5 bg-white rounded-2xl shadow-lg w-64">
+          <h2 className="text-lg font-semibold mb-3">Write your text</h2>
+
+          <textarea
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring"
+            rows={4}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type a phrase…"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 </body>
 </html>
