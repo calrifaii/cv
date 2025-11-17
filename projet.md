@@ -1,55 +1,33 @@
-# Projet : Jeu "Avoid the Germs"
+# Projet Phaser – Description
 
-## Description
-Ce projet est un petit jeu d’arcade développé en **JavaScript** à l’aide du framework **Phaser 3**.  
-Le joueur contrôle un personnage qui doit **éviter les germes** animés tout en **ramassant des anneaux** pour gagner des points.  
-Le jeu se termine dès qu’un germe touche le joueur.
-
----
-
-## Objectifs du projet
-- Créer un jeu web interactif en utilisant **Phaser 3**
-- Gérer des scènes de jeu (menu principal, chargement, gameplay)
-- Apprendre la gestion des collisions, de la physique et des animations en JavaScript
-- Concevoir un système de score et de “highscore”
-
----
+## Présentation du projet
+Ce projet utilise le framework **Phaser 3** pour créer une scène animée composée d’une grille de blocs visuels. L’objectif est de générer un effet visuel dynamique rappelant une **vague** ou une **respiration**, grâce à l’utilisation des tweens de Phaser.
 
 ## Fonctionnalités principales
-- **Contrôle du joueur** : déplacement avec la souris  
-- **Ennemis (germes)** : apparaissent et poursuivent le joueur avec des vitesses différentes  
-- **Objets à collecter** : des anneaux à ramasser pour augmenter le score  
-- **Sons et musiques** : effets audio pour les actions (victoire, échec, etc.)  
-- **Interface dynamique** : menu principal, écran de “Game Over”, affichage du score  
+- **Chargement d’assets** : une image de fond et un sprite carré de 50x50 pixels.
+- **Création d’un groupe d’objets** : génération automatique de 108 blocs mis à l’échelle.
+- **Alignement en grille** : placement précis des blocs selon une grille de 12 colonnes et 9 lignes.
+- **Animation séquentielle** : chaque bloc change d’échelle de façon répétée, avec un léger décalage temporel créant un effet d’onde.
+
+## Comportement visuel
+Les blocs s’animent de manière synchronisée par ligne : chaque ligne commence son animation après la précédente, produisant un mouvement fluide et hypnotique.  
+L’effet repose sur des tweens configurés avec :
+- une durée courte (300 ms),
+- une animation en aller-retour (yoyo),
+- un délai progressif qui se réinitialise à chaque nouvelle ligne.
+
+## Objectif pédagogique
+Ce projet permet de comprendre :
+- la création d’une scène Phaser,
+- l’utilisation d’un groupe d’objets,
+- le placement en grille via `Phaser.Actions.GridAlign`,
+- l’utilisation des animations (tweens) pour créer des effets visuels complexes.
+
+## Améliorations possibles
+- Modifier l’effet de vague (diagonale, circulaire, aléatoire).
+- Changer la forme ou la couleur des éléments.
+- Ajouter des interactions utilisateur (clic, survol, mouvement souris).
+- Intégrer des particules ou des effets sonores.
 
 ---
-
-## Technologies utilisées
-- **Phaser 3** (moteur de jeu 2D en JavaScript)
-- **HTML5 / CSS3**
-- **JavaScript (ES6 modules)**
-- **GitHub Pages** pour l’hébergement
-
----
-
-## Structure du projet
-- `Boot.js` : chargeur initial du jeu  
-- `Preloader.js` : gestion du chargement des assets (images, sons, etc.)  
-- `MainMenu.js` : menu principal et lancement du jeu  
-- `MainGame.js` : logique principale du gameplay  
-- `Player.js`, `Germ.js`, `Pickups.js`, `Germs.js` : gestion des objets du jeu  
-
----
-
-## Résultat attendu
-Un jeu d’arcade jouable directement dans le navigateur où :
-- Le joueur doit survivre le plus longtemps possible,
-- Éviter les germes en mouvement,
-- Ramasser des anneaux pour battre le meilleur score.
-
-Le jeu sera hébergé sur GitHub Pages et accessible via un simple lien.
-
----
-
-## Auteur
-**Chahnaz Alrifaii** — Étudiante en mastère Humanités Numériques.
+Ce document décrit clairement le fonctionnement du projet et ses possibilités d’évolution.
