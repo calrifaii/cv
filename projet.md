@@ -1,7 +1,7 @@
 # Projet Phaser – Description
 
 ## Présentation du projet
-Ce projet utilise le framework **Phaser 3** pour créer une scène animée composée d’une grille de blocs visuels. L’objectif est de générer un effet visuel dynamique rappelant une **vague** ou une **respiration**, grâce à l’utilisation des tweens de Phaser.
+Ce projet utilise le framework Phaser 3 pour créer une scène animée composée d’une grille de blocs visuels. L’objectif est de générer un effet visuel dynamique rappelant une vague ou une respiration, grâce à l’utilisation des tweens de Phaser.
 
 ## Fonctionnalités principales
 - **Chargement d’assets** : une image de fond et un sprite carré de 50x50 pixels.
@@ -16,18 +16,9 @@ L’effet repose sur des tweens configurés avec :
 - une animation en aller-retour (yoyo),
 - un délai progressif qui se réinitialise à chaque nouvelle ligne.
 
-## Objectif pédagogique
-Ce projet permet de comprendre :
-- la création d’une scène Phaser,
-- l’utilisation d’un groupe d’objets,
-- le placement en grille via `Phaser.Actions.GridAlign`,
-- l’utilisation des animations (tweens) pour créer des effets visuels complexes.
-
 ## Améliorations possibles
 - Modifier l’effet de vague (diagonale, circulaire, aléatoire).
 - Changer la forme ou la couleur des éléments.
 - Ajouter des interactions utilisateur (clic, survol, mouvement souris).
 - Intégrer des particules ou des effets sonores.
 
----
-Ce document décrit clairement le fonctionnement du projet et ses possibilités d’évolution.
