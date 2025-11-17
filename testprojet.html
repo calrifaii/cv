@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <title>Phaser Waves Project</title>
 
-    <!-- Import Phaser -->
+    <!-- Phaser 3 -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #000;
-            font-family: Arial, sans-serif;
+            background: #2d2d2d;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
 
         #phaser-example {
@@ -27,19 +27,18 @@
 <div id="phaser-example"></div>
 
 <script>
-// ---------------------------------------------------------
-//  COMPLETE JS CODE
-// ---------------------------------------------------------
-
-class Example extends Phaser.Scene {
-    constructor() {
+class Example extends Phaser.Scene
+{
+    constructor ()
+    {
         super();
         this.phase = 0; 
         this.phaseDuration = 6000; 
         this.timeSincePhase = 0;
     }
 
-    preload() {
+    preload ()
+    {
         this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
 
         // Background
@@ -53,42 +52,44 @@ class Example extends Phaser.Scene {
         // Particles
         this.load.image('spark', 'assets/particles/blue.png');
 
-        // Sounds
+        // Sound
         this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
     }
 
-    create() {
+    create ()
+    {
         this.add.image(400, 300, 'bg');
 
         this.particles = this.add.particles('spark');
-        this.blocks = this.add.group();
 
+        // Groupe principal
         const shapes = ['square', 'circle', 'diamond'];
+        const blocks = this.add.group();
 
         for (let i = 0; i < 108; i++) {
             const shape = shapes[i % shapes.length];
-            const block = this.add.image(0, 0, shape).setScale(0.3);
+            const child = this.add.image(0, 0, shape).setScale(0.3);
 
-            block.setTint(Phaser.Display.Color.RandomRGB().color);
+            child.setTint(Phaser.Display.Color.RandomRGB().color);
 
             // Hover
-            block.setInteractive({ pixelPerfect: true });
-            block.on('pointerover', () => {
+            child.setInteractive();
+            child.on('pointerover', () => {
                 this.tweens.add({
-                    targets: block,
+                    targets: child,
                     scale: 0.5,
                     duration: 150,
                     yoyo: true
                 });
             });
 
-            // Click
-            block.on('pointerdown', () => {
-                this.sound.play('pop', { volume: 0.4 });
+            // Click = particules + son
+            child.on('pointerdown', () => {
+                this.sound.play('pop', { volume: 0.5 });
 
                 this.particles.createEmitter({
-                    x: block.x,
-                    y: block.y,
+                    x: child.x,
+                    y: child.y,
                     speed: { min: -150, max: 150 },
                     lifespan: 500,
                     scale: { start: 0.5, end: 0 },
@@ -96,11 +97,11 @@ class Example extends Phaser.Scene {
                 });
             });
 
-            this.blocks.add(block);
+            blocks.add(child);
         }
 
         // Grid
-        Phaser.Actions.GridAlign(this.blocks.getChildren(), {
+        Phaser.Actions.GridAlign(blocks.getChildren(), {
             width: 12,
             height: 9,
             cellWidth: 60,
@@ -109,22 +110,22 @@ class Example extends Phaser.Scene {
             y: 30
         });
 
-        this.originalPositions = this.blocks.getChildren().map(b => ({
-            x: b.x,
-            y: b.y
-        }));
+        this.blocks = blocks;
+        this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
     }
 
-    update(time, delta) {
+    update (time, delta)
+    {
+        // Phase switching
         this.timeSincePhase += delta;
-
         if (this.timeSincePhase > this.phaseDuration) {
             this.phase = (this.phase + 1) % 4;
             this.timeSincePhase = 0;
 
-            this.blocks.getChildren().forEach(b =>
-                b.setTint(Phaser.Display.Color.RandomRGB().color)
-            );
+            // Color change
+            this.blocks.getChildren().forEach(b => {
+                b.setTint(Phaser.Display.Color.RandomRGB().color);
+            });
         }
 
         // Mouse attraction
@@ -142,30 +143,27 @@ class Example extends Phaser.Scene {
         this.animateBlocks(time);
     }
 
-    animateBlocks(time) {
+    animateBlocks(time)
+    {
         const blocks = this.blocks.getChildren();
-
         blocks.forEach((block, i) => {
             const orig = this.originalPositions[i];
             let offset = 0;
 
             switch (this.phase) {
-                case 0:
+                case 0: // Vague horizontale
                     offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
                     break;
-
-                case 1:
+                case 1: // Vague circulaire
                     const dx = orig.x - 400;
                     const dy = orig.y - 300;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const dist = Math.sqrt(dx*dx + dy*dy);
                     offset = Math.sin(time / 250 + dist * 0.05) * 18;
                     break;
-
-                case 2:
+                case 2: // Diagonale
                     offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
                     break;
-
-                case 3:
+                case 3: // Aléatoire
                     offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25);
                     break;
             }
@@ -180,13 +178,13 @@ const config = {
     type: Phaser.AUTO,
     width: window.innerWidth,
     height: window.innerHeight,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#2d2d2d',
     parent: 'phaser-example',
     scene: Example
 };
 
 const game = new Phaser.Game(config);
-
 </script>
+
 </body>
 </html>
