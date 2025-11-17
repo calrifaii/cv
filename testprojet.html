@@ -2,17 +2,17 @@ class Example extends Phaser.Scene {
     constructor() {
         super();
         this.phase = 0; // 0 = wave, 1 = circular, 2 = diagonal, 3 = random
-        this.phaseDuration = 6000; // duration per phase
+        this.phaseDuration = 6000; // durée de chaque phase
         this.timeSincePhase = 0;
     }
 
     preload() {
         this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
 
-        // Basic assets
+        // Background
         this.load.image('bg', 'assets/tweens/space.png');
 
-        // Shapes for visual evolution
+        // Shapes
         this.load.image('square', 'assets/sprites/50x50.png');
         this.load.image('circle', 'assets/sprites/blue_ball.png');
         this.load.image('diamond', 'assets/sprites/diamond.png');
@@ -27,26 +27,26 @@ class Example extends Phaser.Scene {
     create() {
         this.add.image(400, 300, 'bg');
 
-        // Create particle manager
+        // Particle manager
         this.particles = this.add.particles('spark');
 
-        // Create blocks
+        // Create group
         this.blocks = this.add.group();
 
-        const shapeOrder = ['square', 'circle', 'diamond'];
+        const shapes = ['square', 'circle', 'diamond'];
 
+        // Create 108 elements (grid 12×9)
         for (let i = 0; i < 108; i++) {
-            const shape = shapeOrder[i % shapeOrder.length];
-
+            const shape = shapes[i % shapes.length];
             const block = this.add.image(0, 0, shape).setScale(0.3);
 
-            // Random tint
+            // Random color
             block.setTint(Phaser.Display.Color.RandomRGB().color);
 
-            // Make interactive
+            // Make clickable + hover
             block.setInteractive({ pixelPerfect: true });
 
-            // Hover effect
+            // Hover animation
             block.on('pointerover', () => {
                 this.tweens.add({
                     targets: block,
@@ -56,17 +56,17 @@ class Example extends Phaser.Scene {
                 });
             });
 
-            // Click effect: particles + sound
+            // Click → particles + pop sound
             block.on('pointerdown', () => {
                 this.sound.play('pop', { volume: 0.4 });
 
                 this.particles.createEmitter({
                     x: block.x,
                     y: block.y,
-                    speed: { min: -100, max: 100 },
-                    lifespan: 400,
-                    scale: { start: 0.4, end: 0 },
-                    quantity: 20
+                    speed: { min: -150, max: 150 },
+                    lifespan: 500,
+                    scale: { start: 0.5, end: 0 },
+                    quantity: 25
                 });
             });
 
@@ -83,35 +83,40 @@ class Example extends Phaser.Scene {
             y: 30
         });
 
-        this.originalPositions = this.blocks.getChildren().map(c => ({ x: c.x, y: c.y }));
+        // Save original positions for animation
+        this.originalPositions = this.blocks.getChildren().map(b => ({
+            x: b.x,
+            y: b.y
+        }));
     }
 
     update(time, delta) {
+        // Phase switching logic
         this.timeSincePhase += delta;
 
         if (this.timeSincePhase > this.phaseDuration) {
             this.phase = (this.phase + 1) % 4;
             this.timeSincePhase = 0;
 
-            // Change colors each phase
+            // Color change every phase
             this.blocks.getChildren().forEach(b => {
                 b.setTint(Phaser.Display.Color.RandomRGB().color);
             });
         }
 
-        // Mouse attraction effect
+        // Mouse attraction
         if (this.input.activePointer.isDown) {
             const mx = this.input.x;
             const my = this.input.y;
 
             this.blocks.getChildren().forEach(block => {
                 const angle = Phaser.Math.Angle.Between(block.x, block.y, mx, my);
-                block.x += Math.cos(angle) * 0.5;
-                block.y += Math.sin(angle) * 0.5;
+                block.x += Math.cos(angle) * 0.6;
+                block.y += Math.sin(angle) * 0.6;
             });
         }
 
-        // Animate according to phase
+        // Animate blocks
         this.animateBlocks(time);
     }
 
@@ -125,22 +130,22 @@ class Example extends Phaser.Scene {
 
             switch (this.phase) {
                 case 0: // Horizontal wave
-                    offset = Math.sin(time / 300 + orig.y * 0.1) * 10;
+                    offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
                     break;
 
                 case 1: // Circular wave
                     const dx = orig.x - 400;
                     const dy = orig.y - 300;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    offset = Math.sin(time / 250 + dist * 0.05) * 15;
+                    offset = Math.sin(time / 250 + dist * 0.05) * 18;
                     break;
 
                 case 2: // Diagonal wave
-                    offset = Math.sin(time / 200 + (orig.x + orig.y) * 0.05) * 12;
+                    offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
                     break;
 
-                case 3: // Random dance
-                    offset = Math.sin(time / 150 + i) * Phaser.Math.Between(5, 25);
+                case 3: // Random chaos
+                    offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25);
                     break;
             }
 
@@ -154,9 +159,10 @@ const config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
-    backgroundColor: '#1d1d1d',
+    backgroundColor: '#1a1a1a',
     parent: 'phaser-example',
     scene: Example
 };
 
 const game = new Phaser.Game(config);
+
