@@ -1,123 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Phaser + Text Animation</title>
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: #ccffd5; /* light green */
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <title>Phaser Text Animation</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
-    #left {
-        width: 60%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #b8ffb8;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
 
-    #right {
-        width: 40%;
-        padding: 30px;
-        background: white;
-        box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
+        /* Zone animation gauche */
+        #phaser-left {
+            width: 60%;
+            height: 100vh;
+        }
 
-    #display {
-        font-size: 32px;
-        font-weight: bold;
-        white-space: nowrap;
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
+        /* Zone texte droite */
+        #text-zone {
+            width: 40%;
+            background: white;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-    textarea {
-        width: 100%;
-        height: 120px;
-        padding: 10px;
-        font-size: 16px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        resize: none;
-        outline: none;
-    }
+        #text-zone input {
+            width: 100%;
+            padding: 10px;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
 
-    textarea:focus {
-        border-color: #89c0ff;
-    }
-</style>
+        #text-zone button {
+            width: 100%;
+            padding: 10px;
+            font-size: 20px;
+            background: #ff3eb5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
 
-<!-- Phaser -->
-<script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.min.js"></script>
-
+        #phaser-text {
+            width: 100%;
+            height: calc(100% - 120px);
+            margin-top: 20px;
+            border: 2px solid #ff3eb5;
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="left">
-    <div id="phaser-example"></div>
-</div>
+<!-- Animation principale -->
+<div id="phaser-left"></div>
 
-<div id="right">
-    <div id="display"></div>
-    <textarea id="inputText" placeholder="Type any name or phrase here..."></textarea>
+<!-- Zone texte -->
+<div id="text-zone">
+    <input id="userText" type="text" placeholder="Écris un mot ou une phrase..." />
+    <button onclick="updateText()">Afficher le texte en cubes</button>
+    <div id="phaser-text"></div>
 </div>
-
 
 <script>
-// -------------------------------------------------------------
-// TEXT TYPING EFFECT
-// -------------------------------------------------------------
-let input = document.getElementById("inputText");
-let display = document.getElementById("display");
-
-function animateText(text) {
-    display.textContent = "";
-    let i = 0;
-    let interval = setInterval(() => {
-        display.textContent += text[i];
-        i++;
-        if (i >= text.length) clearInterval(interval);
-    }, 100);
-}
-
-input.addEventListener("input", () => {
-    animateText(input.value);
-});
-
-// default text
-animateText("Your Text Here");
-
-// -------------------------------------------------------------
-// PHASER ANIMATION
-// -------------------------------------------------------------
-class Example extends Phaser.Scene {
+/* ------------------ SCÈNE DE GAUCHE (animation) ------------------ */
+class LeftScene extends Phaser.Scene {
     constructor() {
         super();
+        this.phase = 0;
+        this.phaseDuration = 6000;
+        this.timeSincePhase = 0;
     }
 
     preload() {
         this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
-        this.load.image('bg', 'assets/tweens/space.png');
-        this.load.image('block', 'assets/sprites/50x50.png');
+        this.load.image('square', 'assets/sprites/50x50.png');
     }
 
     create() {
-        this.add.image(400, 300, 'bg').setTint(0xCCFFD5); // tint to match green bg
+        const blocks = this.add.group();
 
-        const blocks = this.add.group({
-            key: 'block',
-            repeat: 107,
-            setScale: { x: 0.3, y: 0.3 }
-        });
+        for (let i = 0; i < 108; i++) {
+            const child = this.add.image(0, 0, 'square').setScale(0.3);
+            child.setTint(0xff3eb5);
+            blocks.add(child);
+        }
 
         Phaser.Actions.GridAlign(blocks.getChildren(), {
             width: 12,
@@ -128,42 +101,117 @@ class Example extends Phaser.Scene {
             y: 30
         });
 
-        let i = 0;
+        this.blocks = blocks;
+        this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+    }
 
-        blocks.children.iterate(child => {
+    update(time, delta) {
+        this.timeSincePhase += delta;
+        if (this.timeSincePhase > this.phaseDuration) {
+            this.phase = (this.phase + 1) % 4;
+            this.timeSincePhase = 0;
+        }
 
-            child.setTint(0xFF66CC); // PINK COLOR
+        const blocks = this.blocks.getChildren();
+        blocks.forEach((block, i) => {
+            const orig = this.originalPositions[i];
+            let offset = 0;
 
-            this.tweens.add({
-                targets: child,
-                scale: 1,
-                ease: 'sine.inout',
-                duration: 300,
-                delay: i * 50,
-                repeat: -1,
-                yoyo: true
-            });
-
-            i++;
-
-            if (i % 12 === 0) {
-                i = 0;
+            switch (this.phase) {
+                case 0: offset = Math.sin(time / 300 + orig.y * 0.12) * 12; break;
+                case 1:
+                    const dx = orig.x - 400, dy = orig.y - 300;
+                    offset = Math.sin(time / 250 + Math.sqrt(dx*dx+dy*dy)*0.05) * 18;
+                    break;
+                case 2: offset = Math.sin(time / 220 + (orig.x + orig.y)*0.06) * 15; break;
+                case 3: offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25); break;
             }
 
+            block.x = orig.x + offset;
+            block.y = orig.y + offset;
         });
     }
 }
 
-const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    backgroundColor: '#ccffd5', // light green
-    parent: 'phaser-example',
-    scene: Example
-};
+/* ------------------ SCÈNE DE DROITE (texte en cubes) ------------------ */
+class TextScene extends Phaser.Scene {
+    constructor() {
+        super();
+        this.cubes = [];
+        this.gridSize = 20;
+    }
 
-new Phaser.Game(config);
+    preload() {
+        this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
+        this.load.image('square', 'assets/sprites/50x50.png');
+    }
+
+    create() {
+        this.drawText("HELLO");
+    }
+
+    drawText(text) {
+        this.cubes.forEach(c => c.destroy());
+        this.cubes = [];
+
+        const ctx = this.textures.createCanvas('textCanvas', 600, 300).getContext();
+        ctx.clearRect(0,0,600,300);
+
+        ctx.font = "90px Arial Black";
+        ctx.fillStyle = "#000000";
+        ctx.fillText(text.toUpperCase(), 20, 150);
+
+        const canvas = ctx.canvas;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+        for (let y = 0; y < canvas.height; y += this.gridSize) {
+            for (let x = 0; x < canvas.width; x += this.gridSize) {
+                const pixelIndex = (y * canvas.width + x) * 4;
+                if (imageData[pixelIndex + 3] > 128) {
+                    const cube = this.add.image(x, y, 'square').setScale(0.15);
+                    cube.setTint(0xff3eb5);
+
+                    this.tweens.add({
+                        targets: cube,
+                        x: cube.x + Phaser.Math.Between(-5, 5),
+                        y: cube.y + Phaser.Math.Between(-5, 5),
+                        duration: 300,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'sine.inOut'
+                    });
+
+                    this.cubes.push(cube);
+                }
+            }
+        }
+    }
+}
+
+/* ---------- Création des deux jeux Phaser séparés ---------- */
+let leftGame = new Phaser.Game({
+    type: Phaser.AUTO,
+    width: window.innerWidth * 0.60,
+    height: window.innerHeight,
+    parent: 'phaser-left',
+    backgroundColor: '#b8ffb8',
+    scene: LeftScene
+});
+
+let textGame = new Phaser.Game({
+    type: Phaser.AUTO,
+    width: window.innerWidth * 0.40 - 40,
+    height: window.innerHeight - 200,
+    parent: 'phaser-text',
+    backgroundColor: '#ffffff',
+    scene: TextScene
+});
+
+/* ----------- Fonction pour mettre à jour le texte ----------- */
+function updateText() {
+    const txt = document.getElementById("userText").value;
+    textGame.scene.keys.default.drawText(txt);
+}
 </script>
 
 </body>
