@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Phaser Waves Project + Text Animation</title>
+    <title>Phaser Waves + Text Generator</title>
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
@@ -11,100 +12,119 @@
             margin: 0;
             padding: 0;
             background: #b8ffb8;
-            overflow: hidden;
             display: flex;
-            height: 100vh;
+            overflow: hidden;
             font-family: Arial, sans-serif;
         }
 
-        #phaser-area {
-            width: 70%;
+        /* Zone Phaser à gauche */
+        #phaser-example {
+            width: 70vw;
             height: 100vh;
         }
 
+        /* Zone interface à droite */
         #right-panel {
-            width: 30%;
+            width: 30vw;
+            height: 100vh;
             background: #ffffffaa;
-            backdrop-filter: blur(6px);
             padding: 20px;
             box-sizing: border-box;
+            backdrop-filter: blur(5px);
         }
 
-        h2 {
+        #right-panel h2 {
             margin-top: 0;
             color: #ff3eb5;
+            font-size: 28px;
             text-align: center;
         }
 
-        textarea {
+        #text-input {
             width: 100%;
-            height: 120px;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            font-size: 18px;
+            margin-bottom: 15px;
             border: 2px solid #ff3eb5;
-            font-size: 16px;
-            resize: none;
+            border-radius: 10px;
             outline: none;
         }
 
-        button {
+        #generate-btn {
             width: 100%;
-            margin-top: 15px;
+            padding: 12px;
             background: #ff3eb5;
             color: white;
             border: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 20px;
             cursor: pointer;
         }
 
-        button:hover {
-            opacity: 0.85;
+        #generate-btn:hover {
+            background: #ff1ea0;
+        }
+
+        #phaser-text {
+            margin-top: 30px;
+            height: 60vh;
+            border: 2px dashed #ff3eb5;
+            border-radius: 10px;
+            padding: 10px;
+            color: #ff3eb5;
         }
     </style>
 </head>
 <body>
 
-<div id="phaser-area"></div>
+<!-- Zone Animation -->
+<div id="phaser-example"></div>
 
+<!-- Zone Interface -->
 <div id="right-panel">
-    <h2>Your Text Animation</h2>
-    <textarea id="userText" placeholder="Type anything here…"></textarea>
-    <button onclick="updateTextAnimation()">Animate Text</button>
+    <h2>Créer une animation avec ton texte</h2>
+    <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…">
+    <button id="generate-btn">Générer l’animation</button>
+
+    <div id="phaser-text"></div>
 </div>
 
 <script>
-let game;
-let textScene;
-
-class MainScene extends Phaser.Scene {
-    constructor() {
-        super({ key: "main" });
+class Example extends Phaser.Scene
+{
+    constructor ()
+    {
+        super();
         this.phase = 0;
         this.phaseDuration = 6000;
         this.timeSincePhase = 0;
     }
 
-    preload() {
+    preload ()
+    {
         this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
 
-        this.load.image('cube', 'assets/sprites/50x50.png');
+        this.load.image('square', 'assets/sprites/50x50.png');
+        this.load.image('circle', 'assets/sprites/blue_ball.png');
+        this.load.image('diamond', 'assets/sprites/diamond.png');
+
         this.load.image('spark', 'assets/particles/blue.png');
         this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
     }
 
-    create() {
-        // Main animation cubes
+    create ()
+    {
+        const shapes = ["square", "circle", "diamond"];
         const blocks = this.add.group();
 
         for (let i = 0; i < 108; i++) {
-            const child = this.add.image(0, 0, 'cube').setScale(0.3);
+            const shape = shapes[i % shapes.length];
+            const child = this.add.image(0, 0, shape).setScale(0.3);
 
-            child.setTint(0xff3eb5);
+            child.setTint(0xff3eb5); // rose
 
             child.setInteractive();
-            child.on('pointerover', () => {
+            child.on("pointerover", () => {
                 this.tweens.add({
                     targets: child,
                     scale: 0.5,
@@ -113,8 +133,8 @@ class MainScene extends Phaser.Scene {
                 });
             });
 
-            child.on('pointerdown', () => {
-                this.sound.play('pop', { volume: 0.5 });
+            child.on("pointerdown", () => {
+                this.sound.play('pop');
 
                 this.particles.createEmitter({
                     x: child.x,
@@ -130,7 +150,7 @@ class MainScene extends Phaser.Scene {
             blocks.add(child);
         }
 
-        this.particles = this.add.particles('spark');
+        this.particles = this.add.particles("spark");
 
         Phaser.Actions.GridAlign(blocks.getChildren(), {
             width: 12,
@@ -144,11 +164,12 @@ class MainScene extends Phaser.Scene {
         this.blocks = blocks;
         this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
 
-        // Create secondary scene for text animation
-        this.scene.launch("textAnim");
+        // TEXT ANIMATION ZONE
+        this.createTextEngine();
     }
 
-    update(time, delta) {
+    update(time, delta)
+    {
         this.timeSincePhase += delta;
         if (this.timeSincePhase > this.phaseDuration) {
             this.phase = (this.phase + 1) % 4;
@@ -169,8 +190,10 @@ class MainScene extends Phaser.Scene {
         this.animateBlocks(time);
     }
 
-    animateBlocks(time) {
+    animateBlocks(time)
+    {
         const blocks = this.blocks.getChildren();
+
         blocks.forEach((block, i) => {
             const orig = this.originalPositions[i];
             let offset = 0;
@@ -197,65 +220,63 @@ class MainScene extends Phaser.Scene {
             block.y = orig.y + offset;
         });
     }
-}
 
-class TextAnimScene extends Phaser.Scene {
-    constructor() {
-        super({ key: "textAnim" });
+    /** TEXT ENGINE **/
+    createTextEngine() {
+        const input = document.getElementById("text-input");
+        const button = document.getElementById("generate-btn");
+
+        button.addEventListener("click", () => {
+            this.generateAnimatedText(input.value.toUpperCase());
+        });
     }
 
-    create() {
-        this.cubes = [];
-    }
+    generateAnimatedText(text) {
+        if (!text) return;
 
-    animateText(text) {
-        this.cubes.forEach(c => c.destroy());
-        this.cubes = [];
+        const startX = 650;
+        const startY = 100;
+        let index = 0;
 
-        let x = 900;
-        let y = 100;
+        // Remove previous letters
+        if (this.letters) {
+            this.letters.forEach(l => l.destroy());
+        }
 
-        for (let char of text) {
-            const cube = this.add.image(x, y, "cube").setScale(0.25);
-            cube.setTint(0xff3eb5);
+        this.letters = [];
+
+        [...text].forEach((char, i) => {
+            const letter = this.add.text(startX, startY + i * 40, char, {
+                fontFamily: 'Arial',
+                fontSize: '40px',
+                color: '#ff3eb5'
+            }).setOrigin(0.5);
+
+            this.letters.push(letter);
 
             this.tweens.add({
-                targets: cube,
-                y: y - 20,
-                scale: 0.35,
-                duration: 300,
+                targets: letter,
+                x: startX + 30,
+                angle: 10,
                 yoyo: true,
                 repeat: -1,
-                ease: "sine.inout",
-                delay: Math.random() * 400
+                duration: 800 + i * 30,
+                ease: "sine.inout"
             });
-
-            this.cubes.push(cube);
-            x += 45;
-
-            if (x > 1150) {
-                x = 900;
-                y += 60;
-            }
-        }
+        });
     }
 }
 
-game = new Phaser.Game({
+const config = {
     type: Phaser.AUTO,
-    width: window.innerWidth * 0.7,
+    width: window.innerWidth * 0.70,
     height: window.innerHeight,
     backgroundColor: '#b8ffb8',
-    parent: 'phaser-area',
-    scene: [MainScene, TextAnimScene]
-});
+    parent: 'phaser-example',
+    scene: Example
+};
 
-// Function called from HTML
-function updateTextAnimation() {
-    const text = document.getElementById("userText").value;
-    const scene = game.scene.keys["textAnim"];
-    scene.animateText(text);
-}
+new Phaser.Game(config);
 </script>
 
 </body>
