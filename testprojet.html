@@ -1,77 +1,70 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Phaser Text Animation</title>
+    <title>Phaser Text Cubes Animation</title>
+
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #b8ffb8;
+            background: #b8ffb8; /* VERT CLAIR */
             display: flex;
-            height: 100vh;
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
 
-        /* Zone animation gauche */
-        #phaser-left {
-            width: 60%;
+        #left-panel {
+            width: 65vw;
             height: 100vh;
         }
 
-        /* Zone texte droite */
-        #text-zone {
-            width: 40%;
-            background: white;
+        #right-panel {
+            width: 35vw;
+            height: 100vh;
+            background: #ffffff80;
             padding: 20px;
-            box-sizing: border-box;
+            box-shadow: -5px 0px 10px #00000030;
         }
 
-        #text-zone input {
-            width: 100%;
-            padding: 10px;
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-
-        #text-zone button {
-            width: 100%;
-            padding: 10px;
-            font-size: 20px;
-            background: #ff3eb5;
-            color: white;
+        #textInput {
+            width: 90%;
+            padding: 12px;
             border: none;
-            cursor: pointer;
+            border-radius: 8px;
+            font-size: 18px;
+            margin-bottom: 20px;
         }
 
-        #phaser-text {
-            width: 100%;
-            height: calc(100% - 120px);
-            margin-top: 20px;
-            border: 2px solid #ff3eb5;
+        #preview {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff3eb5;
         }
     </style>
 </head>
-
 <body>
 
-<!-- Animation principale -->
-<div id="phaser-left"></div>
+<!-- Left: Animation -->
+<div id="left-panel"></div>
 
-<!-- Zone texte -->
-<div id="text-zone">
-    <input id="userText" type="text" placeholder="Écris un mot ou une phrase..." />
-    <button onclick="updateText()">Afficher le texte en cubes</button>
-    <div id="phaser-text"></div>
+<!-- Right: Text Input -->
+<div id="right-panel">
+    <h2>🩷 Animation en cubes</h2>
+    <p>Écris un nom ou une phrase :</p>
+    <input id="textInput" type="text" placeholder="Écris ici..." />
+
+    <p>Aperçu :</p>
+    <div id="preview"></div>
 </div>
 
+
 <script>
-/* ------------------ SCÈNE DE GAUCHE (animation) ------------------ */
-class LeftScene extends Phaser.Scene {
+/* ========== LEFT PANEL ANIMATION (Original) ========== */
+class MainAnimation extends Phaser.Scene
+{
     constructor() {
         super();
         this.phase = 0;
@@ -82,28 +75,28 @@ class LeftScene extends Phaser.Scene {
     preload() {
         this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
         this.load.image('square', 'assets/sprites/50x50.png');
+        this.load.image('spark', 'assets/particles/blue.png');
     }
 
     create() {
+        this.particles = this.add.particles('spark');
+
         const blocks = this.add.group();
 
         for (let i = 0; i < 108; i++) {
             const child = this.add.image(0, 0, 'square').setScale(0.3);
-            child.setTint(0xff3eb5);
+            child.setTint(0xff3eb5); // rose
             blocks.add(child);
         }
 
         Phaser.Actions.GridAlign(blocks.getChildren(), {
-            width: 12,
-            height: 9,
-            cellWidth: 60,
-            cellHeight: 60,
-            x: 40,
-            y: 30
+            width: 12, height: 9,
+            cellWidth: 60, cellHeight: 60,
+            x: 40, y: 40
         });
 
         this.blocks = blocks;
-        this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+        this.original = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
     }
 
     update(time, delta) {
@@ -113,106 +106,99 @@ class LeftScene extends Phaser.Scene {
             this.timeSincePhase = 0;
         }
 
-        const blocks = this.blocks.getChildren();
-        blocks.forEach((block, i) => {
-            const orig = this.originalPositions[i];
+        this.animateBlocks(time);
+    }
+
+    animateBlocks(time) {
+        const b = this.blocks.getChildren();
+
+        b.forEach((block, i) => {
+            const orig = this.original[i];
             let offset = 0;
 
             switch (this.phase) {
-                case 0: offset = Math.sin(time / 300 + orig.y * 0.12) * 12; break;
+                case 0: offset = Math.sin(time/300 + orig.y*0.12)*12; break;
                 case 1:
-                    const dx = orig.x - 400, dy = orig.y - 300;
-                    offset = Math.sin(time / 250 + Math.sqrt(dx*dx+dy*dy)*0.05) * 18;
+                    const dx = orig.x-400, dy=orig.y-300;
+                    offset = Math.sin(time/250 + Math.sqrt(dx*dx+dy*dy)*0.05)*18;
                     break;
-                case 2: offset = Math.sin(time / 220 + (orig.x + orig.y)*0.06) * 15; break;
-                case 3: offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25); break;
+                case 2: offset = Math.sin(time/220 + (orig.x+orig.y)*0.06)*15; break;
+                case 3: offset = Math.sin(time/150 + i)*Phaser.Math.Between(8,25); break;
             }
 
             block.x = orig.x + offset;
-            block.y = orig.y + offset;
         });
     }
 }
 
-/* ------------------ SCÈNE DE DROITE (texte en cubes) ------------------ */
-class TextScene extends Phaser.Scene {
+
+/* ========== RIGHT PANEL ANIMATION: TEXT IN CUBES ========== */
+class TextCubes extends Phaser.Scene
+{
     constructor() {
-        super();
+        super({ key: "TextCubes" });
         this.cubes = [];
-        this.gridSize = 20;
     }
 
     preload() {
         this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
-        this.load.image('square', 'assets/sprites/50x50.png');
+        this.load.image('cube', 'assets/sprites/50x50.png');
     }
 
     create() {
-        this.drawText("HELLO");
+        this.container = this.add.container(50, 150);
+        this.inputText = "";
+
+        this.updateText("HELLO");
     }
 
-    drawText(text) {
-        this.cubes.forEach(c => c.destroy());
+    updateText(text) {
+        this.container.removeAll(true);
         this.cubes = [];
 
-        const ctx = this.textures.createCanvas('textCanvas', 600, 300).getContext();
-        ctx.clearRect(0,0,600,300);
+        let x = 0;
 
-        ctx.font = "90px Arial Black";
-        ctx.fillStyle = "#000000";
-        ctx.fillText(text.toUpperCase(), 20, 150);
+        for (let char of text.toUpperCase()) {
+            if (char === " ") { x += 40; continue; }
 
-        const canvas = ctx.canvas;
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            const cube = this.add.image(x, 0, 'cube').setScale(0.25);
+            cube.setTint(0xff3eb5);
 
-        for (let y = 0; y < canvas.height; y += this.gridSize) {
-            for (let x = 0; x < canvas.width; x += this.gridSize) {
-                const pixelIndex = (y * canvas.width + x) * 4;
-                if (imageData[pixelIndex + 3] > 128) {
-                    const cube = this.add.image(x, y, 'square').setScale(0.15);
-                    cube.setTint(0xff3eb5);
+            this.tweens.add({
+                targets: cube,
+                y: { from: 0, to: 20 },
+                duration: 600,
+                repeat: -1,
+                yoyo: true,
+                delay: x * 2
+            });
 
-                    this.tweens.add({
-                        targets: cube,
-                        x: cube.x + Phaser.Math.Between(-5, 5),
-                        y: cube.y + Phaser.Math.Between(-5, 5),
-                        duration: 300,
-                        yoyo: true,
-                        repeat: -1,
-                        ease: 'sine.inOut'
-                    });
-
-                    this.cubes.push(cube);
-                }
-            }
+            this.container.add(cube);
+            x += 35;
         }
     }
 }
 
-/* ---------- Création des deux jeux Phaser séparés ---------- */
-let leftGame = new Phaser.Game({
+
+/* ========== GAME CONFIG ========== */
+const game = new Phaser.Game({
     type: Phaser.AUTO,
-    width: window.innerWidth * 0.60,
+    width: document.getElementById("left-panel").clientWidth,
     height: window.innerHeight,
-    parent: 'phaser-left',
     backgroundColor: '#b8ffb8',
-    scene: LeftScene
+    parent: 'left-panel',
+    scene: [MainAnimation, TextCubes]
 });
 
-let textGame = new Phaser.Game({
-    type: Phaser.AUTO,
-    width: window.innerWidth * 0.40 - 40,
-    height: window.innerHeight - 200,
-    parent: 'phaser-text',
-    backgroundColor: '#ffffff',
-    scene: TextScene
-});
 
-/* ----------- Fonction pour mettre à jour le texte ----------- */
-function updateText() {
-    const txt = document.getElementById("userText").value;
-    textGame.scene.keys.default.drawText(txt);
-}
+/* ========== INPUT LISTENER ========== */
+document.getElementById("textInput").addEventListener("input", e => {
+    const text = e.target.value;
+    document.getElementById("preview").textContent = text;
+
+    const scene = game.scene.keys["TextCubes"];
+    scene.updateText(text);
+});
 </script>
 
 </body>
