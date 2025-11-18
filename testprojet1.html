@@ -157,7 +157,17 @@ class Example extends Phaser.Scene {
 
   update(time, delta) {
     this.timeSincePhase += delta;
-    if(this.timeSincePhase>this.phaseDuration){ this.phase=(this.phase+1)%4; this.timeSincePhase=0; }
+    if (this.timeSincePhase > this.phaseDuration) {
+    this.phase = (this.phase + 1) % 4;
+    this.timeSincePhase = 0;
+
+    // Change shape for this phase
+    var shapes = ['square', 'circle', 'diamond'];
+    var newShape = shapes[this.phase % shapes.length];
+    this.blocks.getChildren().forEach(function(block){
+        block.setTexture(newShape);
+    });
+}
 
     if(this.input.activePointer.isDown){
       var mx=this.input.x, my=this.input.y;
