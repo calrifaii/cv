@@ -21,4 +21,5 @@ L’effet repose sur des tweens configurés avec :
 - Changer la forme ou la couleur des éléments.
 - Ajouter des interactions utilisateur (clic, survol, mouvement souris).
 - Intégrer des particules ou des effets sonores.
+- Ajoute une partie ou on peut ajouter une phrase ou un mot et s'affichera en animation.
 
