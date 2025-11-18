@@ -3,6 +3,12 @@
 ## Présentation du projet
 Ce projet utilise le framework Phaser 3 pour créer une scène animée composée d’une grille de blocs visuels. L’objectif est de générer un effet visuel dynamique rappelant une vague ou une respiration, grâce à l’utilisation des tweens de Phaser.
 
+## Documentation du projet
+Lien utiliser: [Phaser.io](https://phaser.io/examples/v3.85.0/tweens/view/checkerboard-2)
+Modèle utiliser: Chatgbt GPT-5.1
+
+
+
 ## Fonctionnalités principales
 - **Chargement d’assets** : une image de fond et un sprite carré de 50x50 pixels.
 - **Création d’un groupe d’objets** : génération automatique de 108 blocs mis à l’échelle.
