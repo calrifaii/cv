@@ -197,16 +197,30 @@ class Example extends Phaser.Scene {
     });
   }
 
-  createTextEngine(){
-    var input=document.getElementById("text-input");
-    var button=document.getElementById("generate-btn");
-    var display=document.getElementById("phaser-text");
-    var self=this;
+  createTextEngine() {
+    var input = document.getElementById("text-input");
+    var button = document.getElementById("generate-btn");
+    var display = document.getElementById("phaser-text");
+    var self = this;
+
+    // Array to store all text history
+    this.history = [];
+
     button.addEventListener("click", function(){
-      var text=input.value.toUpperCase();
-      display.innerText=text;
-      self.generateAnimatedText(text);
+        var text = input.value.toUpperCase();
+        if (!text) return;
+
+        // Add to history
+        self.history.push(text);
+
+        // Display full history
+        display.innerText = self.history.join("\n");
+
+        // Animate latest text
+        self.generateAnimatedText(text);
     });
+}
+
   }
 
   generateAnimatedText(text){
