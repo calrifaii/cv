@@ -1,298 +1,223 @@
-
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Phaser Shapes + Text Generator</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Phaser Shapes + Text Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      background: #b8ffb8;
+    }
+
+    /* Phaser zone */
+    #phaser-example {
+      width: 70vw;
+      height: 100vh;
+    }
+
+    /* Right-side interface */
+    #right-panel {
+      width: 30vw;
+      height: 100vh;
+      background: rgba(255,255,255,0.85);
+      padding: 20px;
+      box-sizing: border-box;
+      backdrop-filter: blur(5px);
+    }
+
+    #right-panel h2 {
+      margin-top: 0;
+      color: #ff3eb5;
+      font-size: 22px;
+      text-align: center;
+    }
+
+    #text-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      border: 2px solid #ff3eb5;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    #generate-btn {
+      width: 100%;
+      padding: 10px;
+      background: #ff3eb5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #phaser-text {
+      margin-top: 18px;
+      height: 60vh;
+      border: 2px dashed #ff3eb5;
+      border-radius: 10px;
+      padding: 10px;
+      color: #ff3eb5;
+      overflow: auto;
+    }
+  </style>
 </head>
 <body>
 
-<!-- Zone Animation -->
 <div id="phaser-example"></div>
 
-<!-- Zone Interface -->
 <div id="right-panel">
-    <h2>Créer une animation avec ton texte</h2>
-    <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…">
-    <button id="generate-btn">Générer l’animation</button>
-    <div id="phaser-text"></div>
+  <h2>Créer une animation avec ton texte</h2>
+  <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…">
+  <button id="generate-btn">Générer l’animation</button>
+  <div id="phaser-text"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
-<script src="main.js"></script>
+<script>
+class Example extends Phaser.Scene {
+  constructor() {
+    super();
+    this.phase = 0;
+    this.phaseDuration = 6000;
+    this.timeSincePhase = 0;
+  }
+
+  preload() {
+    this.load.setBaseURL('https://labs.phaser.io');
+    this.load.image('spark', 'assets/particles/blue.png');
+    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+  }
+
+  create() {
+    var g = this.make.graphics({ x: 0, y: 0, add: false });
+
+    // Square
+    g.fillStyle(0xff3eb5, 1);
+    g.fillRect(0, 0, 50, 50);
+    g.generateTexture('square', 50, 50);
+
+    // Circle
+    g.clear();
+    g.fillStyle(0xff3eb5, 1);
+    g.fillCircle(25, 25, 25);
+    g.generateTexture('circle', 50, 50);
+
+    // Diamond
+    g.clear();
+    g.fillStyle(0xff3eb5, 1);
+    g.beginPath();
+    g.moveTo(25, 0);
+    g.lineTo(50, 25);
+    g.lineTo(25, 50);
+    g.lineTo(0, 25);
+    g.closePath();
+    g.fillPath();
+    g.generateTexture('diamond', 50, 50);
+
+    // Create grid
+    var shapes = ['square','circle','diamond'];
+    var blocks = this.add.group();
+
+    for(var i=0;i<108;i++){
+      var key = shapes[i%shapes.length];
+      var sprite = this.add.image(0,0,key).setScale(0.3);
+      sprite.setInteractive();
+      blocks.add(sprite);
+    }
+
+    Phaser.Actions.GridAlign(blocks.getChildren(), { width:12, height:9, cellWidth:60, cellHeight:60, x:40, y:30 });
+
+    this.blocks = blocks;
+    this.originalPositions = blocks.getChildren().map(function(b){return {x:b.x, y:b.y};});
+    this.particles = this.add.particles('spark');
+
+    var self = this;
+    blocks.getChildren().forEach(function(block){
+      block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
+      block.on('pointerdown', function(){ 
+        if(self.sound){ try{self.sound.play('pop');}catch{} }
+        self.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:0xff3eb5}).explode(20, block.x, block.y);
+      });
+    });
+
+    // Pulse animation
+    var children = blocks.getChildren();
+    children.forEach(function(child, idx){ self.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%12)*40, yoyo:true, repeat:-1 }); });
+
+    // Text engine
+    this.createTextEngine();
+  }
+
+  update(time, delta) {
+    this.timeSincePhase += delta;
+    if(this.timeSincePhase>this.phaseDuration){ this.phase=(this.phase+1)%4; this.timeSincePhase=0; }
+
+    if(this.input.activePointer.isDown){
+      var mx=this.input.x, my=this.input.y;
+      this.blocks.getChildren().forEach(function(block){
+        var angle=Phaser.Math.Angle.Between(block.x, block.y, mx, my);
+        block.x += Math.cos(angle)*0.6;
+        block.y += Math.sin(angle)*0.6;
+      });
+    }
+
+    this.animateBlocks(time);
+  }
+
+  animateBlocks(time){
+    var self=this;
+    this.blocks.getChildren().forEach(function(block,i){
+      var orig=self.originalPositions[i];
+      var offset=0;
+      switch(self.phase){
+        case 0: offset=Math.sin(time/300 + orig.y*0.12)*12; break;
+        case 1: var dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy); offset=Math.sin(time/250 + dist*0.05)*18; break;
+        case 2: offset=Math.sin(time/220 + (orig.x+orig.y)*0.06)*15; break;
+        case 3: offset=Math.sin(time/150 + i)*(8 + (i%18)); break;
+      }
+      block.x = orig.x + offset;
+      block.y = orig.y + offset;
+    });
+  }
+
+  createTextEngine(){
+    var input=document.getElementById("text-input");
+    var button=document.getElementById("generate-btn");
+    var display=document.getElementById("phaser-text");
+    var self=this;
+    button.addEventListener("click", function(){
+      var text=input.value.toUpperCase();
+      display.innerText=text;
+      self.generateAnimatedText(text);
+    });
+  }
+
+  generateAnimatedText(text){
+    if(!text) return;
+    if(this.letters) this.letters.forEach(function(l){l.destroy();});
+    this.letters=[];
+
+    var startX=650, startY=100;
+    for(var i=0;i<text.length;i++){
+      (function(self,ch,idx){
+        var letter=self.add.text(startX, startY+idx*40, ch, {fontFamily:'Arial', fontSize:'40px', color:'#ff3eb5'}).setOrigin(0.5);
+        self.letters.push(letter);
+        self.tweens.add({targets:letter, x:startX+30, angle:10, yoyo:true, repeat:-1, duration:800+idx*30, ease:"sine.inout"});
+      })(this,text[i],i);
+    }
+  }
+}
+
+var config = { type: Phaser.AUTO, width: window.innerWidth*0.70, height: window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example };
+new Phaser.Game(config);
+</script>
 
 </body>
 </html>
-
-body {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-    background: #b8ffb8;
-}
-
-/* Zone Phaser à gauche */
-#phaser-example {
-    width: 70vw;
-    height: 100vh;
-}
-
-/* Zone interface à droite */
-#right-panel {
-    width: 30vw;
-    height: 100vh;
-    background: rgba(255,255,255,0.85);
-    padding: 20px;
-    box-sizing: border-box;
-    backdrop-filter: blur(5px);
-}
-
-#right-panel h2 {
-    margin-top: 0;
-    color: #ff3eb5;
-    font-size: 22px;
-    text-align: center;
-}
-
-#text-input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    margin-bottom: 12px;
-    border: 2px solid #ff3eb5;
-    border-radius: 8px;
-    outline: none;
-}
-
-#generate-btn {
-    width: 100%;
-    padding: 10px;
-    background: #ff3eb5;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-#phaser-text {
-    margin-top: 18px;
-    height: 60vh;
-    border: 2px dashed #ff3eb5;
-    border-radius: 10px;
-    padding: 10px;
-    color: #ff3eb5;
-    overflow: auto;
-}
-
-class Example extends Phaser.Scene {
-    constructor() {
-        super();
-        this.phase = 0;
-        this.phaseDuration = 6000;
-        this.timeSincePhase = 0;
-    }
-
-    preload() {
-        // Load particles and optional pop sound
-        this.load.setBaseURL('https://labs.phaser.io');
-        this.load.image('spark', 'assets/particles/blue.png');
-        this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
-    }
-
-    create() {
-        // Generate textures dynamically
-        const g = this.make.graphics({ x: 0, y: 0, add: false });
-
-        // Square
-        g.fillStyle(0xff3eb5, 1);
-        g.fillRect(0, 0, 50, 50);
-        g.generateTexture('square', 50, 50);
-
-        // Circle
-        g.clear();
-        g.fillStyle(0xff3eb5, 1);
-        g.fillCircle(25, 25, 25);
-        g.generateTexture('circle', 50, 50);
-
-        // Diamond
-        g.clear();
-        g.fillStyle(0xff3eb5, 1);
-        g.beginPath();
-        g.moveTo(25, 0);
-        g.lineTo(50, 25);
-        g.lineTo(25, 50);
-        g.lineTo(0, 25);
-        g.closePath();
-        g.fillPath();
-        g.generateTexture('diamond', 50, 50);
-
-        // Create grid of blocks
-        const shapes = ['square', 'circle', 'diamond'];
-        const blocks = this.add.group();
-
-        for (let i = 0; i < 108; i++) {
-            const key = shapes[i % shapes.length];
-            const sprite = this.add.image(0, 0, key).setScale(0.3);
-            sprite.setInteractive();
-            blocks.add(sprite);
-        }
-
-        Phaser.Actions.GridAlign(blocks.getChildren(), {
-            width: 12,
-            height: 9,
-            cellWidth: 60,
-            cellHeight: 60,
-            x: 40,
-            y: 30
-        });
-
-        this.blocks = blocks;
-        this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
-        this.particles = this.add.particles('spark');
-
-        // Hover and click interactions
-        this.blocks.getChildren().forEach(block => {
-            block.on('pointerover', () => {
-                this.tweens.add({
-                    targets: block,
-                    scale: 0.5,
-                    duration: 150,
-                    yoyo: true
-                });
-            });
-
-            block.on('pointerdown', () => {
-                if (this.sound) {
-                    try { this.sound.play('pop'); } catch {}
-                }
-                this.particles.createEmitter({
-                    x: block.x,
-                    y: block.y,
-                    speed: { min: -150, max: 150 },
-                    lifespan: 500,
-                    scale: { start: 0.5, end: 0 },
-                    quantity: 20,
-                    tint: 0xff3eb5
-                }).explode(20, block.x, block.y);
-            });
-        });
-
-        // Add subtle tween pulse effect
-        const children = this.blocks.getChildren();
-        children.forEach((child, idx) => {
-            this.tweens.add({
-                targets: child,
-                scale: 0.35,
-                ease: 'sine.inout',
-                duration: 600,
-                delay: (idx % 12) * 40,
-                yoyo: true,
-                repeat: -1
-            });
-        });
-
-        // Setup text engine
-        this.createTextEngine();
-    }
-
-    update(time, delta) {
-        this.timeSincePhase += delta;
-        if (this.timeSincePhase > this.phaseDuration) {
-            this.phase = (this.phase + 1) % 4;
-            this.timeSincePhase = 0;
-        }
-
-        if (this.input.activePointer.isDown) {
-            const mx = this.input.x;
-            const my = this.input.y;
-
-            this.blocks.getChildren().forEach(block => {
-                const angle = Phaser.Math.Angle.Between(block.x, block.y, mx, my);
-                block.x += Math.cos(angle) * 0.6;
-                block.y += Math.sin(angle) * 0.6;
-            });
-        }
-
-        this.animateBlocks(time);
-    }
-
-    animateBlocks(time) {
-        this.blocks.getChildren().forEach((block, i) => {
-            const orig = this.originalPositions[i];
-            let offset = 0;
-
-            switch (this.phase) {
-                case 0: offset = Math.sin(time / 300 + orig.y * 0.12) * 12; break;
-                case 1:
-                    const dx = orig.x - 400;
-                    const dy = orig.y - 300;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    offset = Math.sin(time / 250 + dist * 0.05) * 18;
-                    break;
-                case 2: offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15; break;
-                case 3: offset = Math.sin(time / 150 + i) * (8 + (i % 18)); break;
-            }
-
-            block.x = orig.x + offset;
-            block.y = orig.y + offset;
-        });
-    }
-
-    createTextEngine() {
-        const input = document.getElementById("text-input");
-        const button = document.getElementById("generate-btn");
-        const display = document.getElementById("phaser-text");
-
-        button.addEventListener("click", () => {
-            const text = input.value.toUpperCase();
-            display.innerText = text;
-            this.generateAnimatedText(text);
-        });
-    }
-
-    generateAnimatedText(text) {
-        if (!text) return;
-
-        if (this.letters) this.letters.forEach(l => l.destroy());
-        this.letters = [];
-
-        const startX = 650;
-        const startY = 100;
-
-        [...text].forEach((char, i) => {
-            const letter = this.add.text(startX, startY + i * 40, char, {
-                fontFamily: 'Arial',
-                fontSize: '40px',
-                color: '#ff3eb5'
-            }).setOrigin(0.5);
-
-            this.letters.push(letter);
-
-            this.tweens.add({
-                targets: letter,
-                x: startX + 30,
-                angle: 10,
-                yoyo: true,
-                repeat: -1,
-                duration: 800 + i * 30,
-                ease: "sine.inout"
-            });
-        });
-    }
-}
-
-const config = {
-    type: Phaser.AUTO,
-    width: window.innerWidth * 0.70,
-    height: window.innerHeight,
-    backgroundColor: '#b8ffb8',
-    parent: 'phaser-example',
-    scene: Example
-};
-
-new Phaser.Game(config);
