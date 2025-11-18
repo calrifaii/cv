@@ -1,4 +1,6 @@
+
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +25,7 @@
 
 </body>
 </html>
+
 body {
     margin: 0;
     padding: 0;
@@ -85,6 +88,7 @@ body {
     color: #ff3eb5;
     overflow: auto;
 }
+
 class Example extends Phaser.Scene {
     constructor() {
         super();
