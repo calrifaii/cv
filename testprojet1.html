@@ -1,242 +1,233 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Phaser Shapes + Text Generator with History</title>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-      background: #b8ffb8;
-    }
-
-    /* Phaser zone */
-    #phaser-example {
-      width: 70vw;
-      height: 100vh;
-    }
-
-    /* Right-side interface */
-    #right-panel {
-      width: 30vw;
-      height: 100vh;
-      background: rgba(255,255,255,0.85);
-      padding: 20px;
-      box-sizing: border-box;
-      backdrop-filter: blur(5px);
-      overflow: auto;
-    }
-
-    #right-panel h2 {
-      margin-top: 0;
-      color: #ff3eb5;
-      font-size: 22px;
-      text-align: center;
-    }
-
-    #text-input {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 12px;
-      border: 2px solid #ff3eb5;
-      border-radius: 8px;
-      outline: none;
-    }
-
-    #generate-btn {
-      width: 100%;
-      padding: 10px;
-      background: #ff3eb5;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    #phaser-text {
-      margin-top: 18px;
-      height: 60vh;
-      border: 2px dashed #ff3eb5;
-      border-radius: 10px;
-      padding: 10px;
-      color: #ff3eb5;
-      white-space: pre-line;
-    }
-  </style>
-</head>
-<body>
-
-<div id="phaser-example"></div>
-
-<div id="right-panel">
-  <h2>Créer une animation avec ton texte</h2>
-  <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…">
-  <button id="generate-btn">Générer l’animation</button>
-  <div id="phaser-text"></div>
-</div>
-
-<script>
-class Example extends Phaser.Scene {
-  constructor() {
-    super();
-    this.phase = 0;
-    this.phaseDuration = 6000;
-    this.timeSincePhase = 0;
+      this.clearAnimatedText();
+    });
   }
 
-  preload() {
-    this.load.setBaseURL('https://labs.phaser.io');
-    this.load.image('spark', 'assets/particles/blue.png');
-    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+  updateHistoryUI() {
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '';
+
+    this.history.forEach(text => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      if (text === this.currentAnimationText) {
+        item.classList.add('active');
+      }
+      item.textContent = text;
+      
+      item.addEventListener('click', () => {
+        this.generateAnimatedText(text);
+        this.currentAnimationText = text;
+        this.updateHistoryUI();
+      });
+
+      historyList.appendChild(item);
+    });
   }
 
-  create() {
-    // Graphics for shapes
-    var g = this.make.graphics({ x:0, y:0, add:false });
-
-    // Square
-    g.fillStyle(0xff3eb5,1);
-    g.fillRect(0,0,50,50);
-    g.generateTexture('square',50,50);
-
-    // Circle
-    g.clear();
-    g.fillStyle(0xff3eb5,1);
-    g.fillCircle(25,25,25);
-    g.generateTexture('circle',50,50);
-
-    // Diamond
-    g.clear();
-    g.fillStyle(0xff3eb5,1);
-    g.beginPath();
-    g.moveTo(25,0);
-    g.lineTo(50,25);
-    g.lineTo(25,50);
-    g.lineTo(0,25);
-    g.closePath();
-    g.fillPath();
-    g.generateTexture('diamond',50,50);
-
-    // Create blocks
-    var shapes = ['square','circle','diamond'];
-    var blocks = this.add.group();
-    for(var i=0;i<108;i++){
-      var key = shapes[i%shapes.length];
-      var sprite = this.add.image(0,0,key).setScale(0.3);
-      sprite.setInteractive();
-      blocks.add(sprite);
+  generateAnimatedText(text) {
+    // Clear previous text
+    if (this.textLetters) {
+      this.textLetters.forEach(letter => letter.destroy());
     }
+    this.textLetters = [];
 
-    Phaser.Actions.GridAlign(blocks.getChildren(), { width:12, height:9, cellWidth:60, cellHeight:60, x:40, y:30 });
+    if (!text) return;
 
-    this.blocks = blocks;
-    this.originalPositions = blocks.getChildren().map(function(b){return {x:b.x, y:b.y};});
-    this.particles = this.add.particles('spark');
-    this.shapes = shapes;
+    // Center position
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+    
+    const charWidth = 35;
+    const totalWidth = text.length * charWidth;
+    const startX = centerX - totalWidth / 2;
 
-    var self=this;
-    blocks.getChildren().forEach(function(block){
-      block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
-      block.on('pointerdown', function(){ 
-        if(self.sound){ try{self.sound.play('pop');}catch{} }
-        self.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:0xff3eb5}).explode(20, block.x, block.y);
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const xPos = startX + i * charWidth;
+      
+      const letter = this.add.text(xPos, centerY, char, {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '48px',
+        fontWeight: 'bold',
+        color: '#ffffff',
+        stroke: '#667eea',
+        strokeThickness: 2
+      }).setOrigin(0.5).setDepth(100);
+
+      this.textLetters.push(letter);
+
+      // Animate each letter
+      this.tweens.add({
+        targets: letter,
+        y: centerY - 15,
+        angle: 360,
+        alpha: 1,
+        duration: 1000 + i * 50,
+        ease: 'elastic.out',
+        repeat: 0
+      });
+
+      // Continuous floating animation
+      this.tweens.add({
+        targets: letter,
+        y: centerY + 10,
+        duration: 2000 + i * 100,
+        ease: 'sine.inout',
+        delay: 1000 + i * 50,
+        yoyo: true,
+        repeat: -1
+      });
+    }
+  }
+
+  clearAnimatedText() {
+    if (this.textLetters) {
+      this.textLetters.forEach(letter => letter.destroy());
+      this.textLetters = [];
+    }
+  }
+
+  setupAudio() {
+    const audioToggle = document.getElementById('audio-toggle');
+    
+    try {
+      const ambientMusic = this.sound.add('ambient', { loop: true, volume: 0.3 });
+      
+      audioToggle.addEventListener('click', () => {
+        this.audioEnabled = !this.audioEnabled;
+        audioToggle.classList.toggle('active');
+        
+        if (this.audioEnabled) {
+          if (!ambientMusic.isPlaying) {
+            ambientMusic.play();
+          }
+        } else {
+          ambientMusic.stop();
+        }
+      });
+
+      // Auto-play with muted state
+      ambientMusic.play().catch(() => {
+        // Browser autoplay policy - user must interact
+      });
+    } catch (e) {
+      console.log('Audio setup skipped');
+    }
+  }
+
+  setupInput() {
+    // Mouse flee effect
+    this.input.on('pointermove', (pointer) => {
+      if (!this.blocks) return;
+
+      this.blocks.getChildren().forEach(block => {
+        const angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
+        const distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
+        
+        // Flee effect - stronger when closer
+        if (distance < 200) {
+          const fleeForce = (200 - distance) / 200 * 2;
+          block.x += Math.cos(angle + Math.PI) * fleeForce;
+          block.y += Math.sin(angle + Math.PI) * fleeForce;
+        }
       });
     });
-
-    // Pulse animation
-    var children = blocks.getChildren();
-    children.forEach(function(child,idx){ self.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%12)*40, yoyo:true, repeat:-1 }); });
-
-    // Text engine
-    this.createTextEngine();
   }
 
   update(time, delta) {
+    if (!this.blocks) return;
+
+    // Update phase
     this.timeSincePhase += delta;
-    if(this.timeSincePhase>this.phaseDuration){
-      this.phase=(this.phase+1)%this.shapes.length;
-      this.timeSincePhase=0;
+    if (this.timeSincePhase > this.phaseDuration) {
+      this.currentPhase = (this.currentPhase + 1) % this.shapes.length;
+      this.timeSincePhase = 0;
 
-      // Change shape automatically
-      var newShape = this.shapes[this.phase];
-      this.blocks.getChildren().forEach(function(block){ block.setTexture(newShape); });
-    }
-
-    if(this.input.activePointer.isDown){
-      var mx=this.input.x, my=this.input.y;
-      this.blocks.getChildren().forEach(function(block){
-        var angle=Phaser.Math.Angle.Between(block.x, block.y, mx, my);
-        block.x += Math.cos(angle)*0.6;
-        block.y += Math.sin(angle)*0.6;
+      this.blocks.getChildren().forEach(block => {
+        block.setTexture(this.shapes[this.currentPhase]);
       });
     }
 
+    // Animate blocks
     this.animateBlocks(time);
+    
+    // Keep blocks in bounds
+    this.keepBlocksInBounds();
   }
 
-  animateBlocks(time){
-    var self=this;
-    this.blocks.getChildren().forEach(function(block,i){
-      var orig=self.originalPositions[i];
-      var offset=0;
-      switch(self.phase){
-        case 0: offset=Math.sin(time/300 + orig.y*0.12)*12; break;
-        case 1: var dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy); offset=Math.sin(time/250 + dist*0.05)*18; break;
-        case 2: offset=Math.sin(time/220 + (orig.x+orig.y)*0.06)*15; break;
+  animateBlocks(time) {
+    this.blocks.getChildren().forEach((block, i) => {
+      const orig = this.originalPositions[i];
+      let offsetX = 0;
+      let offsetY = 0;
+
+      // HORIZONTAL animation patterns
+      switch (this.currentPhase) {
+        case 0: // Wave effect - horizontal
+          offsetX = Math.sin(time / 300 + orig.y * 0.12) * 15;
+          offsetY = Math.cos(time / 400 + orig.x * 0.08) * 8;
+          break;
+        case 1: // Radial pulse - horizontal
+          const dx = orig.x - 400;
+          const dy = orig.y - 300;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          offsetX = Math.sin(time / 250 + dist * 0.05) * 20;
+          offsetY = Math.cos(time / 350 + dist * 0.03) * 12;
+          break;
+        case 2: // Spiral effect - horizontal
+          offsetX = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 18;
+          offsetY = Math.cos(time / 280 + (orig.x - orig.y) * 0.05) * 15;
+          break;
       }
-      block.x = orig.x + offset;
-      block.y = orig.y + offset;
+
+      block.x = orig.x + offsetX;
+      block.y = orig.y + offsetY;
     });
   }
 
-  createTextEngine(){
-    var input=document.getElementById("text-input");
-    var button=document.getElementById("generate-btn");
-    var display=document.getElementById("phaser-text");
-    var self=this;
+  keepBlocksInBounds() {
+    const padding = 100;
+    const bounds = this.cameras.main.getBounds();
 
-    // Store all history
-    this.history=[];
-
-    button.addEventListener("click", function(){
-      var text=input.value.toUpperCase();
-      if(!text) return;
-
-      // Add to history
-      self.history.push(text);
-
-      // Display full history
-      display.innerText=self.history.join("\n");
-
-      // Animate latest text
-      self.generateAnimatedText(text);
+    this.blocks.getChildren().forEach((block, i) => {
+      const orig = this.originalPositions[i];
+      
+      // Clamp to bounds
+      if (block.x < bounds.left - padding) block.x = bounds.left - padding;
+      if (block.x > bounds.right + padding) block.x = bounds.right + padding;
+      if (block.y < bounds.top - padding) block.y = bounds.top - padding;
+      if (block.y > bounds.bottom + padding) block.y = bounds.bottom + padding;
     });
-  }
-
-  generateAnimatedText(text){
-    if(!text) return;
-    if(this.letters) this.letters.forEach(function(l){l.destroy();});
-    this.letters=[];
-
-    var startX=650, startY=100;
-    for(var i=0;i<text.length;i++){
-      (function(self,ch,idx){
-        var letter=self.add.text(startX, startY+idx*40, ch, {fontFamily:'Arial', fontSize:'40px', color:'#ff3eb5'}).setOrigin(0.5);
-        self.letters.push(letter);
-        self.tweens.add({targets:letter, x:startX+30, angle:10, yoyo:true, repeat:-1, duration:800+idx*30, ease:"sine.inout"});
-      })(this,text[i],i);
-    }
   }
 }
 
-var config = { type: Phaser.AUTO, width: window.innerWidth*0.70, height: window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example };
-new Phaser.Game(config);
+// Phaser configuration
+const config = {
+  type: Phaser.AUTO,
+  width: window.innerWidth * 0.75,
+  height: window.innerHeight,
+  backgroundColor: '#667eea',
+  parent: 'phaser-example',
+  scene: AnimationScene,
+  render: {
+    antialias: true,
+    antialiasGL: true,
+    pixelArt: false
+  },
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: false
+    }
+  }
+};
+
+const game = new Phaser.Game(config);
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  game.scale.resize(window.innerWidth * 0.75, window.innerHeight);
+});
 </script>
 
 </body>
