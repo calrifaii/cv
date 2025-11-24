@@ -81,55 +81,6 @@
       transform: translateY(0);
     }
 
-    /* Audio Control */
-    .audio-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-      padding: 10px;
-      background: rgba(255, 62, 181, 0.08);
-      border-radius: 8px;
-      border: 1px solid rgba(255, 62, 181, 0.2);
-    }
-
-    .audio-toggle {
-      width: 40px;
-      height: 24px;
-      background: #ddd;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.3s ease;
-    }
-
-    .audio-toggle.active {
-      background: #ff3eb5;
-    }
-
-    .audio-toggle::after {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: white;
-      border-radius: 50%;
-      top: 2px;
-      left: 2px;
-      transition: left 0.3s ease;
-    }
-
-    .audio-toggle.active::after {
-      left: 18px;
-    }
-
-    .audio-label {
-      font-size: 12px;
-      color: #ff3eb5;
-      font-weight: 600;
-    }
-
     /* History Section */
     .history-section {
       flex: 1;
@@ -229,11 +180,6 @@
   <h2>Créer une animation avec ton texte</h2>
   <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…" maxlength="50">
   <button id="generate-btn">Générer l'animation</button>
-  
-  <div class="audio-control">
-    <button class="audio-toggle active" id="audio-toggle"></button>
-    <span class="audio-label">Musique</span>
-  </div>
 
   <div class="history-section">
     <div class="history-title">Historique</div>
@@ -253,7 +199,7 @@ class Example extends Phaser.Scene {
     this.timeSincePhase = 0;
     this.history = [];
     this.currentAnimationText = '';
-    this.audioEnabled = true;
+    this.ambientMusic = null;
   }
 
   preload() {
@@ -313,7 +259,7 @@ class Example extends Phaser.Scene {
     blocks.getChildren().forEach(function(block){
       block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
       block.on('pointerdown', function(){ 
-        if(self.audioEnabled && self.sound){ try{self.sound.play('pop');}catch{} }
+        if(self.sound){ try{self.sound.play('pop');}catch{} }
         self.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:0xff3eb5}).explode(20, block.x, block.y);
       });
     });
@@ -325,11 +271,11 @@ class Example extends Phaser.Scene {
     // Text engine
     this.createTextEngine();
     
-    // Setup audio
-    this.setupAudio();
-    
     // Setup mouse flee effect
     this.setupMouseFleeEffect();
+    
+    // Setup audio
+    this.setupAudio();
   }
 
   update(time, delta) {
@@ -406,6 +352,9 @@ class Example extends Phaser.Scene {
       self.generateAnimatedText(text);
       self.currentAnimationText = text;
       
+      // Play music on click
+      self.playMusic();
+      
       input.value = '';
     });
 
@@ -439,6 +388,7 @@ class Example extends Phaser.Scene {
         self.generateAnimatedText(text);
         self.currentAnimationText = text;
         self.updateHistoryUI();
+        self.playMusic();
       });
 
       historyList.appendChild(item);
@@ -450,26 +400,26 @@ class Example extends Phaser.Scene {
     if(this.letters) this.letters.forEach(function(l){l.destroy();});
     this.letters=[];
 
-    // Center position
-    var centerX = this.cameras.main.width / 2;
-    var centerY = this.cameras.main.height / 2;
+    // Position en dessous de l'animation (bottom)
+    var bottomY = this.cameras.main.height - 80;
     
     var charWidth = 35;
     var totalWidth = text.length * charWidth;
+    var centerX = this.cameras.main.width / 2;
     var startX = centerX - totalWidth / 2;
     
     var self = this;
     for(var i=0;i<text.length;i++){
       (function(self,ch,idx){
         var xPos = startX + idx * charWidth;
-        var letter=self.add.text(xPos, centerY, ch, {fontFamily:'Arial', fontSize:'40px', color:'#ff3eb5', fontWeight: 'bold'}).setOrigin(0.5).setDepth(100);
+        var letter=self.add.text(xPos, bottomY, ch, {fontFamily:'Arial', fontSize:'40px', color:'#ff3eb5', fontWeight: 'bold'}).setOrigin(0.5).setDepth(100);
         self.letters.push(letter);
         
         // Entrance animation
-        self.tweens.add({targets:letter, y:centerY-15, angle:360, alpha:1, duration:800+idx*50, ease:"elastic.out"});
+        self.tweens.add({targets:letter, y:bottomY-15, angle:360, alpha:1, duration:800+idx*50, ease:"elastic.out"});
         
         // Continuous floating animation
-        self.tweens.add({targets:letter, y:centerY+10, duration:2000+idx*100, ease:"sine.inout", delay:800+idx*50, yoyo:true, repeat:-1});
+        self.tweens.add({targets:letter, y:bottomY+10, duration:2000+idx*100, ease:"sine.inout", delay:800+idx*50, yoyo:true, repeat:-1});
       })(this,text[i],i);
     }
   }
@@ -483,30 +433,22 @@ class Example extends Phaser.Scene {
 
   setupAudio(){
     var self = this;
-    var audioToggle = document.getElementById('audio-toggle');
-    
     try {
-      var ambientMusic = this.sound.add('ambient', { loop: true, volume: 0.3 });
-      
-      audioToggle.addEventListener('click', function(){
-        self.audioEnabled = !self.audioEnabled;
-        audioToggle.classList.toggle('active');
-        
-        if(self.audioEnabled){
-          if(!ambientMusic.isPlaying){
-            ambientMusic.play();
-          }
-        } else {
-          ambientMusic.stop();
-        }
-      });
-
-      // Auto-play
-      ambientMusic.play().catch(function(){
-        // Browser autoplay policy
-      });
+      this.ambientMusic = this.sound.add('ambient', { loop: true, volume: 0.3 });
     } catch(e){
       console.log('Audio setup skipped');
+    }
+  }
+
+  playMusic(){
+    if(this.ambientMusic){
+      try {
+        if(!this.ambientMusic.isPlaying){
+          this.ambientMusic.play();
+        }
+      } catch(e){
+        console.log('Music play error');
+      }
     }
   }
 
@@ -519,9 +461,9 @@ class Example extends Phaser.Scene {
         var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
         var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
         
-        // Flee effect - stronger when closer
-        if(distance < 200){
-          var fleeForce = (200 - distance) / 200 * 2;
+        // Flee effect - stronger when closer (distance < 150)
+        if(distance < 150){
+          var fleeForce = (150 - distance) / 150 * 3;
           block.x += Math.cos(angle + Math.PI) * fleeForce;
           block.y += Math.sin(angle + Math.PI) * fleeForce;
         }
