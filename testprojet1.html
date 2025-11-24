@@ -1,3 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Professionnelle Interactive - Phaser 3</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100% );
+      height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+      gap: 0;
+    }
+
+    /* Phaser Canvas Area */
+    #phaser-container {
+      flex: 1;
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #phaser-example {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Right Panel - History & Controls */
+    #right-panel {
+      width: 320px;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      overflow-y: auto;
+      box-shadow: -5px 0 30px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #right-panel::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #right-panel::-webkit-scrollbar-track {
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 10px;
+    }
+
+    #right-panel::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+    }
+
+    #right-panel h1 {
+      font-size: 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    #text-input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 14px;
+      border: 2px solid #667eea;
+      border-radius: 10px;
+      outline: none;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #text-input:focus {
+      border-color: #764ba2;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+
+    #generate-btn {
+      width: 100%;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    #generate-btn:active {
+      transform: translateY(0);
+    }
+
+    .history-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+    }
+
+    .history-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #667eea;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    #history-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+    }
+
+    #history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #history-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #history-list::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.3);
+      border-radius: 3px;
+    }
+
+    .history-item {
+      padding: 12px;
+      background: rgba(102, 126, 234, 0.08);
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 13px;
+      color: #333;
+      word-break: break-word;
+      font-weight: 500;
+    }
+
+    .history-item:hover {
+      background: rgba(102, 126, 234, 0.15);
+      border-color: #667eea;
+      transform: translateX(4px);
+    }
+
+    .history-item.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: transparent;
+      font-weight: 600;
+    }
+
+    .clear-history-btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+      border: 1px solid #667eea;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .clear-history-btn:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    /* Audio Control */
+    .audio-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .audio-toggle {
+      width: 40px;
+      height: 24px;
+      background: #ddd;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s ease;
+    }
+
+    .audio-toggle.active {
+      background: #667eea;
+    }
+
+    .audio-toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s ease;
+    }
+
+    .audio-toggle.active::after {
+      left: 18px;
+    }
+
+    .audio-label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      #phaser-container {
+        height: 60vh;
+      }
+
+      #right-panel {
+        width: 100%;
+        height: 40vh;
+        border-radius: 20px 20px 0 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="phaser-container">
+    <div id="phaser-example"></div>
+  </div>
+
+  <div id="right-panel">
+    <h1>✨ Animation Pro</h1>
+    
+    <div class="input-group">
+      <input 
+        id="text-input" 
+        type="text" 
+        placeholder="Écris un mot ou une phrase…"
+        maxlength="50"
+      >
+      <button id="generate-btn">Générer</button>
+    </div>
+
+    <div class="audio-control">
+      <button class="audio-toggle active" id="audio-toggle"></button>
+      <span class="audio-label">Musique</span>
+    </div>
+
+    <div class="history-section">
+      <div class="history-title">Historique</div>
+      <div id="history-list"></div>
+      <button class="clear-history-btn" id="clear-history-btn">Effacer l'historique</button>
+    </div>
+  </div>
+</div>
+
+<script>
+class AnimationScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'AnimationScene' });
+    this.currentPhase = 0;
+    this.phaseDuration = 8000;
+    this.timeSincePhase = 0;
+    this.history = [];
+    this.currentAnimationText = '';
+    this.audioEnabled = true;
+  }
+
+  preload() {
+    // Load assets
+    this.load.setBaseURL('https://labs.phaser.io' );
+    this.load.image('spark', 'assets/particles/blue.png');
+    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+    
+    // Load background music (royalty-free ambient music)
+    this.load.audio('ambient', 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' );
+  }
+
+  create() {
+    // Create shapes
+    this.createShapes();
+    
+    // Setup particles
+    this.particles = this.add.particles('spark');
+    
+    // Setup text engine
+    this.setupTextEngine();
+    
+    // Setup audio
+    this.setupAudio();
+    
+    // Setup input
+    this.setupInput();
+  }
+
+  createShapes() {
+    const g = this.make.graphics({ x: 0, y: 0, add: false });
+    const shapeSize = 50;
+    const colors = [0x667eea, 0x764ba2, 0xff6b9d];
+
+    // Square
+    g.fillStyle(colors[0], 1);
+    g.fillRect(0, 0, shapeSize, shapeSize);
+    g.generateTexture('square', shapeSize, shapeSize);
+
+    // Circle
+    g.clear();
+    g.fillStyle(colors[1], 1);
+    g.fillCircle(shapeSize / 2, shapeSize / 2, shapeSize / 2);
+    g.generateTexture('circle', shapeSize, shapeSize);
+
+    // Diamond
+    g.clear();
+    g.fillStyle(colors[2], 1);
+    g.beginPath();
+    g.moveTo(shapeSize / 2, 0);
+    g.lineTo(shapeSize, shapeSize / 2);
+    g.lineTo(shapeSize / 2, shapeSize);
+    g.lineTo(0, shapeSize / 2);
+    g.closePath();
+    g.fillPath();
+    g.generateTexture('diamond', shapeSize, shapeSize);
+
+    // Create grid of shapes - HORIZONTAL LAYOUT
+    const shapes = ['square', 'circle', 'diamond'];
+    const blocks = this.add.group();
+    
+    const gridWidth = 16;
+    const gridHeight = 6;
+    const cellWidth = 70;
+    const cellHeight = 70;
+    const startX = 50;
+    const startY = 30;
+
+    for (let i = 0; i < gridWidth * gridHeight; i++) {
+      const key = shapes[i % shapes.length];
+      const sprite = this.add.image(0, 0, key).setScale(0.4);
+      sprite.setInteractive();
+      blocks.add(sprite);
+    }
+
+    Phaser.Actions.GridAlign(blocks.getChildren(), {
+      width: gridWidth,
+      height: gridHeight,
+      cellWidth: cellWidth,
+      cellHeight: cellHeight,
+      x: startX,
+      y: startY
+    });
+
+    this.blocks = blocks;
+    this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+    this.shapes = shapes;
+
+    // Add interactions
+    this.setupBlockInteractions();
+    
+    // Add pulse animation
+    this.addPulseAnimation();
+  }
+
+  setupBlockInteractions() {
+    const self = this;
+    
+    this.blocks.getChildren().forEach(block => {
+      // Hover effect
+      block.on('pointerover', () => {
+        this.tweens.add({
+          targets: block,
+          scale: 0.3,
+          duration: 200,
+          yoyo: true
+        });
+      });
+
+      // Click effect with particles
+      block.on('pointerdown', () => {
+        if (this.audioEnabled && this.sound) {
+          try {
+            this.sound.play('pop');
+          } catch (e) {}
+        }
+        
+        this.particles.createEmitter({
+          x: block.x,
+          y: block.y,
+          speed: { min: -200, max: 200 },
+          lifespan: 600,
+          scale: { start: 0.6, end: 0 },
+          quantity: 25,
+          tint: 0x667eea
+        }).explode(25, block.x, block.y);
+      });
+    });
+  }
+
+  addPulseAnimation() {
+    const children = this.blocks.getChildren();
+    children.forEach((child, idx) => {
+      this.tweens.add({
+        targets: child,
+        scale: 0.45,
+        ease: 'sine.inout',
+        duration: 700,
+        delay: (idx % 16) * 30,
+        yoyo: true,
+        repeat: -1
+      });
+    });
+  }
+
+  setupTextEngine() {
+    const input = document.getElementById('text-input');
+    const button = document.getElementById('generate-btn');
+    const historyList = document.getElementById('history-list');
+    const clearBtn = document.getElementById('clear-history-btn');
+
+    button.addEventListener('click', () => {
+      const text = input.value.toUpperCase().trim();
+      if (!text) return;
+
+      // Add to history
+      if (!this.history.includes(text)) {
+        this.history.push(text);
+      }
+
+      // Update UI
+      this.updateHistoryUI();
+      
+      // Generate animation
+      this.generateAnimatedText(text);
+      this.currentAnimationText = text;
+      
+      input.value = '';
+    });
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        button.click();
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      this.history = [];
+      this.updateHistoryUI();
       this.clearAnimatedText();
     });
   }
