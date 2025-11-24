@@ -3,212 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Animation Professionnelle Interactive - Phaser 3</title>
+  <title>Phaser Shapes + Text Generator with History</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
   <style>
-    * {
+    body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100% );
-      height: 100vh;
-    }
-
-    .container {
       display: flex;
-      height: 100vh;
-      gap: 0;
-    }
-
-    /* Phaser Canvas Area */
-    #phaser-container {
-      flex: 1;
-      position: relative;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-family: Arial, sans-serif;
       overflow: hidden;
+      background: #b8ffb8;
     }
 
+    /* Phaser zone */
     #phaser-example {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Right Panel - History & Controls */
-    #right-panel {
-      width: 320px;
+      width: 70vw;
       height: 100vh;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 25px;
-      overflow-y: auto;
-      box-shadow: -5px 0 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Right-side interface */
+    #right-panel {
+      width: 30vw;
+      height: 100vh;
+      background: rgba(255,255,255,0.95);
+      padding: 20px;
+      box-sizing: border-box;
+      backdrop-filter: blur(5px);
+      overflow: auto;
       display: flex;
       flex-direction: column;
     }
 
-    #right-panel::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    #right-panel::-webkit-scrollbar-track {
-      background: rgba(102, 126, 234, 0.1);
-      border-radius: 10px;
-    }
-
-    #right-panel::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 10px;
-    }
-
-    #right-panel h1 {
-      font-size: 24px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 20px;
-      font-weight: 700;
+    #right-panel h2 {
+      margin-top: 0;
+      color: #ff3eb5;
+      font-size: 22px;
       text-align: center;
-    }
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     #text-input {
       width: 100%;
-      padding: 12px 16px;
-      font-size: 14px;
-      border: 2px solid #667eea;
-      border-radius: 10px;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      border: 2px solid #ff3eb5;
+      border-radius: 8px;
       outline: none;
       transition: all 0.3s ease;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     #text-input:focus {
-      border-color: #764ba2;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 10px rgba(255, 62, 181, 0.3);
       transform: translateY(-2px);
     }
 
     #generate-btn {
       width: 100%;
-      padding: 12px 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 10px;
+      background: #ff3eb5;
       color: white;
       border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
       transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-weight: 600;
+      margin-bottom: 15px;
     }
 
     #generate-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 5px 15px rgba(255, 62, 181, 0.3);
     }
 
     #generate-btn:active {
       transform: translateY(0);
-    }
-
-    .history-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      margin-top: 20px;
-    }
-
-    .history-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #667eea;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
-
-    #history-list {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-    }
-
-    #history-list::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #history-list::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #history-list::-webkit-scrollbar-thumb {
-      background: rgba(102, 126, 234, 0.3);
-      border-radius: 3px;
-    }
-
-    .history-item {
-      padding: 12px;
-      background: rgba(102, 126, 234, 0.08);
-      border: 1px solid rgba(102, 126, 234, 0.2);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 13px;
-      color: #333;
-      word-break: break-word;
-      font-weight: 500;
-    }
-
-    .history-item:hover {
-      background: rgba(102, 126, 234, 0.15);
-      border-color: #667eea;
-      transform: translateX(4px);
-    }
-
-    .history-item.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-color: transparent;
-      font-weight: 600;
-    }
-
-    .clear-history-btn {
-      width: 100%;
-      padding: 10px;
-      background: rgba(102, 126, 234, 0.1);
-      color: #667eea;
-      border: 1px solid #667eea;
-      border-radius: 8px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .clear-history-btn:hover {
-      background: #667eea;
-      color: white;
     }
 
     /* Audio Control */
@@ -216,9 +86,11 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid rgba(102, 126, 234, 0.2);
+      margin-bottom: 15px;
+      padding: 10px;
+      background: rgba(255, 62, 181, 0.08);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 62, 181, 0.2);
     }
 
     .audio-toggle {
@@ -233,7 +105,7 @@
     }
 
     .audio-toggle.active {
-      background: #667eea;
+      background: #ff3eb5;
     }
 
     .audio-toggle::after {
@@ -254,67 +126,130 @@
 
     .audio-label {
       font-size: 12px;
-      color: #666;
+      color: #ff3eb5;
       font-weight: 600;
     }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
+    /* History Section */
+    .history-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 10px;
+    }
 
-      #phaser-container {
-        height: 60vh;
-      }
+    .history-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ff3eb5;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
 
-      #right-panel {
-        width: 100%;
-        height: 40vh;
-        border-radius: 20px 20px 0 0;
-      }
+    #history-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    #history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #history-list::-webkit-scrollbar-track {
+      background: rgba(255, 62, 181, 0.1);
+      border-radius: 10px;
+    }
+
+    #history-list::-webkit-scrollbar-thumb {
+      background: #ff3eb5;
+      border-radius: 10px;
+    }
+
+    .history-item {
+      padding: 10px;
+      background: rgba(255, 62, 181, 0.08);
+      border: 1px solid rgba(255, 62, 181, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 12px;
+      color: #333;
+      word-break: break-word;
+      font-weight: 500;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 62, 181, 0.15);
+      border-color: #ff3eb5;
+      transform: translateX(3px);
+    }
+
+    .history-item.active {
+      background: #ff3eb5;
+      color: white;
+      border-color: #ff3eb5;
+      font-weight: 600;
+    }
+
+    .clear-history-btn {
+      width: 100%;
+      padding: 8px;
+      background: rgba(255, 62, 181, 0.1);
+      color: #ff3eb5;
+      border: 1px solid #ff3eb5;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .clear-history-btn:hover {
+      background: #ff3eb5;
+      color: white;
+    }
+
+    #phaser-text {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div id="phaser-container">
-    <div id="phaser-example"></div>
+<div id="phaser-example"></div>
+
+<div id="right-panel">
+  <h2>Créer une animation avec ton texte</h2>
+  <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…" maxlength="50">
+  <button id="generate-btn">Générer l'animation</button>
+  
+  <div class="audio-control">
+    <button class="audio-toggle active" id="audio-toggle"></button>
+    <span class="audio-label">Musique</span>
   </div>
 
-  <div id="right-panel">
-    <h1>✨ Animation Pro</h1>
-    
-    <div class="input-group">
-      <input 
-        id="text-input" 
-        type="text" 
-        placeholder="Écris un mot ou une phrase…"
-        maxlength="50"
-      >
-      <button id="generate-btn">Générer</button>
-    </div>
-
-    <div class="audio-control">
-      <button class="audio-toggle active" id="audio-toggle"></button>
-      <span class="audio-label">Musique</span>
-    </div>
-
-    <div class="history-section">
-      <div class="history-title">Historique</div>
-      <div id="history-list"></div>
-      <button class="clear-history-btn" id="clear-history-btn">Effacer l'historique</button>
-    </div>
+  <div class="history-section">
+    <div class="history-title">Historique</div>
+    <div id="history-list"></div>
+    <button class="clear-history-btn" id="clear-history-btn">Effacer l'historique</button>
   </div>
+
+  <div id="phaser-text"></div>
 </div>
 
 <script>
-class AnimationScene extends Phaser.Scene {
+class Example extends Phaser.Scene {
   constructor() {
-    super({ key: 'AnimationScene' });
-    this.currentPhase = 0;
-    this.phaseDuration = 8000;
+    super();
+    this.phase = 0;
+    this.phaseDuration = 6000;
     this.timeSincePhase = 0;
     this.history = [];
     this.currentAnimationText = '';
@@ -322,283 +257,243 @@ class AnimationScene extends Phaser.Scene {
   }
 
   preload() {
-    // Load assets
-    this.load.setBaseURL('https://labs.phaser.io' );
+    this.load.setBaseURL('https://labs.phaser.io');
     this.load.image('spark', 'assets/particles/blue.png');
     this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
     
-    // Load background music (royalty-free ambient music)
-    this.load.audio('ambient', 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' );
+    // Load background music
+    this.load.audio('ambient', 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
   }
 
   create() {
-    // Create shapes
-    this.createShapes();
-    
-    // Setup particles
-    this.particles = this.add.particles('spark');
-    
-    // Setup text engine
-    this.setupTextEngine();
-    
-    // Setup audio
-    this.setupAudio();
-    
-    // Setup input
-    this.setupInput();
-  }
-
-  createShapes() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false });
-    const shapeSize = 50;
-    const colors = [0x667eea, 0x764ba2, 0xff6b9d];
+    // Graphics for shapes
+    var g = this.make.graphics({ x:0, y:0, add:false });
 
     // Square
-    g.fillStyle(colors[0], 1);
-    g.fillRect(0, 0, shapeSize, shapeSize);
-    g.generateTexture('square', shapeSize, shapeSize);
+    g.fillStyle(0xff3eb5,1);
+    g.fillRect(0,0,50,50);
+    g.generateTexture('square',50,50);
 
     // Circle
     g.clear();
-    g.fillStyle(colors[1], 1);
-    g.fillCircle(shapeSize / 2, shapeSize / 2, shapeSize / 2);
-    g.generateTexture('circle', shapeSize, shapeSize);
+    g.fillStyle(0xff3eb5,1);
+    g.fillCircle(25,25,25);
+    g.generateTexture('circle',50,50);
 
     // Diamond
     g.clear();
-    g.fillStyle(colors[2], 1);
+    g.fillStyle(0xff3eb5,1);
     g.beginPath();
-    g.moveTo(shapeSize / 2, 0);
-    g.lineTo(shapeSize, shapeSize / 2);
-    g.lineTo(shapeSize / 2, shapeSize);
-    g.lineTo(0, shapeSize / 2);
+    g.moveTo(25,0);
+    g.lineTo(50,25);
+    g.lineTo(25,50);
+    g.lineTo(0,25);
     g.closePath();
     g.fillPath();
-    g.generateTexture('diamond', shapeSize, shapeSize);
+    g.generateTexture('diamond',50,50);
 
-    // Create grid of shapes - HORIZONTAL LAYOUT
-    const shapes = ['square', 'circle', 'diamond'];
-    const blocks = this.add.group();
-    
-    const gridWidth = 16;
-    const gridHeight = 6;
-    const cellWidth = 70;
-    const cellHeight = 70;
-    const startX = 50;
-    const startY = 30;
-
-    for (let i = 0; i < gridWidth * gridHeight; i++) {
-      const key = shapes[i % shapes.length];
-      const sprite = this.add.image(0, 0, key).setScale(0.4);
+    // Create blocks - HORIZONTAL LAYOUT (16 wide x 6 tall)
+    var shapes = ['square','circle','diamond'];
+    var blocks = this.add.group();
+    for(var i=0;i<96;i++){
+      var key = shapes[i%shapes.length];
+      var sprite = this.add.image(0,0,key).setScale(0.3);
       sprite.setInteractive();
       blocks.add(sprite);
     }
 
-    Phaser.Actions.GridAlign(blocks.getChildren(), {
-      width: gridWidth,
-      height: gridHeight,
-      cellWidth: cellWidth,
-      cellHeight: cellHeight,
-      x: startX,
-      y: startY
-    });
+    Phaser.Actions.GridAlign(blocks.getChildren(), { width:16, height:6, cellWidth:60, cellHeight:60, x:40, y:30 });
 
     this.blocks = blocks;
-    this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+    this.originalPositions = blocks.getChildren().map(function(b){return {x:b.x, y:b.y};});
+    this.particles = this.add.particles('spark');
     this.shapes = shapes;
 
-    // Add interactions
-    this.setupBlockInteractions();
+    var self=this;
+    blocks.getChildren().forEach(function(block){
+      block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
+      block.on('pointerdown', function(){ 
+        if(self.audioEnabled && self.sound){ try{self.sound.play('pop');}catch{} }
+        self.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:0xff3eb5}).explode(20, block.x, block.y);
+      });
+    });
+
+    // Pulse animation
+    var children = blocks.getChildren();
+    children.forEach(function(child,idx){ self.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%16)*40, yoyo:true, repeat:-1 }); });
+
+    // Text engine
+    this.createTextEngine();
     
-    // Add pulse animation
-    this.addPulseAnimation();
+    // Setup audio
+    this.setupAudio();
+    
+    // Setup mouse flee effect
+    this.setupMouseFleeEffect();
   }
 
-  setupBlockInteractions() {
-    const self = this;
-    
-    this.blocks.getChildren().forEach(block => {
-      // Hover effect
-      block.on('pointerover', () => {
-        this.tweens.add({
-          targets: block,
-          scale: 0.3,
-          duration: 200,
-          yoyo: true
-        });
-      });
+  update(time, delta) {
+    this.timeSincePhase += delta;
+    if(this.timeSincePhase>this.phaseDuration){
+      this.phase=(this.phase+1)%this.shapes.length;
+      this.timeSincePhase=0;
 
-      // Click effect with particles
-      block.on('pointerdown', () => {
-        if (this.audioEnabled && this.sound) {
-          try {
-            this.sound.play('pop');
-          } catch (e) {}
-        }
-        
-        this.particles.createEmitter({
-          x: block.x,
-          y: block.y,
-          speed: { min: -200, max: 200 },
-          lifespan: 600,
-          scale: { start: 0.6, end: 0 },
-          quantity: 25,
-          tint: 0x667eea
-        }).explode(25, block.x, block.y);
+      // Change shape automatically
+      var newShape = this.shapes[this.phase];
+      this.blocks.getChildren().forEach(function(block){ block.setTexture(newShape); });
+    }
+
+    if(this.input.activePointer.isDown){
+      var mx=this.input.x, my=this.input.y;
+      this.blocks.getChildren().forEach(function(block){
+        var angle=Phaser.Math.Angle.Between(block.x, block.y, mx, my);
+        block.x += Math.cos(angle)*0.6;
+        block.y += Math.sin(angle)*0.6;
       });
+    }
+
+    this.animateBlocks(time);
+  }
+
+  animateBlocks(time){
+    var self=this;
+    this.blocks.getChildren().forEach(function(block,i){
+      var orig=self.originalPositions[i];
+      var offsetX=0, offsetY=0;
+      
+      // HORIZONTAL animation patterns
+      switch(self.phase){
+        case 0: 
+          offsetX=Math.sin(time/300 + orig.y*0.12)*12; 
+          offsetY=Math.cos(time/400 + orig.x*0.08)*8;
+          break;
+        case 1: 
+          var dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy); 
+          offsetX=Math.sin(time/250 + dist*0.05)*18; 
+          offsetY=Math.cos(time/350 + dist*0.03)*12;
+          break;
+        case 2: 
+          offsetX=Math.sin(time/220 + (orig.x+orig.y)*0.06)*15; 
+          offsetY=Math.cos(time/280 + (orig.x-orig.y)*0.05)*10;
+          break;
+      }
+      
+      block.x = orig.x + offsetX;
+      block.y = orig.y + offsetY;
     });
   }
 
-  addPulseAnimation() {
-    const children = this.blocks.getChildren();
-    children.forEach((child, idx) => {
-      this.tweens.add({
-        targets: child,
-        scale: 0.45,
-        ease: 'sine.inout',
-        duration: 700,
-        delay: (idx % 16) * 30,
-        yoyo: true,
-        repeat: -1
-      });
-    });
-  }
+  createTextEngine(){
+    var input=document.getElementById("text-input");
+    var button=document.getElementById("generate-btn");
+    var historyList=document.getElementById("history-list");
+    var clearBtn=document.getElementById("clear-history-btn");
+    var self=this;
 
-  setupTextEngine() {
-    const input = document.getElementById('text-input');
-    const button = document.getElementById('generate-btn');
-    const historyList = document.getElementById('history-list');
-    const clearBtn = document.getElementById('clear-history-btn');
-
-    button.addEventListener('click', () => {
-      const text = input.value.toUpperCase().trim();
-      if (!text) return;
+    button.addEventListener("click", function(){
+      var text=input.value.toUpperCase().trim();
+      if(!text) return;
 
       // Add to history
-      if (!this.history.includes(text)) {
-        this.history.push(text);
+      if(!self.history.includes(text)){
+        self.history.push(text);
       }
 
       // Update UI
-      this.updateHistoryUI();
+      self.updateHistoryUI();
       
       // Generate animation
-      this.generateAnimatedText(text);
-      this.currentAnimationText = text;
+      self.generateAnimatedText(text);
+      self.currentAnimationText = text;
       
       input.value = '';
     });
 
-    input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+    input.addEventListener('keypress', function(e){
+      if(e.key === 'Enter'){
         button.click();
       }
     });
 
-    clearBtn.addEventListener('click', () => {
-      this.history = [];
-      this.updateHistoryUI();
-      this.clearAnimatedText();
+    clearBtn.addEventListener("click", function(){
+      self.history = [];
+      self.updateHistoryUI();
+      self.clearAnimatedText();
     });
   }
 
-  updateHistoryUI() {
-    const historyList = document.getElementById('history-list');
+  updateHistoryUI(){
+    var historyList=document.getElementById("history-list");
     historyList.innerHTML = '';
+    var self = this;
 
-    this.history.forEach(text => {
-      const item = document.createElement('div');
+    this.history.forEach(function(text){
+      var item = document.createElement('div');
       item.className = 'history-item';
-      if (text === this.currentAnimationText) {
+      if(text === self.currentAnimationText){
         item.classList.add('active');
       }
       item.textContent = text;
       
-      item.addEventListener('click', () => {
-        this.generateAnimatedText(text);
-        this.currentAnimationText = text;
-        this.updateHistoryUI();
+      item.addEventListener('click', function(){
+        self.generateAnimatedText(text);
+        self.currentAnimationText = text;
+        self.updateHistoryUI();
       });
 
       historyList.appendChild(item);
     });
   }
 
-  generateAnimatedText(text) {
-    // Clear previous text
-    if (this.textLetters) {
-      this.textLetters.forEach(letter => letter.destroy());
-    }
-    this.textLetters = [];
-
-    if (!text) return;
+  generateAnimatedText(text){
+    if(!text) return;
+    if(this.letters) this.letters.forEach(function(l){l.destroy();});
+    this.letters=[];
 
     // Center position
-    const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
+    var centerX = this.cameras.main.width / 2;
+    var centerY = this.cameras.main.height / 2;
     
-    const charWidth = 35;
-    const totalWidth = text.length * charWidth;
-    const startX = centerX - totalWidth / 2;
-
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      const xPos = startX + i * charWidth;
-      
-      const letter = this.add.text(xPos, centerY, char, {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '48px',
-        fontWeight: 'bold',
-        color: '#ffffff',
-        stroke: '#667eea',
-        strokeThickness: 2
-      }).setOrigin(0.5).setDepth(100);
-
-      this.textLetters.push(letter);
-
-      // Animate each letter
-      this.tweens.add({
-        targets: letter,
-        y: centerY - 15,
-        angle: 360,
-        alpha: 1,
-        duration: 1000 + i * 50,
-        ease: 'elastic.out',
-        repeat: 0
-      });
-
-      // Continuous floating animation
-      this.tweens.add({
-        targets: letter,
-        y: centerY + 10,
-        duration: 2000 + i * 100,
-        ease: 'sine.inout',
-        delay: 1000 + i * 50,
-        yoyo: true,
-        repeat: -1
-      });
+    var charWidth = 35;
+    var totalWidth = text.length * charWidth;
+    var startX = centerX - totalWidth / 2;
+    
+    var self = this;
+    for(var i=0;i<text.length;i++){
+      (function(self,ch,idx){
+        var xPos = startX + idx * charWidth;
+        var letter=self.add.text(xPos, centerY, ch, {fontFamily:'Arial', fontSize:'40px', color:'#ff3eb5', fontWeight: 'bold'}).setOrigin(0.5).setDepth(100);
+        self.letters.push(letter);
+        
+        // Entrance animation
+        self.tweens.add({targets:letter, y:centerY-15, angle:360, alpha:1, duration:800+idx*50, ease:"elastic.out"});
+        
+        // Continuous floating animation
+        self.tweens.add({targets:letter, y:centerY+10, duration:2000+idx*100, ease:"sine.inout", delay:800+idx*50, yoyo:true, repeat:-1});
+      })(this,text[i],i);
     }
   }
 
-  clearAnimatedText() {
-    if (this.textLetters) {
-      this.textLetters.forEach(letter => letter.destroy());
-      this.textLetters = [];
+  clearAnimatedText(){
+    if(this.letters){
+      this.letters.forEach(function(l){l.destroy();});
+      this.letters = [];
     }
   }
 
-  setupAudio() {
-    const audioToggle = document.getElementById('audio-toggle');
+  setupAudio(){
+    var self = this;
+    var audioToggle = document.getElementById('audio-toggle');
     
     try {
-      const ambientMusic = this.sound.add('ambient', { loop: true, volume: 0.3 });
+      var ambientMusic = this.sound.add('ambient', { loop: true, volume: 0.3 });
       
-      audioToggle.addEventListener('click', () => {
-        this.audioEnabled = !this.audioEnabled;
+      audioToggle.addEventListener('click', function(){
+        self.audioEnabled = !self.audioEnabled;
         audioToggle.classList.toggle('active');
         
-        if (this.audioEnabled) {
-          if (!ambientMusic.isPlaying) {
+        if(self.audioEnabled){
+          if(!ambientMusic.isPlaying){
             ambientMusic.play();
           }
         } else {
@@ -606,128 +501,37 @@ class AnimationScene extends Phaser.Scene {
         }
       });
 
-      // Auto-play with muted state
-      ambientMusic.play().catch(() => {
-        // Browser autoplay policy - user must interact
+      // Auto-play
+      ambientMusic.play().catch(function(){
+        // Browser autoplay policy
       });
-    } catch (e) {
+    } catch(e){
       console.log('Audio setup skipped');
     }
   }
 
-  setupInput() {
-    // Mouse flee effect
-    this.input.on('pointermove', (pointer) => {
-      if (!this.blocks) return;
+  setupMouseFleeEffect(){
+    var self = this;
+    this.input.on('pointermove', function(pointer){
+      if(!self.blocks) return;
 
-      this.blocks.getChildren().forEach(block => {
-        const angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
-        const distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
+      self.blocks.getChildren().forEach(function(block){
+        var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
+        var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
         
         // Flee effect - stronger when closer
-        if (distance < 200) {
-          const fleeForce = (200 - distance) / 200 * 2;
+        if(distance < 200){
+          var fleeForce = (200 - distance) / 200 * 2;
           block.x += Math.cos(angle + Math.PI) * fleeForce;
           block.y += Math.sin(angle + Math.PI) * fleeForce;
         }
       });
     });
   }
-
-  update(time, delta) {
-    if (!this.blocks) return;
-
-    // Update phase
-    this.timeSincePhase += delta;
-    if (this.timeSincePhase > this.phaseDuration) {
-      this.currentPhase = (this.currentPhase + 1) % this.shapes.length;
-      this.timeSincePhase = 0;
-
-      this.blocks.getChildren().forEach(block => {
-        block.setTexture(this.shapes[this.currentPhase]);
-      });
-    }
-
-    // Animate blocks
-    this.animateBlocks(time);
-    
-    // Keep blocks in bounds
-    this.keepBlocksInBounds();
-  }
-
-  animateBlocks(time) {
-    this.blocks.getChildren().forEach((block, i) => {
-      const orig = this.originalPositions[i];
-      let offsetX = 0;
-      let offsetY = 0;
-
-      // HORIZONTAL animation patterns
-      switch (this.currentPhase) {
-        case 0: // Wave effect - horizontal
-          offsetX = Math.sin(time / 300 + orig.y * 0.12) * 15;
-          offsetY = Math.cos(time / 400 + orig.x * 0.08) * 8;
-          break;
-        case 1: // Radial pulse - horizontal
-          const dx = orig.x - 400;
-          const dy = orig.y - 300;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          offsetX = Math.sin(time / 250 + dist * 0.05) * 20;
-          offsetY = Math.cos(time / 350 + dist * 0.03) * 12;
-          break;
-        case 2: // Spiral effect - horizontal
-          offsetX = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 18;
-          offsetY = Math.cos(time / 280 + (orig.x - orig.y) * 0.05) * 15;
-          break;
-      }
-
-      block.x = orig.x + offsetX;
-      block.y = orig.y + offsetY;
-    });
-  }
-
-  keepBlocksInBounds() {
-    const padding = 100;
-    const bounds = this.cameras.main.getBounds();
-
-    this.blocks.getChildren().forEach((block, i) => {
-      const orig = this.originalPositions[i];
-      
-      // Clamp to bounds
-      if (block.x < bounds.left - padding) block.x = bounds.left - padding;
-      if (block.x > bounds.right + padding) block.x = bounds.right + padding;
-      if (block.y < bounds.top - padding) block.y = bounds.top - padding;
-      if (block.y > bounds.bottom + padding) block.y = bounds.bottom + padding;
-    });
-  }
 }
 
-// Phaser configuration
-const config = {
-  type: Phaser.AUTO,
-  width: window.innerWidth * 0.75,
-  height: window.innerHeight,
-  backgroundColor: '#667eea',
-  parent: 'phaser-example',
-  scene: AnimationScene,
-  render: {
-    antialias: true,
-    antialiasGL: true,
-    pixelArt: false
-  },
-  physics: {
-    default: 'arcade',
-    arcade: {
-      debug: false
-    }
-  }
-};
-
-const game = new Phaser.Game(config);
-
-// Handle window resize
-window.addEventListener('resize', () => {
-  game.scale.resize(window.innerWidth * 0.75, window.innerHeight);
-});
+var config = { type: Phaser.AUTO, width: window.innerWidth*0.70, height: window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example, render: { antialias: true } };
+new Phaser.Game(config);
 </script>
 
 </body>
