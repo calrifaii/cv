@@ -420,7 +420,7 @@ class Example extends Phaser.Scene {
         var xPos = startX + idx * charWidth;
         
         // Create a background circle behind the text
-        var bgCircle = self.add.circle(xPos, centerY, 35, 0xb8ffb8, 0.8).setDepth(100);
+        var bgCircle = self.add.circle(xPos, centerY, 35, 0xb8ffb8, 0.8).setDepth(99);
         self.letters.push(bgCircle);
         
         // Entrance animation for background
@@ -480,7 +480,7 @@ class Example extends Phaser.Scene {
         
         // Flee effect - stronger when closer (distance < 150)
         if(distance < 1000){
-          var fleeForce = (1000 - distance) / 1000 * 60;
+          var fleeForce = (1000 - distance) / 100000 * 6000;
           block.x += Math.cos(angle + Math.PI) * fleeForce;
           block.y += Math.sin(angle + Math.PI) * fleeForce;
         }
