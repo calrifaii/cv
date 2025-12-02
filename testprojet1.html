@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Phaser Shapes + Text Generator — Couleurs & Sons</title>
+  <title>Phaser — Texte animé + shapes foncées (final)</title>
 
-  <!-- Google Font (cute) -->
+  <!-- Police cute -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
@@ -16,110 +16,26 @@
       --bg: #b8ffb8;
       --panel-bg: rgba(255,255,255,0.95);
     }
-    html,body{
-      height:100%;
-      margin:0;
-      padding:0;
-      font-family: 'Fredoka', Arial, sans-serif;
-      background: var(--bg);
-      overflow:hidden;
-    }
-
+    html,body{ height:100%; margin:0; padding:0; font-family:'Fredoka', Arial, sans-serif; background:var(--bg); overflow:hidden; }
     /* Layout */
     #phaser-example{ width:70vw; height:100vh; float:left; }
-    #right-panel{
-      width:30vw;
-      height:100vh;
-      float:right;
-      background: var(--panel-bg);
-      padding:22px;
-      box-sizing:border-box;
-      backdrop-filter: blur(6px);
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-    }
-
-    h2{
-      margin:0;
-      color:var(--accent);
-      font-size:20px;
-      text-align:center;
-    }
-
-    #controls{
-      display:flex;
-      gap:8px;
-      justify-content:space-between;
-      align-items:center;
-    }
-
-    #text-input{
-      flex:1;
-      padding:10px;
-      font-size:16px;
-      border-radius:10px;
-      border:2px solid var(--accent);
-      outline:none;
-      box-shadow:none;
-    }
-
-    #generate-btn{
-      margin-left:8px;
-      padding:10px 14px;
-      background:var(--accent);
-      color:white;
-      border:none;
-      border-radius:10px;
-      font-weight:700;
-      cursor:pointer;
-    }
+    #right-panel{ width:30vw; height:100vh; float:right; background:var(--panel-bg); padding:20px; box-sizing:border-box; backdrop-filter: blur(6px); display:flex; flex-direction:column; gap:14px; }
+    h2{ margin:0; color:var(--accent); font-size:20px; text-align:center; }
+    #controls{ display:flex; gap:8px; align-items:center; }
+    #text-input{ flex:1; padding:10px; border-radius:10px; border:2px solid var(--accent); outline:none; font-size:16px; }
+    #generate-btn{ padding:10px 14px; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; }
     #generate-btn:active{ transform:translateY(1px); }
-
-    /* Color palette */
-    .color-palette{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      align-items:center;
-    }
-    .color-swatch{
-      width:36px;
-      height:36px;
-      border-radius:50%;
-      border:3px solid rgba(255,255,255,0.6);
-      box-shadow:0 6px 14px rgba(0,0,0,0.12);
-      cursor:pointer;
-      transition: transform .18s ease, box-shadow .18s ease;
-    }
-    .color-swatch.selected{
-      transform:scale(1.08);
-      box-shadow:0 12px 22px rgba(0,0,0,0.2);
-      border:3px solid #fff;
-    }
-
+    .color-palette{ display:flex; gap:10px; justify-content:center; align-items:center; }
+    .color-swatch{ width:36px; height:36px; border-radius:50%; border:3px solid rgba(255,255,255,0.6); box-shadow:0 6px 14px rgba(0,0,0,0.12); cursor:pointer; transition: transform .18s ease, box-shadow .18s ease; }
+    .color-swatch.selected{ transform:scale(1.08); box-shadow:0 12px 22px rgba(0,0,0,0.2); border:3px solid #fff; }
     .palette-label{ text-align:center; font-size:12px; color:var(--accent); font-weight:700; text-transform:uppercase; margin-top:4px; }
-
-    /* History */
     .history-section{ flex:1; display:flex; flex-direction:column; gap:8px; overflow:auto; }
     .history-title{ color:var(--accent); font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
     #history-list{ display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:6px; }
-    .history-item{
-      padding:8px;
-      border-radius:8px;
-      background:rgba(255,62,181,0.06);
-      border:1px solid rgba(255,62,181,0.12);
-      font-size:13px;
-      cursor:pointer;
-    }
+    .history-item{ padding:8px; border-radius:8px; background:rgba(255,62,181,0.06); border:1px solid rgba(255,62,181,0.12); font-size:13px; cursor:pointer; }
     .history-item.active{ background:var(--accent); color:white; font-weight:700; }
-
-    .clear-history-btn{
-      padding:10px; border-radius:10px; border:1px solid var(--accent); color:var(--accent); background:transparent; cursor:pointer; font-weight:700;
-    }
+    .clear-history-btn{ padding:10px; border-radius:10px; border:1px solid var(--accent); color:var(--accent); background:transparent; cursor:pointer; font-weight:700; }
     .small-note{ font-size:12px; color:#333; text-align:center; }
-
-    /* Responsive tweak */
     @media(max-width:900px){
       #phaser-example{ width:100vw; height:60vh; }
       #right-panel{ width:100vw; height:40vh; position:fixed; bottom:0; left:0; display:block; overflow:auto; }
@@ -140,9 +56,7 @@
 
     <div style="display:flex;flex-direction:column;align-items:center;">
       <div class="palette-label">Choisis une couleur</div>
-      <div class="color-palette" id="color-palette">
-        <!-- JS injects swatches -->
-      </div>
+      <div class="color-palette" id="color-palette"></div>
     </div>
 
     <div class="history-section">
@@ -155,90 +69,56 @@
     </div>
   </div>
 
-
 <script>
 /*
-  Phaser scene with:
-  - grid shapes (square/circle/diamond) used as tiles
-  - 5 color options, each color selects:
-      * text fill / stroke
-      * special background shapes animation variant
-      * a short generated melody played on click (WebAudio)
-  - text enters from left to center quickly
-  - previous text exits to the right
-  - history list
-  - particle click pop and mouse flee
+  Version finale robuste.
+  - Grid de shapes animées (avec teintes plus foncées pour les tiles)
+  - 5 couleurs sélectionnables (texte + variantes d'animations)
+  - Musique courte générée par WebAudio à chaque clic
+  - API safe: window.registerShapeVariant(name, fn)
 */
 
-class Example extends Phaser.Scene {
-  constructor(){
-    super({ key: 'Example' });
-    this.history = [];
-    this.currentText = '';
-    this.letters = [];
-    this.blocks = null;
-    this.originalPositions = null;
-    this.shapes = ['square','circle','diamond'];
-    this.phase = 0;
-    this.phaseDuration = 6000;
-    this.timeSincePhase = 0;
-    this.colorMode = null; // will be set externally
-    this.audioEngine = null;
-    this.musicEnabled = true;
-  }
+/* ---------- Couleurs (teintes PLus foncées pour shapes) ---------- */
+const COLORS = [
+  { key: 'pink', label: 'Fuchsia', color:'#ff3eb5' },
+  { key: 'mint', label: 'Mint', color:'#34d399' },
+  { key: 'sun',  label: 'Sun',  color:'#ffb86b' },
+  { key: 'lav',  label: 'Lavande', color:'#9b7bff' },
+  { key: 'aqua', label: 'Aqua', color:'#00c2ff' }
+];
+
+/* TEINTES PLUS FONCÉES pour les tiles (tileTint) */
+const COLOR_MAP = {
+  pink:  { tileTint: 0xff6fae, tileAlpha:0.98, tileScale:0.36, variant:'twirl', bgCircle:0x2b0018, textColor:'#ffffff', stroke:'#ff3eb5', intensity:3 },
+  mint:  { tileTint: 0x0f8f5f, tileAlpha:0.95, tileScale:0.36, variant:'bounce', bgCircle:0x022916, textColor:'#ffffff', stroke:'#34a37d', intensity:2 },
+  sun:   { tileTint: 0xb87630, tileAlpha:0.96, tileScale:0.36, variant:'wave', bgCircle:0x2f1600, textColor:'#ffffff', stroke:'#c87a2b', intensity:2.2 },
+  lav:   { tileTint: 0x5b3fff, tileAlpha:0.95, tileScale:0.36, variant:'spin', bgCircle:0x120036, textColor:'#ffffff', stroke:'#5d3cff', intensity:2.6 },
+  aqua:  { tileTint: 0x007aa3, tileAlpha:0.96, tileScale:0.36, variant:'jitter', bgCircle:0x001f2b, textColor:'#ffffff', stroke:'#007fb3', intensity:3.4 }
+};
+
+/* ---------- Phaser Scene ---------- */
+class FinalScene extends Phaser.Scene {
+  constructor(){ super({ key:'FinalScene' }); this.blocks=null; this.originalPositions=[]; this.letters=[]; this.history=[]; this.currentText=''; this.shapes=['square','circle','diamond']; this.phase=0; this.phaseDuration=6000; this.timeSincePhase=0; this.colorKey=COLORS[0].key; this.registeredVariants={}; }
 
   preload(){
-    // Use labs.phaser.io base for misc assets
     this.load.setBaseURL('https://labs.phaser.io');
-    this.load.image('spark', 'assets/particles/blue.png');
-    // small fx for click (we'll mainly use WebAudio)
-    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+    this.load.image('spark','assets/particles/blue.png');
+    this.load.audio('pop','assets/audio/SoundEffects/pop.wav');
   }
 
   create(){
-    // create texture shapes via graphics
-    const g = this.make.graphics({ add: false });
-    // square
-    g.fillStyle(0xffffff, 1);
-    g.fillRect(0,0,50,50);
-    g.generateTexture('square',50,50);
-    // circle
-    g.clear();
-    g.fillStyle(0xffffff,1);
-    g.fillCircle(25,25,25);
-    g.generateTexture('circle',50,50);
-    // diamond
-    g.clear();
-    g.fillStyle(0xffffff,1);
-    g.beginPath();
-    g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath(); g.fillPath();
-    g.generateTexture('diamond',50,50);
-
-    // grid background of shapes
-    this.createGrid();
-
-    // particles
-    this.particles = this.add.particles('spark');
-
-    // pulsing animation for blocks
-    this.setupBlockPulse();
-
-    // sound setup
-    this.setupAudio();
-
-    // text engine - UI hooks are outside but will call scene methods; still prepare container
-    this.letters = [];
-    this.currentText = '';
-
-    // mouse interactions
-    this.setupMouseInteractions();
-
-    // default color mode
-    // if not set by outside, set to first color
-    if(!this.colorMode) this.colorMode = Example.COLORS[0].key;
-
-    // initial shapes coloring according to current color
-    this.applyColorModeToShapes(this.colorMode);
+    try{
+      this.createTexturesIfNeeded();
+      this.createGrid();
+      this.setupParticles();
+      this.setupPointerInteractions();
+      this.setupAudio();
+      this.applyColorToGrid(this.colorKey);
+      // register default variants
+      this.registerDefaultVariants();
+    }catch(err){
+      console.error('Erreur create():', err);
+    }
   }
 
   update(time, delta){
@@ -246,414 +126,279 @@ class Example extends Phaser.Scene {
     if(this.timeSincePhase > this.phaseDuration){
       this.phase = (this.phase + 1) % this.shapes.length;
       this.timeSincePhase = 0;
-      // change texture across grid
-      const shapeKey = this.shapes[this.phase];
-      this.blocks.getChildren().forEach(b => b.setTexture(shapeKey));
+      const nextShape = this.shapes[this.phase];
+      if(this.blocks) this.blocks.getChildren().forEach(b => b.setTexture(nextShape));
     }
-
-    // animate blocks with pattern depending on phase and color mode
     this.animateBlocks(time);
   }
 
+  createTexturesIfNeeded(){
+    if(this.textures.exists('square')) return;
+    const g = this.make.graphics({ add:false });
+    g.fillStyle(0xffffff,1); g.fillRect(0,0,50,50); g.generateTexture('square',50,50);
+    g.clear(); g.fillStyle(0xffffff,1); g.fillCircle(25,25,25); g.generateTexture('circle',50,50);
+    g.clear(); g.fillStyle(0xffffff,1); g.beginPath(); g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath(); g.fillPath(); g.generateTexture('diamond',50,50);
+  }
+
   createGrid(){
-    // fill game area with tiles
-    const gameWidth = this.cameras.main.width;
-    const gameHeight = this.cameras.main.height;
+    if(this.blocks){
+      try{ this.blocks.getChildren().forEach(c => c.destroy()); }catch(e){}
+      try{ this.blocks.clear(true); }catch(e){}
+      this.blocks = null;
+      this.originalPositions = [];
+    }
+
+    const w = this.cameras.main.width, h = this.cameras.main.height;
     const cellW = 60, cellH = 60;
-    const cols = Math.ceil(gameWidth / cellW) + 1;
-    const rows = Math.ceil(gameHeight / cellH) + 1;
+    const cols = Math.ceil(w / cellW) + 1;
+    const rows = Math.ceil(h / cellH) + 1;
     const total = cols * rows;
 
-    const blocks = this.add.group();
+    this.blocks = this.add.group();
     for(let i=0;i<total;i++){
       const key = this.shapes[i % this.shapes.length];
       const s = this.add.image(0,0,key).setScale(0.36).setAlpha(0.98);
-      s.setInteractive({ cursor: 'pointer' });
-      blocks.add(s);
+      s.setInteractive();
+      this.blocks.add(s);
     }
-    Phaser.Actions.GridAlign(blocks.getChildren(), { width: cols, height: rows, cellWidth: cellW, cellHeight: cellH, x: 0, y: 0 });
-    // store
-    this.blocks = blocks;
-    this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
-
-    // block pointer interactions - pop particles on click and slight scale on hover
-    const self = this;
-    blocks.getChildren().forEach(block => {
-      block.on('pointerover', () => {
-        self.tweens.add({ targets: block, scale: 0.5, duration: 140, yoyo: true });
-      });
-      block.on('pointerdown', () => {
-        try{ if(self.sound) self.sound.play('pop'); }catch(e){}
-        self.particles.createEmitter({ x: block.x, y: block.y, speed: {min:-150,max:150}, lifespan: 500, scale: {start:0.5,end:0}, quantity: 20, tint: Example.COLOR_MAP[this.colorMode].tint }).explode(20, block.x, block.y);
+    Phaser.Actions.GridAlign(this.blocks.getChildren(), { width: cols, height: rows, cellWidth: cellW, cellHeight: cellH, x:0, y:0 });
+    this.originalPositions = this.blocks.getChildren().map(b => ({ x:b.x, y:b.y }));
+    // interactions
+    this.blocks.getChildren().forEach(b => {
+      b.on('pointerover', ()=> { this.tweens.add({ targets:b, scale:0.5, duration:140, yoyo:true }); });
+      b.on('pointerdown', ()=> {
+        try{ if(this.sound) this.sound.play('pop'); }catch(e){}
+        if(this.particles) this.particles.createEmitter({ x:b.x, y:b.y, speed:{min:-100,max:100}, lifespan:400, scale:{start:0.4,end:0}, quantity:14, tint: COLOR_MAP[this.colorKey].tileTint }).explode(14, b.x, b.y);
       });
     });
   }
 
-  setupBlockPulse(){
-    const children = this.blocks.getChildren();
-    for(let i=0;i<children.length;i++){
-      this.tweens.add({
-        targets: children[i],
-        scale: 0.36,
-        ease: 'sine.inout',
-        duration: 700 + (i%10)*20,
-        delay: (i%20)*25,
-        yoyo: true,
-        repeat: -1
+  setupParticles(){
+    if(this.particles){ try{ this.particles.destroy(); }catch(e){} }
+    this.particles = this.add.particles('spark');
+  }
+
+  setupPointerInteractions(){
+    this.input.on('pointermove', pointer => {
+      if(!this.blocks || !this.originalPositions) return;
+      const px = pointer.x, py = pointer.y;
+      this.blocks.getChildren().forEach((b,i) => {
+        const op = this.originalPositions[i];
+        const dist = Phaser.Math.Distance.Between(op.x, op.y, px, py);
+        if(dist < 900){
+          const angle = Phaser.Math.Angle.Between(op.x, op.y, px, py);
+          const force = (900 - dist) / 9000 * 20 * (1 + (COLOR_MAP[this.colorKey].intensity || 1)/3);
+          b.x += Math.cos(angle + Math.PI) * force;
+          b.y += Math.sin(angle + Math.PI) * force;
+        }
       });
-    }
+    });
+
+    this.input.on('pointerdown', () => {
+      if(!this.originalPositions) return;
+      for(let i=0;i<3;i++){
+        const idx = Phaser.Math.Between(0, this.originalPositions.length-1);
+        const op = this.originalPositions[idx];
+        this.tweens.add({ targets: op, x: op.x + Phaser.Math.Between(-10,10), y: op.y + Phaser.Math.Between(-10,10), duration:260, yoyo:true });
+      }
+    });
+  }
+
+  setupAudio(){
+    try{ this.audioEngine = new AudioEngineSafe(); }catch(e){ this.audioEngine = null; console.warn('AudioEngine failed init'); }
+    try{ this.popSound = this.sound.add('pop'); }catch(e){ this.popSound = null; }
+  }
+
+  applyColorToGrid(key){
+    if(!this.blocks) return;
+    const map = COLOR_MAP[key];
+    this.blocks.getChildren().forEach(b => {
+      try{ b.setTint(map.tileTint); b.setAlpha(map.tileAlpha); b.setScale(map.tileScale || 0.36); }catch(e){}
+    });
   }
 
   animateBlocks(time){
-    const self = this;
-    const children = this.blocks.getChildren();
-    const colsApprox = Math.ceil(this.cameras.main.width / 60) + 1;
-
-    children.forEach(function(block, i){
-      const orig = self.originalPositions[i];
-      let offsetX = 0, offsetY = 0;
-      // different patterns by phase
-      switch(self.phase){
-        case 0:
-          offsetX = Math.sin(time/260 + orig.y*0.11)* (12 + self.colorAnimationIntensity());
-          offsetY = Math.cos(time/340 + orig.x*0.07)* (8 + self.colorAnimationIntensity()/2);
-          break;
-        case 1:
-          const dx = orig.x - (self.cameras.main.width/2);
-          const dy = orig.y - (self.cameras.main.height/2);
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          offsetX = Math.sin(time/200 + dist*0.04) * (18 + self.colorAnimationIntensity()*1.5);
-          offsetY = Math.cos(time/300 + dist*0.02) * (12 + self.colorAnimationIntensity());
-          break;
-        case 2:
-          offsetX = Math.sin(time/220 + (orig.x+orig.y)*0.05) * (15 + self.colorAnimationIntensity());
-          offsetY = Math.cos(time/280 + (orig.x-orig.y)*0.04) * (10 + self.colorAnimationIntensity()/1.2);
-          break;
-      }
-
-      // Add color-specific wiggle or rotation
-      const colVariant = Example.COLOR_MAP[self.colorMode].variant;
-      if(colVariant === 'twirl') {
-        block.rotation = Math.sin(time/1000 + i)*0.6;
-      } else if(colVariant === 'bounce') {
-        offsetY += Math.sin(time/450 + i*0.02) * 8;
-      } else if(colVariant === 'wave') {
-        offsetX += Math.sin(time/1800 + i*0.04) * 6;
-      } else if(colVariant === 'spin') {
-        block.rotation = Math.cos(time/800 + i*0.01) * 0.4;
-      } else if(colVariant === 'jitter') {
-        offsetX += (Math.random()-0.5) * 2;
-        offsetY += (Math.random()-0.5) * 2;
-      }
-
-      block.x = orig.x + offsetX;
-      block.y = orig.y + offsetY;
-
-      // change tint per color mode for nicer effect
-      block.setTint( Example.COLOR_MAP[self.colorMode].tileTint );
-      block.setAlpha( Example.COLOR_MAP[self.colorMode].tileAlpha );
-    });
-  }
-
-  colorAnimationIntensity(){
-    // map colorMode to intensity (for variety)
-    const m = Example.COLOR_MAP[this.colorMode].intensity || 0;
-    return m;
-  }
-
-  applyColorModeToShapes(colorKey){
-    // apply initial tint/styling for blocks
     if(!this.blocks) return;
-    const map = Example.COLOR_MAP[colorKey];
-    this.blocks.getChildren().forEach(b => {
-      b.setTint(map.tileTint);
-      b.setAlpha(map.tileAlpha);
-      b.setScale(map.tileScale || 0.36);
-    });
+    const children = this.blocks.getChildren();
+    for(let i=0;i<children.length;i++){
+      const b = children[i];
+      const op = this.originalPositions[i];
+      if(!op) continue;
+      let offsetX=0, offsetY=0;
+      const intensity = COLOR_MAP[this.colorKey].intensity || 1;
+      switch(this.phase){
+        case 0: offsetX = Math.sin(time/300 + op.y*0.12)*(12 + intensity); offsetY = Math.cos(time/400 + op.x*0.08)*(8 + intensity/2); break;
+        case 1: const dx = op.x - (this.cameras.main.width/2); const dy = op.y - (this.cameras.main.height/2); const dist = Math.sqrt(dx*dx + dy*dy); offsetX = Math.sin(time/250 + dist*0.05)*(18 + intensity*1.4); offsetY = Math.cos(time/350 + dist*0.03)*(12 + intensity); break;
+        case 2: offsetX = Math.sin(time/220 + (op.x+op.y)*0.06)*(15 + intensity); offsetY = Math.cos(time/280 + (op.x-op.y)*0.05)*(10 + intensity/1.2); break;
+      }
+      // variant hook (safe)
+      const variantFn = this.registeredVariants[COLOR_MAP[this.colorKey].variant];
+      if(variantFn){
+        try{
+          const res = variantFn(b, i, time, op) || {};
+          if(res.delta){ offsetX += res.delta.x || 0; offsetY += res.delta.y || 0; }
+        }catch(e){ console.error('variant error', e); }
+      }
+      b.x = op.x + offsetX;
+      b.y = op.y + offsetY;
+    }
   }
 
+  /* Génère le texte (entrée gauche → centre). Nettoie l'ancien proprement (centre → droite). */
   generateAnimatedText(text, colorKey){
-    if(!text) return;
-    const centerY = this.cameras.main.height / 2;
-    const centerX = this.cameras.main.width / 2;
+    if(!text || text.trim()==='') return;
+    text = text.toUpperCase().slice(0, 20);
 
-    // If there is existing text on screen, animate it out to the right
+    // sortie de l'ancien texte vers la droite puis destruction
     if(this.letters && this.letters.length){
-      // group old objects to tween out
       const old = this.letters.slice();
       this.letters = [];
       this.tweens.add({
         targets: old,
         x: `+=${this.cameras.main.width * 0.6}`,
         alpha: 0,
-        ease: 'power2.in',
-        duration: 450,
-        onComplete: function(twn, targets){
-          targets.forEach(o => { try { o.destroy(); } catch(e){} });
-        }
-      });
-    }
-
-    // store to history (unique)
-    const upText = text.toUpperCase();
-    if(!this.history.includes(upText)){
-      this.history.unshift(upText);
-      if(this.history.length>20) this.history.pop();
-      // reflect UI via external hook
-      if(window.updateHistoryUI) window.updateHistoryUI(this.history, upText);
-    } else {
-      // bring chosen text to front in history
-      const idx = this.history.indexOf(upText);
-      if(idx > -1){
-        this.history.splice(idx,1);
-        this.history.unshift(upText);
-        if(window.updateHistoryUI) window.updateHistoryUI(this.history, upText);
-      }
-    }
-
-    // set current color mode
-    this.colorMode = colorKey || this.colorMode || Example.COLORS[0].key;
-    this.applyColorModeToShapes(this.colorMode);
-
-    // play color-specific melody
-    if(this.musicEnabled && this.audioEngine) this.audioEngine.playMelodyFor(this.colorMode);
-
-    // compute text sizing
-    const charW = 42;
-    const totalW = upText.length * charW;
-    const startX = -Math.max(200, totalW); // start sufficiently off-screen left
-
-    // create letters each entering from left to final center-based position
-    for(let i=0;i<upText.length;i++){
-      const ch = upText[i];
-      const xPosFinal = centerX - totalW/2 + i * charW + charW/2;
-      const yPosFinal = centerY;
-
-      // bg circle behind letter
-      const bg = this.add.circle(startX + i*10, yPosFinal, 36, Example.COLOR_MAP[this.colorMode].bgCircle).setDepth(90);
-      bg.setAlpha(0.0);
-      // letter text
-      const letter = this.add.text(startX + i*10, yPosFinal, ch, {
-        fontFamily: 'Fredoka, Arial, sans-serif',
-        fontSize: '44px',
-        fontStyle: '700',
-        color: Example.COLOR_MAP[this.colorMode].textColorHex
-      }).setOrigin(0.5).setDepth(95);
-
-      // add stroke for clarity
-      letter.setStroke(Example.COLOR_MAP[this.colorMode].strokeColorHex || '#FFFFFF', 6);
-      letter.setShadow(0,4, 'rgba(0,0,0,0.15)', 6);
-
-      // small pop particle when each letter lands
-      const self = this;
-      this.tweens.add({
-        targets: [bg],
-        x: xPosFinal,
-        alpha: 0.85,
-        scale: { from: 0.6, to: 1.0 },
-        ease: 'back.out',
-        duration: 360,
-        delay: i * 40
-      });
-
-      this.tweens.add({
-        targets: [letter],
-        x: xPosFinal,
-        y: yPosFinal - 8,
-        alpha: 1,
-        angle: 0,
         duration: 420,
-        delay: i * 40 + 30,
-        ease: 'expo.out',
-        onComplete: function(){
-          // small particle burst
-          self.particles.createEmitter({ x: xPosFinal, y: yPosFinal, speed: {min:-80,max:80}, lifespan: 350, scale: {start:0.4,end:0}, quantity: 8, tint: Example.COLOR_MAP[self.colorMode].tint }).explode(8, xPosFinal, yPosFinal);
-        }
+        ease: 'power2.in',
+        onComplete: (t, targets) => { targets.forEach(o => { try{o.destroy(); }catch(e){} }); }
       });
-
-      // continuous float on each letter
-      this.tweens.add({ targets: [bg, letter], y: yPosFinal + 8, duration: 2200 + i*60, ease: 'sine.inout', yoyo:true, repeat:-1, delay: 420 });
-
-      this.letters.push(bg);
-      this.letters.push(letter);
     }
 
-    this.currentText = upText;
+    // history update
+    if(!this.history.includes(text)) this.history.unshift(text);
+    else { const idx = this.history.indexOf(text); if(idx > -1){ this.history.splice(idx,1); this.history.unshift(text); } }
+    if(window.updateHistoryUI) window.updateHistoryUI(this.history, text);
+
+    // set color
+    if(COLOR_MAP[colorKey]) this.colorKey = colorKey;
+    this.applyColorToGrid(this.colorKey);
+
+    // play melody
+    if(this.audioEngine){
+      try{
+        // resume context on first gesture if suspended
+        if(this.audioEngine.ctx && this.audioEngine.ctx.state === 'suspended') this.audioEngine.ctx.resume().catch(()=>{});
+        this.audioEngine.playFor(this.colorKey);
+      }catch(e){ console.warn('audio play err', e); }
+    }
+    try{ if(this.popSound) this.popSound.play(); }catch(e){}
+
+    // compute positions
+    const centerX = this.cameras.main.width/2, centerY = this.cameras.main.height/2;
+    const charW = 44, totalW = text.length * charW;
+    const startX = -Math.max(200, totalW);
+
+    for(let i=0;i<text.length;i++){
+      const ch = text[i];
+      const finalX = centerX - totalW/2 + i*charW + charW/2;
+      // bg circle (darker behind text for contrast)
+      const bg = this.add.circle(startX + i*12, centerY, 36, COLOR_MAP[this.colorKey].bgCircle).setDepth(90);
+      bg.setAlpha(0);
+      const letter = this.add.text(startX + i*12, centerY, ch, { fontFamily:'Fredoka, Arial', fontSize:'44px', fontWeight:700, color: COLOR_MAP[this.colorKey].textColor }).setOrigin(0.5).setDepth(95);
+      try{ letter.setStroke(COLOR_MAP[this.colorKey].stroke, 6); }catch(e){}
+      // tween entry
+      this.tweens.add({ targets: bg, x: finalX, alpha: 0.9, scale: { from: 0.6, to: 1 }, ease: 'back.out', duration: 360, delay: i*45 });
+      this.tweens.add({ targets: letter, x: finalX, y: centerY - 8, alpha: 1, ease:'expo.out', duration: 420, delay: i*45 + 30, onComplete: () => {
+        if(this.particles) this.particles.createEmitter({ x: finalX, y: centerY, speed:{min:-60,max:60}, lifespan:280, scale:{start:0.35,end:0}, quantity:6, tint: COLOR_MAP[this.colorKey].tileTint }).explode(6, finalX, centerY);
+      }});
+      // floating
+      this.tweens.add({ targets: [bg, letter], y: centerY + 10, duration: 2200 + i*60, ease:'sine.inout', yoyo:true, repeat:-1, delay:420 });
+      this.letters.push(bg); this.letters.push(letter);
+    }
+
+    this.currentText = text;
     if(window.updateHistoryUI) window.updateHistoryUI(this.history, this.currentText);
   }
 
   clearAnimatedText(){
     if(this.letters && this.letters.length){
-      this.letters.forEach(o => { try{o.destroy();}catch(e){} });
+      this.letters.forEach(o => { try{o.destroy(); }catch(e){} });
       this.letters = [];
       this.currentText = '';
     }
   }
 
-  setupAudio(){
-    // WebAudio generated melodies per color
-    this.audioEngine = new AudioEngine();
-    // attempt to load pop sound from loaded asset as fallback
-    try {
-      this.popSound = this.sound.add('pop');
-    } catch(e) {
-      this.popSound = null;
-    }
+  registerVariant(name, fn){
+    if(typeof fn !== 'function'){ console.warn('variant must be function'); return; }
+    this.registeredVariants[name] = fn;
+    console.info('Variant registered:', name);
   }
 
-  playPop(){
-    try { if(this.popSound) this.popSound.play(); } catch(e){}
-  }
-
-  setupMouseInteractions(){
-    const self = this;
-    // pointer move - blocks flee from pointer
-    this.input.on('pointermove', function(pointer){
-      if(!self.blocks) return;
-      self.blocks.getChildren().forEach(function(block){
-        const angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
-        const distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
-        if(distance < 900){
-          const fleeForce = (900 - distance) / 9000 * 16 * (1 + self.colorAnimationIntensity()/3);
-          block.x += Math.cos(angle + Math.PI) * fleeForce;
-          block.y += Math.sin(angle + Math.PI) * fleeForce;
-        }
-      });
-    });
-
-    // pointer down drag effect
-    this.input.on('pointerdown', function(pointer){
-      // small screen ripple: shift originalPositions briefly
-      if(self.originalPositions && self.originalPositions.length){
-        for(let i=0;i<3;i++){
-          const idx = Phaser.Math.Between(0, self.originalPositions.length-1);
-          const op = self.originalPositions[idx];
-          self.tweens.add({ targets: op, x: op.x + Phaser.Math.Between(-10, 10), y: op.y + Phaser.Math.Between(-10, 10), yoyo: true, duration: 300 });
-        }
-      }
-    });
+  registerDefaultVariants(){
+    // built-in safe variants
+    this.registerVariant('twirl', (b,i,time) => { b.rotation = Math.sin(time/1000 + i*0.01)*0.6; return { delta:{x:0,y:0} }; });
+    this.registerVariant('bounce', (b,i,time) => { return { delta:{x:0, y: Math.sin(time/450 + i*0.02)*8 } }; });
+    this.registerVariant('wave', (b,i,time) => { return { delta:{ x: Math.sin(time/1800 + i*0.04)*6, y:0 } }; });
+    this.registerVariant('spin', (b,i,time) => { b.rotation = Math.cos(time/800 + i*0.01)*0.4; return { delta:{x:0,y:0} }; });
+    this.registerVariant('jitter', (b,i,time) => { return { delta:{ x:(Math.sin(time/70 + i)*0.7), y:(Math.cos(time/60 + i)*0.7) } }; });
   }
 }
 
-/* ---------- Static color configuration ---------- */
-Example.COLORS = [
-  { key: 'pink', label: 'Fuchsia', color:'#ff3eb5' },
-  { key: 'mint', label: 'Mint', color:'#34d399' },
-  { key: 'sun', label: 'Sun', color:'#ffb86b' },
-  { key: 'lav', label: 'Lavande', color:'#9b7bff' },
-  { key: 'aqua', label: 'Aqua', color:'#00c2ff' }
-];
-
-Example.COLOR_MAP = {
-  pink:  { tint: 0xff3eb5, tileTint: 0xffc0e8, tileAlpha:0.98, bgCircle: 0xffffff, textColorHex:'#ffffff', strokeColorHex:'#ff3eb5', variant:'twirl', intensity:3 },
-  mint:  { tint: 0x34d399, tileTint: 0xc8ffee, tileAlpha:0.95, bgCircle: 0xffffff, textColorHex:'#ffffff', strokeColorHex:'#34a37d', variant:'bounce', intensity:2 },
-  sun:   { tint: 0xffb86b, tileTint: 0xffe6c6, tileAlpha:0.96, bgCircle: 0xffffff, textColorHex:'#ffffff', strokeColorHex:'#c87a2b', variant:'wave', intensity:2.2 },
-  lav:   { tint: 0x9b7bff, tileTint: 0xe6dbff, tileAlpha:0.95, bgCircle: 0xffffff, textColorHex:'#ffffff', strokeColorHex:'#5d3cff', variant:'spin', intensity:2.6 },
-  aqua:  { tint: 0x00c2ff, tileTint: 0xcff5ff, tileAlpha:0.96, bgCircle: 0xffffff, textColorHex:'#ffffff', strokeColorHex:'#007fb3', variant:'jitter', intensity:3.4 }
-};
-
-/* ---------- Simple WebAudio engine to produce short melodies per color ---------- */
-class AudioEngine {
+/* ---------- Audio engine safe (WebAudio) ---------- */
+class AudioEngineSafe {
   constructor(){
-    try{
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    }catch(e){
-      this.ctx = null;
-    }
-    // define melodies as sequences of [freq(ms), dur]
+    try{ this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ this.ctx = null; console.warn('WebAudio not available'); }
     this.melodies = {
-      pink: [440, 660, 880, 660],   // simple ascending
+      pink: [440, 660, 880, 660],
       mint: [330, 392, 440, 392],
-      sun: [494, 440, 392, 330],
-      lav: [262, 330, 392, 523],
+      sun:  [494, 440, 392, 330],
+      lav:  [262, 330, 392, 523],
       aqua: [220, 262, 330, 392]
     };
   }
-
-  playTone(freq, duration=0.12, when=0){
+  playTone(freq, duration = 0.12, when = 0){
     if(!this.ctx) return;
-    const ctx = this.ctx;
-    const t = ctx.currentTime + when;
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
+    const t = this.ctx.currentTime + when;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
     o.type = 'sine';
     o.frequency.setValueAtTime(freq, t);
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-    o.connect(g);
-    g.connect(ctx.destination);
-    o.start(t);
-    o.stop(t + duration + 0.03);
+    o.connect(g); g.connect(this.ctx.destination);
+    o.start(t); o.stop(t + duration + 0.03);
   }
-
-  playMelodyFor(colorKey){
+  playFor(key){
     if(!this.ctx) return;
-    const seq = this.melodies[colorKey] || this.melodies['pink'];
-    // play quick arpeggio
-    seq.forEach((f, i) => {
-      this.playTone(f, 0.1 + (i*0.01), i*0.08);
-    });
-
-    // bit of percussion tone
-    this.playTone(120, 0.06, seq.length*0.08);
+    const seq = this.melodies[key] || this.melodies['pink'];
+    seq.forEach((f,i) => this.playTone(f, 0.1 + i*0.01, i*0.08));
+    // small bass
+    this.playTone(120, 0.06, seq.length * 0.08);
   }
 }
 
-/* ---------- Phaser config ---------- */
+/* ---------- Phaser config & boot ---------- */
 const config = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
   width: Math.floor(window.innerWidth * 0.70),
   height: window.innerHeight,
   backgroundColor: '#b8ffb8',
-  scene: Example,
+  scene: FinalScene,
   render: { antialias: true }
 };
 
 const game = new Phaser.Game(config);
 
-/* ---------- External UI interactions (non-scene code) ---------- */
-
-document.addEventListener('DOMContentLoaded', function(){
+/* ---------- UI wiring (one-time attach) ---------- */
+document.addEventListener('DOMContentLoaded', () => {
   const paletteDiv = document.getElementById('color-palette');
   const generateBtn = document.getElementById('generate-btn');
   const textInput = document.getElementById('text-input');
   const historyList = document.getElementById('history-list');
   const clearBtn = document.getElementById('clear-history-btn');
 
-  // Build color swatches
-  Example.COLORS.forEach((c, idx) => {
+  // create swatches
+  COLORS.forEach((c, idx) => {
     const sw = document.createElement('div');
     sw.className = 'color-swatch';
     sw.style.background = c.color;
     sw.dataset.key = c.key;
     if(idx === 0) sw.classList.add('selected');
     paletteDiv.appendChild(sw);
-
-    sw.addEventListener('click', () => {
-      selectColor(c.key);
-    });
   });
 
-  // selectColor function
-  function selectColor(key){
-    // update UI
-    document.querySelectorAll('.color-swatch').forEach(el => el.classList.toggle('selected', el.dataset.key === key));
-    // set scene color mode
-    const scene = game.scene.keys['Example'];
-    if(scene){
-      scene.colorMode = key;
-      scene.applyColorModeToShapes(key);
-      // small sound feedback
-      if(scene.audioEngine) scene.audioEngine.playMelodyFor(key);
-    }
-  }
-
-  // default color selected
-  let selectedColor = Example.COLORS[0].key;
-
-  // updateHistoryUI exposed for scene to call
+  // updateHistoryUI (exposed to scene)
   window.updateHistoryUI = function(historyArray, active){
     historyList.innerHTML = '';
     historyArray.forEach(item => {
@@ -661,43 +406,51 @@ document.addEventListener('DOMContentLoaded', function(){
       div.className = 'history-item' + (item === active ? ' active' : '');
       div.textContent = item;
       div.addEventListener('click', () => {
-        // call scene to generate
-        const scene = game.scene.keys['Example'];
-        if(scene){
-          scene.generateAnimatedText(item, scene.colorMode || selectedColor);
-        }
+        const scene = game.scene.keys['FinalScene'];
+        if(scene) scene.generateAnimatedText(item, scene.colorKey);
       });
       historyList.appendChild(div);
     });
   };
 
-  // Generate button
+  // palette click
+  paletteDiv.addEventListener('click', (ev) => {
+    const sw = ev.target.closest('.color-swatch');
+    if(!sw) return;
+    document.querySelectorAll('.color-swatch').forEach(el => el.classList.toggle('selected', el === sw));
+    const key = sw.dataset.key;
+    const scene = game.scene.keys['FinalScene'];
+    if(scene){
+      scene.colorKey = key;
+      scene.applyColorToGrid(key);
+      // audio feedback
+      if(scene.audioEngine) scene.audioEngine.playFor(key);
+    }
+  });
+
+  // generate button
   generateBtn.addEventListener('click', () => {
     const txt = textInput.value.trim();
     if(!txt) return;
-    const scene = game.scene.keys['Example'];
+    const scene = game.scene.keys['FinalScene'];
     if(scene){
-      // determine selected color from UI
+      // resume audio if suspended (Chrome policy)
+      if(scene.audioEngine && scene.audioEngine.ctx && scene.audioEngine.ctx.state === 'suspended'){
+        scene.audioEngine.ctx.resume().catch(()=>{});
+      }
       const sw = document.querySelector('.color-swatch.selected');
-      const key = sw ? sw.dataset.key : Example.COLORS[0].key;
+      const key = sw ? sw.dataset.key : COLORS[0].key;
       scene.generateAnimatedText(txt, key);
-      // small pop
       try{ if(scene.popSound) scene.popSound.play(); }catch(e){}
-      // clear input
       textInput.value = '';
     }
   });
 
-  // Enter key triggers generate
-  textInput.addEventListener('keypress', (e) => {
-    if(e.key === 'Enter'){
-      generateBtn.click();
-    }
-  });
+  textInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') generateBtn.click(); });
 
   // clear history
   clearBtn.addEventListener('click', () => {
-    const scene = game.scene.keys['Example'];
+    const scene = game.scene.keys['FinalScene'];
     if(scene){
       scene.history = [];
       scene.clearAnimatedText();
@@ -705,36 +458,42 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   });
 
-  // when swatches clicked, update selectedColor local
-  paletteDiv.addEventListener('click', (ev) => {
-    const el = ev.target.closest('.color-swatch');
-    if(!el) return;
-    selectedColor = el.dataset.key;
-    // also set scene color
-    const scene = game.scene.keys['Example'];
-    if(scene){
-      scene.colorMode = selectedColor;
-      scene.applyColorModeToShapes(selectedColor);
-    }
+  // responsive resize handling
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      try{
+        const newW = Math.floor(window.innerWidth * 0.70);
+        const newH = window.innerHeight;
+        game.scale.resize(newW, newH);
+        const scene = game.scene.keys['FinalScene'];
+        if(scene){
+          scene.createGrid(); // recreate safe grid to fit new size
+        }
+      }catch(e){ console.warn('resize error', e); }
+    }, 150);
   });
 
-  // resize handling (phaser)
-  window.addEventListener('resize', () => {
-    try{
-      const newW = Math.floor(window.innerWidth * 0.70);
-      const newH = window.innerHeight;
-      game.scale.resize(newW, newH);
-      const scene = game.scene.keys['Example'];
-      if(scene && scene.originalPositions){
-        // recompute layout by destroying and recreating grid quickly
-        scene.blocks.getChildren().forEach(b => b.destroy());
-        scene.blocks.clear(true);
-        scene.createGrid();
-        scene.setupBlockPulse();
-      }
-    }catch(e){}
-  });
+  // expose variant registration function
+  window.registerShapeVariant = function(name, fn){
+    const scene = game.scene.keys['FinalScene'];
+    if(scene) scene.registerVariant(name, fn);
+  };
 });
+
+/* ---------- Register built-in variants (example) ---------- */
+window.addEventListener('load', () => {
+  // they are registered from scene.registerDefaultVariants too, but we expose this for extra safety
+  const scene = game.scene && game.scene.keys && game.scene.keys['FinalScene'];
+  if(scene){
+    // already registered in scene, nothing needed
+  }
+  console.info('Code final prêt — tu peux ajouter des variantes avec window.registerShapeVariant("nom", fn)');
+});
+
+/* ---------- Global error logging (console) ---------- */
+window.addEventListener('error', function(e){ console.error('Uncaught error:', e.error || e.message); });
 
 </script>
 
