@@ -1,202 +1,35 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phaser Shapes + Text Generator with History</title>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-      background: #b8ffb8;
-    }
-
-    /* Phaser zone */
-    #phaser-example {
-      width: 70vw;
-      height: 100vh;
-    }
-
-    /* Right-side interface */
-    #right-panel {
-      width: 30vw;
-      height: 100vh;
-      background: rgba(255,255,255,0.95);
-      padding: 20px;
-      box-sizing: border-box;
-      backdrop-filter: blur(5px);
-      overflow: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #right-panel h2 {
-      margin-top: 0;
-      color: #ff3eb5;
-      font-size: 22px;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    #text-input {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 12px;
-      border: 2px solid #ff3eb5;
-      border-radius: 8px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-
-    #text-input:focus {
-      box-shadow: 0 0 10px rgba(255, 62, 181, 0.3);
-      transform: translateY(-2px);
-    }
-
-    #generate-btn {
-      width: 100%;
-      padding: 10px;
-      background: #ff3eb5;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-      margin-bottom: 15px;
-    }
-
-    #generate-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(255, 62, 181, 0.3);
-    }
-
-    #generate-btn:active {
-      transform: translateY(0);
-    }
-
-    /* Color palette */
-    .palette {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-
-    .color-swatch {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      border: 3px solid rgba(0,0,0,0.06);
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .color-swatch:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
-
-    .color-swatch.active {
-      outline: 3px solid rgba(255,255,255,0.9);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.16);
-      transform: translateY(-4px);
-    }
-
-    /* History Section */
-    .history-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      margin-top: 10px;
-    }
-
-    .history-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #ff3eb5;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-    }
-
-    #history-list {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-
-    #history-list::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #history-list::-webkit-scrollbar-track {
-      background: rgba(255, 62, 181, 0.1);
-      border-radius: 10px;
-    }
-
-    #history-list::-webkit-scrollbar-thumb {
-      background: #ff3eb5;
-      border-radius: 10px;
-    }
-
-    .history-item {
-      padding: 10px;
-      background: rgba(255, 62, 181, 0.08);
-      border: 1px solid rgba(255, 62, 181, 0.2);
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 12px;
-      color: #333;
-      word-break: break-word;
-      font-weight: 500;
-    }
-
-    .history-item:hover {
-      background: rgba(255, 62, 181, 0.15);
-      border-color: #ff3eb5;
-      transform: translateX(3px);
-    }
-
-    .history-item.active {
-      background: #ff3eb5;
-      color: white;
-      border-color: #ff3eb5;
-      font-weight: 600;
-    }
-
-    .clear-history-btn {
-      width: 100%;
-      padding: 8px;
-      background: rgba(255, 62, 181, 0.1);
-      color: #ff3eb5;
-      border: 1px solid #ff3eb5;
-      border-radius: 6px;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .clear-history-btn:hover {
-      background: #ff3eb5;
-      color: white;
-    }
-
-    #phaser-text {
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phaser Shapes + Text + Color Animation</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+<style>
+body { margin:0; padding:0; display:flex; font-family: Arial,sans-serif; overflow:hidden; background:#b8ffb8; }
+#phaser-example { width:70vw; height:100vh; }
+#right-panel { width:30vw; height:100vh; background:rgba(255,255,255,0.95); padding:20px; box-sizing:border-box; backdrop-filter: blur(5px); overflow:auto; display:flex; flex-direction:column;}
+#right-panel h2 { margin-top:0; color:#ff3eb5; font-size:22px; text-align:center; margin-bottom:15px; }
+#text-input { width:100%; padding:10px; font-size:16px; margin-bottom:12px; border:2px solid #ff3eb5; border-radius:8px; outline:none; transition:all 0.3s ease; }
+#text-input:focus { box-shadow:0 0 10px rgba(255,62,181,0.3); transform:translateY(-2px); }
+#generate-btn { width:100%; padding:10px; background:#ff3eb5; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer; transition:all 0.3s ease; font-weight:600; margin-bottom:15px;}
+#generate-btn:hover { transform:translateY(-2px); box-shadow:0 5px 15px rgba(255,62,181,0.3);}
+#generate-btn:active { transform:translateY(0);}
+.color-picker { display:flex; justify-content:space-between; margin-bottom:15px; }
+.color-option { width:50px; height:50px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition: all 0.3s ease; }
+.color-option.active { border-color:#000; }
+.history-section { flex:1; display:flex; flex-direction:column; margin-top:10px; }
+.history-title { font-size:14px; font-weight:700; color:#ff3eb5; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+#history-list { flex:1; display:flex; flex-direction:column; gap:8px; overflow-y:auto; margin-bottom:10px;}
+#history-list::-webkit-scrollbar { width:6px; }
+#history-list::-webkit-scrollbar-track { background: rgba(255,62,181,0.1); border-radius:10px; }
+#history-list::-webkit-scrollbar-thumb { background:#ff3eb5; border-radius:10px; }
+.history-item { padding:10px; background:rgba(255,62,181,0.08); border:1px solid rgba(255,62,181,0.2); border-radius:6px; cursor:pointer; transition:all 0.3s ease; font-size:12px; color:#333; word-break:break-word; font-weight:500; }
+.history-item:hover { background:rgba(255,62,181,0.15); border-color:#ff3eb5; transform:translateX(3px); }
+.history-item.active { background:#ff3eb5; color:white; border-color:#ff3eb5; font-weight:600; }
+.clear-history-btn { width:100%; padding:8px; background:rgba(255,62,181,0.1); color:#ff3eb5; border:1px solid #ff3eb5; border-radius:6px; font-size:11px; cursor:pointer; transition:all 0.3s ease; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.clear-history-btn:hover { background:#ff3eb5; color:white; }
+</style>
 </head>
 <body>
 
@@ -205,18 +38,20 @@
 <div id="right-panel">
   <h2>Créer une animation avec ton texte</h2>
   <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…" maxlength="20">
+  <div class="color-picker">
+    <div class="color-option" data-color="#FF00AA" style="background:#FF00AA;"></div>
+    <div class="color-option" data-color="#00C3FF" style="background:#00C3FF;"></div>
+    <div class="color-option" data-color="#40FF00" style="background:#40FF00;"></div>
+    <div class="color-option" data-color="#FFD400" style="background:#FFD400;"></div>
+    <div class="color-option" data-color="#9933FF" style="background:#9933FF;"></div>
+  </div>
   <button id="generate-btn">Générer l'animation</button>
-
-  <!-- Color palette -->
-  <div class="palette" id="color-palette" aria-label="Palette de couleurs"></div>
 
   <div class="history-section">
     <div class="history-title">Historique</div>
     <div id="history-list"></div>
     <button class="clear-history-btn" id="clear-history-btn">Effacer l'historique</button>
   </div>
-
-  <div id="phaser-text"></div>
 </div>
 
 <script>
@@ -227,532 +62,245 @@ class Example extends Phaser.Scene {
     this.phaseDuration = 6000;
     this.timeSincePhase = 0;
     this.history = [];
-    this.currentAnimationText = '';
+    this.currentText = null;
+    this.currentColor = '#FF00AA';
+    this.blocks = null;
+    this.letters = [];
     this.popSound = null;
-
-    // Palette
-    this.palette = [
-      '#FF00AA', // pink
-      '#00C3FF', // blue
-      '#40FF00', // green
-      '#FFD400', // yellow
-      '#9933FF'  // purple
-    ];
-    this.activeColorIndex = 0; // default to first
+    this.currentAnimationText = '';
   }
 
   preload() {
     this.load.setBaseURL('https://labs.phaser.io');
     this.load.image('spark', 'assets/particles/blue.png');
     this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+    this.load.audio('bgMusic', 'assets/audio/SoundEffects/magical1.mp3'); // example background music
   }
 
   create() {
+    // Music
+    this.bgMusic = this.sound.add('bgMusic',{loop:true, volume:0.2});
+    this.bgMusic.play();
+    this.popSound = this.sound.add('pop',{volume:0.5});
+
     // Graphics for shapes
-    var g = this.make.graphics({ x:0, y:0, add:false });
+    let g = this.make.graphics({x:0, y:0, add:false});
+    const colors = ['#FF00AA','#00C3FF','#40FF00','#FFD400','#9933FF'];
+    const shapes = ['square','circle','diamond'];
 
-    // Square
-    g.fillStyle(0xff3eb5,1);
-    g.fillRect(0,0,50,50);
-    g.generateTexture('square',50,50);
+    colors.forEach(color=>{
+      g.clear();
+      g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1);
+      g.fillRect(0,0,50,50);
+      g.generateTexture('square-'+color,50,50);
 
-    // Circle
-    g.clear();
-    g.fillStyle(0xff3eb5,1);
-    g.fillCircle(25,25,25);
-    g.generateTexture('circle',50,50);
+      g.clear();
+      g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1);
+      g.fillCircle(25,25,25);
+      g.generateTexture('circle-'+color,50,50);
 
-    // Diamond
-    g.clear();
-    g.fillStyle(0xff3eb5,1);
-    g.beginPath();
-    g.moveTo(25,0);
-    g.lineTo(50,25);
-    g.lineTo(25,50);
-    g.lineTo(0,25);
-    g.closePath();
-    g.fillPath();
-    g.generateTexture('diamond',50,50);
+      g.clear();
+      g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1);
+      g.beginPath();
+      g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath();
+      g.fillPath();
+      g.generateTexture('diamond-'+color,50,50);
+    });
 
-    // Create blocks - FULL PAGE LAYOUT
-    var gameWidth = this.cameras.main.width;
-    var gameHeight = this.cameras.main.height;
-    var cellWidth = 60;
-    var cellHeight = 60;
-    var cols = Math.ceil(gameWidth / cellWidth) + 1;
-    var rows = Math.ceil(gameHeight / cellHeight) + 1;
-    var totalBlocks = cols * rows;
+    // Create blocks
+    const gameWidth = this.cameras.main.width;
+    const gameHeight = this.cameras.main.height;
+    const cellWidth = 60;
+    const cellHeight = 60;
+    const cols = Math.ceil(gameWidth/cellWidth)+1;
+    const rows = Math.ceil(gameHeight/cellHeight)+1;
+    const totalBlocks = cols*rows;
 
-    var shapes = ['square','circle','diamond'];
-    var blocks = this.add.group();
-    for(var i=0;i<totalBlocks;i++){
-      var key = shapes[i%shapes.length];
-      var sprite = this.add.image(0,0,key).setScale(0.3);
+    this.blocks = this.add.group();
+    for(let i=0;i<totalBlocks;i++){
+      let sprite = this.add.image(0,0,'square-'+this.currentColor).setScale(0.3);
       sprite.setInteractive();
-      blocks.add(sprite);
+      this.blocks.add(sprite);
     }
-
-    Phaser.Actions.GridAlign(blocks.getChildren(), { width:cols, height:rows, cellWidth:cellWidth, cellHeight:cellHeight, x:0, y:0 });
-
-    this.blocks = blocks;
-    this.originalPositions = blocks.getChildren().map(function(b){return {x:b.x, y:b.y};});
+    Phaser.Actions.GridAlign(this.blocks.getChildren(),{width:cols,height:rows,cellWidth:cellWidth,cellHeight:cellHeight,x:0,y:0});
+    this.originalPositions = this.blocks.getChildren().map(b=>({x:b.x,y:b.y}));
     this.particles = this.add.particles('spark');
-    this.shapes = shapes;
 
-    var self=this;
-    blocks.getChildren().forEach(function(block){
-      block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
-      block.on('pointerdown', function(){
-        if(self.sound){ try{self.sound.play('pop');}catch{} }
-        self.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:0xff3eb5}).explode(20, block.x, block.y);
+    // Mouse effects
+    this.input.on('pointermove', pointer=>{
+      this.blocks.getChildren().forEach(block=>{
+        let angle = Phaser.Math.Angle.Between(block.x,block.y,pointer.x,pointer.y);
+        let distance = Phaser.Math.Distance.Between(block.x,block.y,pointer.x,pointer.y);
+        if(distance<1000){
+          let fleeForce=(1000-distance)/100000*6000;
+          block.x += Math.cos(angle+Math.PI)*fleeForce;
+          block.y += Math.sin(angle+Math.PI)*fleeForce;
+        }
       });
     });
 
     // Pulse animation
-    var children = blocks.getChildren();
-    children.forEach(function(child,idx){ self.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%cols)*40, yoyo:true, repeat:-1 }); });
+    const children = this.blocks.getChildren();
+    children.forEach((child,idx)=>{ this.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%cols)*40, yoyo:true, repeat:-1 }); });
 
     // Text engine
     this.createTextEngine();
 
-    // Create UI palette DOM and events
-    this.createPaletteUI();
+    // Color picker
+    const colorOptions = document.querySelectorAll('.color-option');
+    colorOptions.forEach(el=>{
+      el.addEventListener('click', ()=>{
+        colorOptions.forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+        this.currentColor = el.dataset.color;
 
-    // Setup mouse flee effect
-    this.setupMouseFleeEffect();
-
-    // Setup audio
-    this.setupAudio();
+        // Change blocks immediately
+        this.updateBlocksTexture();
+      });
+    });
+    colorOptions[0].classList.add('active');
   }
 
-  update(time, delta) {
+  updateBlocksTexture(){
+    const shapeNames = ['square','circle','diamond'];
+    const textures = shapeNames.map(name=>`${name}-${this.currentColor}`);
+    this.blocks.getChildren().forEach((block,i)=>{
+      block.setTexture(textures[i%3]);
+    });
+  }
+
+  update(time,delta){
     this.timeSincePhase += delta;
     if(this.timeSincePhase>this.phaseDuration){
-      this.phase=(this.phase+1)%this.shapes.length;
+      this.phase=(this.phase+1)%3;
       this.timeSincePhase=0;
-
-      // Change shape automatically
-      var newShape = this.shapes[this.phase];
-      this.blocks.getChildren().forEach(function(block){ block.setTexture(newShape); });
+      this.animateBlocksShape();
     }
-
-    if(this.input.activePointer.isDown){
-      var mx=this.input.x, my=this.input.y;
-      this.blocks.getChildren().forEach(function(block){
-        var angle=Phaser.Math.Angle.Between(block.x, block.y, mx, my);
-        block.x += Math.cos(angle)*0.6;
-        block.y += Math.sin(angle)*0.6;
-      });
-    }
-
     this.animateBlocks(time);
   }
 
-  animateBlocks(time){
-    var self=this;
-    this.blocks.getChildren().forEach(function(block,i){
-      var orig=self.originalPositions[i];
-      var offsetX=0, offsetY=0;
+  animateBlocksShape(){
+    const shapes=['square','circle','diamond'];
+    const shapeTextures = shapes.map(s=>`${s}-${this.currentColor}`);
+    const newShape = shapeTextures[this.phase];
+    this.blocks.getChildren().forEach(block=>block.setTexture(newShape));
+  }
 
-      // HORIZONTAL animation patterns
-      switch(self.phase){
+  animateBlocks(time){
+    this.blocks.getChildren().forEach((block,i)=>{
+      const orig = this.originalPositions[i];
+      let offsetX=0, offsetY=0;
+      switch(this.phase){
         case 0:
-          offsetX=Math.sin(time/300 + orig.y*0.12)*12;
-          offsetY=Math.cos(time/400 + orig.x*0.08)*8;
+          offsetX=Math.sin(time/300+orig.y*0.12)*12;
+          offsetY=Math.cos(time/400+orig.x*0.08)*8;
           break;
         case 1:
-          var dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy);
-          offsetX=Math.sin(time/250 + dist*0.05)*18;
-          offsetY=Math.cos(time/350 + dist*0.03)*12;
+          let dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy);
+          offsetX=Math.sin(time/250+dist*0.05)*18;
+          offsetY=Math.cos(time/350+dist*0.03)*12;
           break;
         case 2:
-          offsetX=Math.sin(time/220 + (orig.x+orig.y)*0.06)*15;
-          offsetY=Math.cos(time/280 + (orig.x-orig.y)*0.05)*10;
+          offsetX=Math.sin(time/220+(orig.x+orig.y)*0.06)*15;
+          offsetY=Math.cos(time/280+(orig.x-orig.y)*0.05)*10;
           break;
       }
-
       block.x = orig.x + offsetX;
       block.y = orig.y + offsetY;
     });
   }
 
   createTextEngine(){
-    var input=document.getElementById("text-input");
-    var button=document.getElementById("generate-btn");
-    var historyList=document.getElementById("history-list");
-    var clearBtn=document.getElementById("clear-history-btn");
-    var self=this;
-
-    button.addEventListener("click", function(){
-      var text=input.value.toUpperCase().trim();
+    const input = document.getElementById("text-input");
+    const button = document.getElementById("generate-btn");
+    const historyList = document.getElementById("history-list");
+    const clearBtn = document.getElementById("clear-history-btn");
+    button.addEventListener("click",()=>{
+      let text = input.value.toUpperCase().trim();
       if(!text) return;
 
-      // Add to history
-      if(!self.history.includes(text)){
-        self.history.push(text);
-      }
+      if(!this.history.includes(text)) this.history.push(text);
+      this.updateHistoryUI();
 
-      // Update UI
-      self.updateHistoryUI();
-
-      // Generate animation
-      self.generateAnimatedText(text);
-      self.currentAnimationText = text;
-
-      // Play sound once on click
-      self.playSoundOnce();
-
-      input.value = '';
+      this.generateAnimatedText(text);
+      this.currentAnimationText = text;
+      if(this.popSound) this.popSound.play();
+      input.value='';
     });
 
-    input.addEventListener('keypress', function(e){
-      if(e.key === 'Enter'){
-        button.click();
-      }
+    input.addEventListener('keypress', e=>{
+      if(e.key==='Enter') button.click();
     });
 
-    clearBtn.addEventListener("click", function(){
-      self.history = [];
-      self.updateHistoryUI();
-      self.clearAnimatedText();
+    clearBtn.addEventListener("click",()=>{
+      this.history=[];
+      this.updateHistoryUI();
+      if(this.currentText) this.currentText.destroy();
     });
   }
 
   updateHistoryUI(){
-    var historyList=document.getElementById("history-list");
+    const historyList = document.getElementById("history-list");
     historyList.innerHTML = '';
-    var self = this;
-
-    this.history.forEach(function(text){
-      var item = document.createElement('div');
-      item.className = 'history-item';
-      if(text === self.currentAnimationText){
-        item.classList.add('active');
-      }
-      item.textContent = text;
-
-      item.addEventListener('click', function(){
-        self.generateAnimatedText(text);
-        self.currentAnimationText = text;
-        self.updateHistoryUI();
-        self.playSoundOnce();
+    this.history.forEach(text=>{
+      const item = document.createElement('div');
+      item.className='history-item';
+      if(text===this.currentAnimationText) item.classList.add('active');
+      item.textContent=text;
+      item.addEventListener('click',()=>{
+        this.generateAnimatedText(text);
+        this.currentAnimationText=text;
+        if(this.popSound) this.popSound.play();
+        this.updateHistoryUI();
       });
-
       historyList.appendChild(item);
     });
   }
 
-  // MAIN: generateAnimatedText applies different text animation depending on activeColorIndex
   generateAnimatedText(text){
-    if(!text) return;
-    if(this.letters) this.letters.forEach(function(l){ if(l && l.destroy) l.destroy(); });
-    this.letters=[];
+    const centerX=this.cameras.main.width/2;
+    const centerY=this.cameras.main.height/2;
 
-    // convert selected color hex to number for shapes/backgrounds
-    var hex = this.palette[this.activeColorIndex];
-    var colorNum = parseInt(hex.replace('#',''),16);
-
-    // Position au centre de l'écran
-    var centerY = this.cameras.main.height / 2;
-
-    var charWidth = 35;
-    var totalWidth = text.length * charWidth;
-    var centerX = this.cameras.main.width / 2;
-    var startX = centerX - totalWidth / 2;
-
-    var self = this;
-    for(var i=0;i<text.length;i++){
-      (function(self,ch,idx){
-        var xPos = startX + idx * charWidth;
-
-        // Create a background circle behind the text using selected color
-        var bgCircle = self.add.circle(xPos, centerY, 35, colorNum, 0.85).setDepth(99);
-        self.letters.push(bgCircle);
-
-        // Set initial small scale for entrance
-        bgCircle.setScale(0.3);
-
-        // Create text with selected color
-        var letter = self.add.text(xPos, centerY, ch, {fontFamily:'Arial', fontSize:'40px', color:hex, fontWeight: 'bold'}).setOrigin(0.5).setDepth(100);
-        letter.setScale(0.6);
-        letter.alpha = 0;
-
-        self.letters.push(letter);
-
-        // Choose animation style based on activeColorIndex (Option B)
-        switch(self.activeColorIndex){
-          // Pink = Pop-in elastic
-          case 0:
-            self.tweens.add({
-              targets: bgCircle,
-              scale: 1,
-              alpha: 0.85,
-              duration: 700 + idx * 40,
-              ease: 'Elastic.Out'
-            });
-            self.tweens.add({
-              targets: letter,
-              y: centerY - 15,
-              angle: 0,
-              alpha: 1,
-              scale: 1,
-              duration: 800 + idx * 40,
-              ease: 'Elastic.Out'
-            });
-            // floating after entrance
-            self.tweens.add({
-              targets: letter,
-              y: centerY + 10,
-              duration: 2000 + idx * 80,
-              ease: 'Sine.InOut',
-              delay: 700 + idx * 40,
-              yoyo: true,
-              repeat: -1
-            });
-            self.tweens.add({
-              targets: bgCircle,
-              y: centerY + 10,
-              duration: 2200 + idx * 90,
-              ease: 'Sine.InOut',
-              delay: 700 + idx * 40,
-              yoyo: true,
-              repeat: -1
-            });
-            break;
-
-          // Blue = Fade + slide from bottom
-          case 1:
-            // bg entrance
-            self.tweens.add({
-              targets: bgCircle,
-              scale: 1,
-              alpha: 0.85,
-              duration: 600 + idx * 30,
-              ease: 'Cubic.Out'
-            });
-            // text slides up and fades in
-            letter.y = centerY + 60;
-            self.tweens.add({
-              targets: letter,
-              y: centerY,
-              alpha: 1,
-              scale: 1,
-              duration: 650 + idx * 30,
-              ease: 'Quad.Out'
-            });
-            // subtle bounce after entrance
-            self.tweens.add({
-              targets: letter,
-              y: '+=8',
-              duration: 1200 + idx * 40,
-              ease: 'Sine.InOut',
-              delay: 700 + idx * 30,
-              yoyo: true,
-              repeat: -1
-            });
-            break;
-
-          // Green = Spin-in
-          case 2:
-            bgCircle.setScale(0.2);
-            self.tweens.add({
-              targets: bgCircle,
-              scale: 1,
-              duration: 600 + idx * 40,
-              ease: 'Back.Out'
-            });
-            letter.setAngle(-360);
-            self.tweens.add({
-              targets: letter,
-              angle: 0,
-              alpha: 1,
-              scale: 1,
-              duration: 700 + idx * 40,
-              ease: 'Cubic.Out'
-            });
-            // small rotation float
-            self.tweens.add({
-              targets: letter,
-              angle: 6,
-              duration: 2000 + idx * 60,
-              ease: 'Sine.InOut',
-              delay: 700 + idx * 40,
-              yoyo: true,
-              repeat: -1
-            });
-            break;
-
-          // Yellow = Zoom-in burst
-          case 3:
-            bgCircle.setScale(0.1);
-            self.tweens.add({
-              targets: bgCircle,
-              scale: 1.05,
-              duration: 550 + idx * 20,
-              ease: 'Power2.Out'
-            });
-            letter.setScale(0.2);
-            self.tweens.add({
-              targets: letter,
-              scale: 1.05,
-              alpha: 1,
-              duration: 500 + idx * 20,
-              ease: 'Back.Out'
-            });
-            // quick subtle pulse
-            self.tweens.add({
-              targets: letter,
-              scale: 1,
-              duration: 900 + idx * 40,
-              ease: 'Sine.InOut',
-              delay: 600 + idx * 20
-            });
-            // floating small yoyo
-            self.tweens.add({
-              targets: letter,
-              y: centerY + 8,
-              duration: 2000 + idx * 80,
-              ease: 'Sine.InOut',
-              delay: 700 + idx * 20,
-              yoyo: true,
-              repeat: -1
-            });
-            break;
-
-          // Purple = Floating wave
-          case 4:
-            bgCircle.setScale(0.8);
-            self.tweens.add({
-              targets: bgCircle,
-              scale: 1,
-              alpha: 0.85,
-              duration: 800 + idx * 30,
-              ease: 'Elastic.Out'
-            });
-            letter.y = centerY - 30;
-            self.tweens.add({
-              targets: letter,
-              y: centerY,
-              alpha: 1,
-              duration: 750 + idx * 30,
-              ease: 'Elastic.Out'
-            });
-            // slow floating wave with slight rotation
-            self.tweens.add({
-              targets: letter,
-              y: '+=14',
-              angle: '+=6',
-              duration: 3000 + idx * 120,
-              ease: 'Sine.InOut',
-              delay: 800 + idx * 30,
-              yoyo: true,
-              repeat: -1
-            });
-            self.tweens.add({
-              targets: bgCircle,
-              y: centerY + 12,
-              duration: 3200 + idx * 120,
-              ease: 'Sine.InOut',
-              delay: 800 + idx * 30,
-              yoyo: true,
-              repeat: -1
-            });
-            break;
-        }
-
-      })(this,text[i],i);
-    }
-  }
-
-  clearAnimatedText(){
-    if(this.letters){
-      this.letters.forEach(function(l){ if(l && l.destroy) l.destroy(); });
-      this.letters = [];
-    }
-  }
-
-  setupAudio(){
-    var self = this;
-    try {
-      this.popSound = this.sound.add('pop', { loop: false, volume: 0.5 });
-    } catch(e){
-      console.log('Audio setup skipped');
-    }
-  }
-
-  playSoundOnce(){
-    if(this.popSound){
-      try {
-        this.popSound.stop();
-        this.popSound.play();
-      } catch(e){
-        console.log('Sound play error');
-      }
-    }
-  }
-
-  setupMouseFleeEffect(){
-    var self = this;
-    this.input.on('pointermove', function(pointer){
-      if(!self.blocks) return;
-
-      self.blocks.getChildren().forEach(function(block){
-        var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
-        var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
-
-        // Flee effect - stronger when closer (distance < 1000)
-        if(distance < 1000){
-          var fleeForce = (1000 - distance) / 100000 * 6000;
-          block.x += Math.cos(angle + Math.PI) * fleeForce;
-          block.y += Math.sin(angle + Math.PI) * fleeForce;
-        }
+    // Slide old text out
+    if(this.currentText){
+      this.tweens.add({
+        targets:this.currentText,
+        x:this.cameras.main.width+200,
+        alpha:0,
+        duration:400,
+        ease:'Cubic.easeIn',
+        onComplete: ()=>{ this.currentText.destroy(); }
       });
+    }
+
+    // Create new text
+    const style = {
+      fontFamily:'Arial',
+      fontSize:'48px',
+      color:'#FFFFFF',
+      stroke:'#000000',
+      strokeThickness:6,
+      shadow:{offsetX:3,offsetY:3,color:'#000000',blur:8,stroke:true,fill:true}
+    };
+    const newText=this.add.text(-200,centerY,text,style).setOrigin(0.5).setDepth(9999);
+    this.tweens.add({targets:newText,x:centerX,alpha:1,duration:400,ease:'Cubic.easeOut'});
+    this.currentText=newText;
+
+    // Particles
+    const emitter=this.particles.createEmitter({
+      x:centerX,y:centerY,
+      speed:{min:-150,max:150},
+      lifespan:500,
+      scale:{start:0.5,end:0},
+      quantity:20,
+      tint:Phaser.Display.Color.HexStringToColor(this.currentColor).color
     });
-  }
-
-  // Create the DOM color palette and wire events
-  createPaletteUI(){
-    var paletteContainer = document.getElementById('color-palette');
-    var self = this;
-
-    // Remove existing content if any
-    paletteContainer.innerHTML = '';
-
-    this.palette.forEach(function(hex, idx){
-      var sw = document.createElement('div');
-      sw.className = 'color-swatch';
-      sw.style.background = hex;
-      sw.title = hex;
-      if(idx === self.activeColorIndex) sw.classList.add('active');
-
-      sw.addEventListener('click', function(){
-        // update active index
-        self.activeColorIndex = idx;
-        // update DOM active class
-        var all = paletteContainer.querySelectorAll('.color-swatch');
-        all.forEach(function(el){ el.classList.remove('active'); });
-        sw.classList.add('active');
-
-        // If there's a current animation text, re-generate it so text animation/style updates
-        if(self.currentAnimationText){
-          self.generateAnimatedText(self.currentAnimationText);
-        }
-      });
-
-      paletteContainer.appendChild(sw);
-    });
+    emitter.explode(20,centerX,centerY);
   }
 }
 
-var config = { type: Phaser.AUTO, width: window.innerWidth*0.70, height: window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example, render: { antialias: true } };
+const config={type:Phaser.AUTO,width:window.innerWidth*0.70,height:window.innerHeight,backgroundColor:'#b8ffb8',parent:'phaser-example',scene:Example,render:{antialias:true}};
 new Phaser.Game(config);
-
-// ensure canvas resizes with window
-window.addEventListener('resize', function(){
-  var game = Phaser.GAMES[0];
-  if(!game) return;
-  game.scale.resize(window.innerWidth*0.70, window.innerHeight);
-});
 </script>
 
 </body>
