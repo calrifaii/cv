@@ -56,92 +56,87 @@ body { margin:0; padding:0; display:flex; font-family: Arial,sans-serif; overflo
 
 <script>
 class Example extends Phaser.Scene {
-  constructor() {
+  constructor(){
     super();
-    this.phase = 0;
-    this.phaseDuration = 6000;
-    this.timeSincePhase = 0;
-    this.history = [];
-    this.currentText = null;
-    this.currentColor = '#FF00AA';
-    this.blocks = null;
-    this.letters = [];
-    this.popSound = null;
-    this.currentAnimationText = '';
+    this.phase=0;
+    this.phaseDuration=6000;
+    this.timeSincePhase=0;
+    this.history=[];
+    this.currentText=null;
+    this.currentColor='#FF00AA';
+    this.blocks=null;
+    this.letters=[];
+    this.popSound=null;
+    this.currentAnimationText='';
   }
 
-  preload() {
+  preload(){
     this.load.setBaseURL('https://labs.phaser.io');
-    this.load.image('spark', 'assets/particles/blue.png');
-    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+    this.load.image('spark','assets/particles/blue.png');
+    this.load.audio('pop','assets/audio/SoundEffects/pop.wav');
   }
 
-  create() {
-    // Load audio
-    this.popSound = this.sound.add('pop',{volume:0.5});
+  create(){
+    // Audio
+    this.popSound=this.sound.add('pop',{volume:0.5});
 
-    // Graphics for shapes
-    let g = this.make.graphics({x:0, y:0, add:false});
-    const colors = ['#FF00AA','#00C3FF','#40FF00','#FFD400','#9933FF'];
-    const shapes = ['square','circle','diamond'];
+    // Graphics
+    let g=this.make.graphics({x:0,y:0,add:false});
+    const colors=['#FF00AA','#00C3FF','#40FF00','#FFD400','#9933FF'];
+    const shapes=['square','circle','diamond'];
 
     colors.forEach(color=>{
-      // Square
       g.clear(); g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1); g.fillRect(0,0,50,50); g.generateTexture('square-'+color,50,50);
-      // Circle
       g.clear(); g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1); g.fillCircle(25,25,25); g.generateTexture('circle-'+color,50,50);
-      // Diamond
       g.clear(); g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1); g.beginPath(); g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath(); g.fillPath(); g.generateTexture('diamond-'+color,50,50);
     });
 
-    // Create blocks
-    const gameWidth = this.cameras.main.width;
-    const gameHeight = this.cameras.main.height;
-    const cellWidth = 60;
-    const cellHeight = 60;
-    const cols = Math.ceil(gameWidth/cellWidth)+1;
-    const rows = Math.ceil(gameHeight/cellHeight)+1;
-    const totalBlocks = cols*rows;
+    // Blocks
+    const gameWidth=this.cameras.main.width;
+    const gameHeight=this.cameras.main.height;
+    const cellWidth=60;
+    const cellHeight=60;
+    const cols=Math.ceil(gameWidth/cellWidth)+1;
+    const rows=Math.ceil(gameHeight/cellHeight)+1;
+    const totalBlocks=cols*rows;
 
-    this.blocks = this.add.group();
+    this.blocks=this.add.group();
     for(let i=0;i<totalBlocks;i++){
-      let shape = shapes[i % shapes.length];
-      let textureKey = shape+'-'+this.currentColor;
-      let sprite = this.add.image(0,0,textureKey).setScale(0.5);
+      let shape=shapes[i%shapes.length];
+      let sprite=this.add.image(0,0,shape+'-'+this.currentColor).setScale(0.5);
       sprite.setInteractive();
       this.blocks.add(sprite);
     }
     Phaser.Actions.GridAlign(this.blocks.getChildren(), {width:cols,height:rows,cellWidth:cellWidth,cellHeight:cellHeight,x:0,y:0});
-    this.originalPositions = this.blocks.getChildren().map(b=>({x:b.x,y:b.y}));
-    this.particles = this.add.particles('spark');
+    this.originalPositions=this.blocks.getChildren().map(b=>({x:b.x,y:b.y}));
+    this.particles=this.add.particles('spark');
 
     // Mouse flee
-    this.input.on('pointermove', pointer=>{
+    this.input.on('pointermove',pointer=>{
       this.blocks.getChildren().forEach(block=>{
-        let angle = Phaser.Math.Angle.Between(block.x,block.y,pointer.x,pointer.y);
-        let distance = Phaser.Math.Distance.Between(block.x,block.y,pointer.x,pointer.y);
+        let angle=Phaser.Math.Angle.Between(block.x,block.y,pointer.x,pointer.y);
+        let distance=Phaser.Math.Distance.Between(block.x,block.y,pointer.x,pointer.y);
         if(distance<1000){
           let fleeForce=(1000-distance)/100000*6000;
-          block.x += Math.cos(angle+Math.PI)*fleeForce;
-          block.y += Math.sin(angle+Math.PI)*fleeForce;
+          block.x+=Math.cos(angle+Math.PI)*fleeForce;
+          block.y+=Math.sin(angle+Math.PI)*fleeForce;
         }
       });
     });
 
-    // Pulse animation
-    const children = this.blocks.getChildren();
-    children.forEach((child,idx)=>{ this.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%cols)*40, yoyo:true, repeat:-1 }); });
+    // Pulse
+    this.blocks.getChildren().forEach((child,idx)=>{ this.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%cols)*40, yoyo:true, repeat:-1}); });
 
     // Text engine
     this.createTextEngine();
 
     // Color picker
-    const colorOptions = document.querySelectorAll('.color-option');
+    const colorOptions=document.querySelectorAll('.color-option');
     colorOptions.forEach(el=>{
-      el.addEventListener('click', ()=>{
+      el.addEventListener('click',()=>{
         colorOptions.forEach(c=>c.classList.remove('active'));
         el.classList.add('active');
-        this.currentColor = el.dataset.color;
+        this.currentColor=el.dataset.color;
         this.updateBlocksTexture();
       });
     });
@@ -149,15 +144,15 @@ class Example extends Phaser.Scene {
   }
 
   updateBlocksTexture(){
-    const shapes = ['square','circle','diamond'];
+    const shapes=['square','circle','diamond'];
     this.blocks.getChildren().forEach((block,i)=>{
-      let shape = shapes[i % 3];
+      let shape=shapes[i%3];
       block.setTexture(shape+'-'+this.currentColor);
     });
   }
 
   update(time,delta){
-    this.timeSincePhase += delta;
+    this.timeSincePhase+=delta;
     if(this.timeSincePhase>this.phaseDuration){
       this.phase=(this.phase+1)%3;
       this.timeSincePhase=0;
@@ -168,58 +163,50 @@ class Example extends Phaser.Scene {
 
   animateBlocksShape(){
     const shapes=['square','circle','diamond'];
-    const shapeTextures = shapes.map(s=>`${s}-${this.currentColor}`);
-    const newShape = shapeTextures[this.phase];
+    const shapeTextures=shapes.map(s=>s+'-'+this.currentColor);
+    const newShape=shapeTextures[this.phase];
     this.blocks.getChildren().forEach(block=>block.setTexture(newShape));
   }
 
   animateBlocks(time){
     this.blocks.getChildren().forEach((block,i)=>{
-      const orig = this.originalPositions[i];
-      let offsetX=0, offsetY=0;
+      const orig=this.originalPositions[i];
+      let offsetX=0,offsetY=0;
       switch(this.phase){
         case 0: offsetX=Math.sin(time/300+orig.y*0.12)*12; offsetY=Math.cos(time/400+orig.x*0.08)*8; break;
         case 1: let dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy); offsetX=Math.sin(time/250+dist*0.05)*18; offsetY=Math.cos(time/350+dist*0.03)*12; break;
         case 2: offsetX=Math.sin(time/220+(orig.x+orig.y)*0.06)*15; offsetY=Math.cos(time/280+(orig.x-orig.y)*0.05)*10; break;
       }
-      block.x = orig.x + offsetX;
-      block.y = orig.y + offsetY;
+      block.x=orig.x+offsetX;
+      block.y=orig.y+offsetY;
     });
   }
 
   createTextEngine(){
-    const input = document.getElementById("text-input");
-    const button = document.getElementById("generate-btn");
-    const clearBtn = document.getElementById("clear-history-btn");
-    const historyList = document.getElementById("history-list");
+    const input=document.getElementById("text-input");
+    const button=document.getElementById("generate-btn");
+    const clearBtn=document.getElementById("clear-history-btn");
 
     button.addEventListener("click",()=>{
-      let text = input.value.toUpperCase().trim();
+      let text=input.value.toUpperCase().trim();
       if(!text) return;
       if(!this.history.includes(text)) this.history.push(text);
       this.updateHistoryUI();
       this.generateAnimatedText(text);
-      this.currentAnimationText = text;
+      this.currentAnimationText=text;
       if(this.popSound) this.popSound.play();
       input.value='';
     });
 
-    input.addEventListener('keypress', e=>{
-      if(e.key==='Enter') button.click();
-    });
-
-    clearBtn.addEventListener("click",()=>{
-      this.history=[];
-      this.updateHistoryUI();
-      if(this.currentText) this.currentText.destroy();
-    });
+    input.addEventListener('keypress', e=>{ if(e.key==='Enter') button.click(); });
+    clearBtn.addEventListener('click',()=>{ this.history=[]; this.updateHistoryUI(); if(this.currentText) this.currentText.destroy(); });
   }
 
   updateHistoryUI(){
-    const historyList = document.getElementById("history-list");
-    historyList.innerHTML = '';
+    const historyList=document.getElementById("history-list");
+    historyList.innerHTML='';
     this.history.forEach(text=>{
-      const item = document.createElement('div');
+      const item=document.createElement('div');
       item.className='history-item';
       if(text===this.currentAnimationText) item.classList.add('active');
       item.textContent=text;
@@ -237,32 +224,15 @@ class Example extends Phaser.Scene {
     const centerX=this.cameras.main.width/2;
     const centerY=this.cameras.main.height/2;
 
-    // Slide old text out
     if(this.currentText){
-      this.tweens.add({
-        targets:this.currentText,
-        x:this.cameras.main.width+200,
-        alpha:0,
-        duration:400,
-        ease:'Cubic.easeIn',
-        onComplete: ()=>{ this.currentText.destroy(); }
-      });
+      this.tweens.add({targets:this.currentText, x:this.cameras.main.width+200, alpha:0, duration:400, ease:'Cubic.easeIn', onComplete: ()=>{ this.currentText.destroy(); } });
     }
 
-    // Create new text
-    const style = {
-      fontFamily:'Arial',
-      fontSize:'48px',
-      color:'#FFFFFF',
-      stroke:'#000000',
-      strokeThickness:6,
-      shadow:{offsetX:3,offsetY:3,color:'#000000',blur:8,stroke:true,fill:true}
-    };
+    const style={ fontFamily:'Arial', fontSize:'48px', color:'#FFFFFF', stroke:'#000', strokeThickness:6, shadow:{offsetX:3,offsetY:3,color:'#000',blur:8,stroke:true,fill:true} };
     const newText=this.add.text(-200,centerY,text,style).setOrigin(0.5).setDepth(9999);
     this.tweens.add({targets:newText,x:centerX,alpha:1,duration:400,ease:'Cubic.easeOut'});
     this.currentText=newText;
 
-    // Particles
     const emitter=this.particles.createEmitter({
       x:centerX,y:centerY,
       speed:{min:-150,max:150},
@@ -275,7 +245,7 @@ class Example extends Phaser.Scene {
   }
 }
 
-const config={type:Phaser.AUTO,width:window.innerWidth*0.70,height:window.innerHeight,backgroundColor:'#b8ffb8',parent:'phaser-example',scene:Example,render:{antialias:true}};
+const config={ type:Phaser.AUTO, width:window.innerWidth*0.7, height:window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example, render:{antialias:true} };
 new Phaser.Game(config);
 </script>
 
