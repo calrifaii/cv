@@ -157,10 +157,16 @@
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      background: #ff3eb5;
+      background: #ff3eb5; /* Mis à jour par JS */
       cursor: pointer;
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
+    
+    /* Utilisation d'un attribut data pour permettre la customisation par JS */
+    #right-panel[data-color] .control-group input[type="range"]::-webkit-slider-thumb {
+      background: var(--main-color, #ff3eb5);
+    }
+
 
     /* Info Section */
     .info-section p {
@@ -169,7 +175,7 @@
     }
 
     .info-section strong {
-      color: #ff3eb5;
+      color: #ff3eb5; /* Mis à jour par JS */
     }
 
     /* History Section (styles kept from previous step) */
@@ -334,7 +340,7 @@ class Example extends Phaser.Scene {
     this.setupMouseFleeEffect();
     this.setupAudio();
     this.setupColorPicker(); 
-    this.setupAnimationControls(); // Nouveau
+    this.setupAnimationControls(); 
     this.applyTheme(this.currentTheme, { updateControls: true }); 
   }
   
@@ -423,6 +429,12 @@ class Example extends Phaser.Scene {
       });
     });
   }
+  
+  blockHit(block){
+    if(this.popSound){ try{this.popSound.play();}catch{} }
+    var hexColor = this.colorConfigs[this.currentTheme].hex;
+    this.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:hexColor}).explode(20, block.x, block.y);
+  }
 
   applyTheme(themeName, { updateControls = false, regenerateText = true }){
     var config = this.colorConfigs[themeName];
@@ -443,19 +455,27 @@ class Example extends Phaser.Scene {
       this.generateAnimatedText(this.currentAnimationText, { instant: true }); 
     }
 
-    // 3. Mettre à jour l'interface
+    // 3. Mettre à jour l'interface (couleurs des boutons, etc.)
+    var hexString = `#${hex.toString(16).toUpperCase().padStart(6, '0')}`;
+    
+    document.getElementById('right-panel').style.setProperty('--main-color', hexString);
+
     document.getElementById('generate-btn').style.background = config.style.color;
     document.getElementById('text-input').style.borderColor = config.style.color;
     document.querySelector('#right-panel h2').style.color = config.style.color;
     document.querySelector('.history-title').style.color = config.style.color;
     document.querySelector('.clear-history-btn').style.color = config.style.color;
     document.querySelector('.clear-history-btn').style.borderColor = config.style.color;
+    
+    // Mettre à jour la couleur des strong dans la section info
+    document.querySelectorAll('.info-section strong').forEach(strong => {
+      strong.style.color = config.style.color;
+    });
+
 
     // 4. Mettre à jour les infos du panneau
-    document.getElementById('info-hex').textContent = `#${hex.toString(16).toUpperCase()}`;
+    document.getElementById('info-hex').textContent = hexString;
     document.getElementById('info-font').textContent = config.style.fontFamily;
-    document.querySelector('.control-group input[type="range"]::-webkit-slider-thumb').style.backgroundColor = config.style.color;
-
 
     // 5. Mettre à jour les indicateurs de sélection de couleur
     document.querySelectorAll('.color-swatch').forEach(swatch => {
@@ -466,7 +486,7 @@ class Example extends Phaser.Scene {
       }
     });
 
-    // 6. Mettre à jour les contrôles UI si nécessaire (utile pour le mode aléatoire)
+    // 6. Mettre à jour les contrôles UI si nécessaire (utile pour le mode aléatoire/historique)
     if (updateControls) {
       document.getElementById('speed-slider').value = this.speed;
       document.getElementById('amplitude-slider').value = this.amplitude;
@@ -503,6 +523,10 @@ class Example extends Phaser.Scene {
 
     speedSlider.addEventListener('input', function(){
       self.speed = parseInt(this.value);
+      // Mettre à jour l'animation de texte si elle est visible avec la nouvelle vitesse
+      if(self.currentAnimationText) {
+        self.generateAnimatedText(self.currentAnimationText, { instant: true }); 
+      }
     });
 
     amplitudeSlider.addEventListener('input', function(){
@@ -512,7 +536,7 @@ class Example extends Phaser.Scene {
 
 
   update(time, delta) {
-    // ... (Logique de souris et de mouvement de bloc) ...
+    
     if(this.input.activePointer.isDown){
       var mx=this.input.x, my=this.input.y;
       this.blocks.getChildren().forEach(function(block){
@@ -607,7 +631,11 @@ class Example extends Phaser.Scene {
       if(!options.instant){
         this.animateOldTextOut();
       } else {
-        this.oldLetters.forEach(function(l){l.destroy();});
+        // Destruction immédiate (pour changement de thème/vitesse)
+        this.oldLetters.forEach(function(l){
+          self.tweens.killTweensOf(l); // Arrêter les tweens continus
+          l.destroy();
+        });
         this.oldLetters = [];
       }
     }
@@ -667,7 +695,9 @@ class Example extends Phaser.Scene {
             delay: baseDelay + indexDelay,
           });
         } else {
-          // Mode instantané (changement de thème)
+          // Mode instantané (changement de thème/vitesse)
+          bgCircle.x = targetX;
+          letter.x = targetX;
           self.addContinuousFloatAnimation(bgCircle, letter, targetX, centerY, config.shapeIndex, idx);
         }
       })(this,text[i],i);
@@ -675,7 +705,7 @@ class Example extends Phaser.Scene {
   }
   
   addContinuousFloatAnimation(bgCircle, letter, targetX, centerY, shapeIndex, idx){
-    // Arrête les tweens continus précédents
+    // Arrête les tweens continus précédents pour éviter les conflits
     this.tweens.killTweensOf([bgCircle, letter]);
 
     switch(shapeIndex){
@@ -695,18 +725,26 @@ class Example extends Phaser.Scene {
         this.tweens.add({targets:bgCircle, x:targetX+10, duration:1800, ease:"sine.inout", yoyo:true, repeat:-1});
         this.tweens.add({targets:letter, x:targetX+10, duration:1800, ease:"sine.inout", yoyo:true, repeat:-1});
         break;
-      case 4: // Red: rotation
+      case 4: // Red: pulse scale
         this.tweens.add({targets:bgCircle, scale:1.1, duration:500, ease:"sine.inout", yoyo:true, repeat:-1});
         this.tweens.add({targets:letter, angle:-360, duration:2000, ease:"linear", repeat:-1});
         break;
     }
   }
 
+  clearAnimatedText(){
+    if(this.letters){
+      this.oldLetters = this.letters;
+      this.letters = [];
+      this.animateOldTextOut(); 
+    }
+  }
+
   createTextEngine(){
     var input=document.getElementById("text-input");
     var button=document.getElementById("generate-btn");
-    var randomBtn = document.getElementById("random-btn"); // Nouveau
-    var exportBtn = document.getElementById("export-btn"); // Nouveau
+    var randomBtn = document.getElementById("random-btn"); 
+    var exportBtn = document.getElementById("export-btn"); 
     var clearBtn=document.getElementById("clear-history-btn");
     var self=this;
 
@@ -716,11 +754,11 @@ class Example extends Phaser.Scene {
       input.value = '';
     });
     
-    randomBtn.addEventListener("click", function(){ // Nouveau
+    randomBtn.addEventListener("click", function(){ 
       self.generateRandom();
     });
 
-    exportBtn.addEventListener("click", function(){ // Nouveau
+    exportBtn.addEventListener("click", function(){ 
       self.exportImage();
     });
 
@@ -741,7 +779,7 @@ class Example extends Phaser.Scene {
   processGeneration(text){
     if(!text) return;
 
-    // Add to history
+    // Stocke la configuration actuelle de l'animation dans l'historique
     var historyItem = { 
       text: text, 
       color: this.currentTheme,
@@ -754,11 +792,10 @@ class Example extends Phaser.Scene {
     }
     this.updateHistoryUI();
     
-    // Generate animation
+    // Générer l'animation avec l'effet de transition GAUCHE -> DROITE
     this.generateAnimatedText(text);
     this.currentAnimationText = text;
     
-    // Play sound
     this.playSoundOnce();
   }
 
@@ -773,9 +810,10 @@ class Example extends Phaser.Scene {
     this.amplitude = Phaser.Math.RND.between(5, 40);
 
     // Appliquer le thème (met à jour les curseurs et l'UI)
+    // Note: regenerateText est false ici car processGeneration sera appelé juste après
     this.applyTheme(randomColor, { updateControls: true, regenerateText: false });
 
-    // Exécuter la génération
+    // Exécuter la génération (qui appellera generateAnimatedText)
     this.processGeneration(randomText);
   }
 
@@ -793,7 +831,7 @@ class Example extends Phaser.Scene {
       var element = document.createElement('div');
       element.className = 'history-item';
       
-      // Vérifie si la couleur et le texte correspondent au thème/texte actuel
+      // Vérifie si la couleur et le texte correspondent au thème/texte actuel + les contrôles
       if(itemText === currentText && itemColor === currentTheme && item.speed === self.speed && item.amplitude === self.amplitude){
         element.classList.add('active');
         element.style.backgroundColor = self.colorConfigs[itemColor].style.color;
@@ -829,8 +867,6 @@ class Example extends Phaser.Scene {
   exportImage(){
     var self = this;
     
-    // Assurez-vous que les tweens de bloc continuent de jouer pendant le snapshot
-    // Utilisation de renderer.snapshot pour capturer le canvas Phaser
     self.game.renderer.snapshot(function(image){
       var link = document.createElement('a');
       link.download = 'PhaserAnimation_' + new Date().getTime() + '.png';
