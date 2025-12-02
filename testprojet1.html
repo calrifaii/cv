@@ -74,13 +74,10 @@ class Example extends Phaser.Scene {
     this.load.setBaseURL('https://labs.phaser.io');
     this.load.image('spark', 'assets/particles/blue.png');
     this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
-    this.load.audio('bgMusic', 'assets/audio/SoundEffects/magical1.mp3'); // example background music
   }
 
   create() {
-    // Music
-    this.bgMusic = this.sound.add('bgMusic',{loop:true, volume:0.2});
-    this.bgMusic.play();
+    // Load audio
     this.popSound = this.sound.add('pop',{volume:0.5});
 
     // Graphics for shapes
@@ -89,22 +86,12 @@ class Example extends Phaser.Scene {
     const shapes = ['square','circle','diamond'];
 
     colors.forEach(color=>{
-      g.clear();
-      g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1);
-      g.fillRect(0,0,50,50);
-      g.generateTexture('square-'+color,50,50);
-
-      g.clear();
-      g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1);
-      g.fillCircle(25,25,25);
-      g.generateTexture('circle-'+color,50,50);
-
-      g.clear();
-      g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1);
-      g.beginPath();
-      g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath();
-      g.fillPath();
-      g.generateTexture('diamond-'+color,50,50);
+      // Square
+      g.clear(); g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1); g.fillRect(0,0,50,50); g.generateTexture('square-'+color,50,50);
+      // Circle
+      g.clear(); g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1); g.fillCircle(25,25,25); g.generateTexture('circle-'+color,50,50);
+      // Diamond
+      g.clear(); g.fillStyle(Phaser.Display.Color.HexStringToColor(color).color,1); g.beginPath(); g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath(); g.fillPath(); g.generateTexture('diamond-'+color,50,50);
     });
 
     // Create blocks
@@ -118,15 +105,17 @@ class Example extends Phaser.Scene {
 
     this.blocks = this.add.group();
     for(let i=0;i<totalBlocks;i++){
-      let sprite = this.add.image(0,0,'square-'+this.currentColor).setScale(0.3);
+      let shape = shapes[i % shapes.length];
+      let textureKey = shape+'-'+this.currentColor;
+      let sprite = this.add.image(0,0,textureKey).setScale(0.5);
       sprite.setInteractive();
       this.blocks.add(sprite);
     }
-    Phaser.Actions.GridAlign(this.blocks.getChildren(),{width:cols,height:rows,cellWidth:cellWidth,cellHeight:cellHeight,x:0,y:0});
+    Phaser.Actions.GridAlign(this.blocks.getChildren(), {width:cols,height:rows,cellWidth:cellWidth,cellHeight:cellHeight,x:0,y:0});
     this.originalPositions = this.blocks.getChildren().map(b=>({x:b.x,y:b.y}));
     this.particles = this.add.particles('spark');
 
-    // Mouse effects
+    // Mouse flee
     this.input.on('pointermove', pointer=>{
       this.blocks.getChildren().forEach(block=>{
         let angle = Phaser.Math.Angle.Between(block.x,block.y,pointer.x,pointer.y);
@@ -153,8 +142,6 @@ class Example extends Phaser.Scene {
         colorOptions.forEach(c=>c.classList.remove('active'));
         el.classList.add('active');
         this.currentColor = el.dataset.color;
-
-        // Change blocks immediately
         this.updateBlocksTexture();
       });
     });
@@ -162,10 +149,10 @@ class Example extends Phaser.Scene {
   }
 
   updateBlocksTexture(){
-    const shapeNames = ['square','circle','diamond'];
-    const textures = shapeNames.map(name=>`${name}-${this.currentColor}`);
+    const shapes = ['square','circle','diamond'];
     this.blocks.getChildren().forEach((block,i)=>{
-      block.setTexture(textures[i%3]);
+      let shape = shapes[i % 3];
+      block.setTexture(shape+'-'+this.currentColor);
     });
   }
 
@@ -191,19 +178,9 @@ class Example extends Phaser.Scene {
       const orig = this.originalPositions[i];
       let offsetX=0, offsetY=0;
       switch(this.phase){
-        case 0:
-          offsetX=Math.sin(time/300+orig.y*0.12)*12;
-          offsetY=Math.cos(time/400+orig.x*0.08)*8;
-          break;
-        case 1:
-          let dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy);
-          offsetX=Math.sin(time/250+dist*0.05)*18;
-          offsetY=Math.cos(time/350+dist*0.03)*12;
-          break;
-        case 2:
-          offsetX=Math.sin(time/220+(orig.x+orig.y)*0.06)*15;
-          offsetY=Math.cos(time/280+(orig.x-orig.y)*0.05)*10;
-          break;
+        case 0: offsetX=Math.sin(time/300+orig.y*0.12)*12; offsetY=Math.cos(time/400+orig.x*0.08)*8; break;
+        case 1: let dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy); offsetX=Math.sin(time/250+dist*0.05)*18; offsetY=Math.cos(time/350+dist*0.03)*12; break;
+        case 2: offsetX=Math.sin(time/220+(orig.x+orig.y)*0.06)*15; offsetY=Math.cos(time/280+(orig.x-orig.y)*0.05)*10; break;
       }
       block.x = orig.x + offsetX;
       block.y = orig.y + offsetY;
@@ -213,15 +190,14 @@ class Example extends Phaser.Scene {
   createTextEngine(){
     const input = document.getElementById("text-input");
     const button = document.getElementById("generate-btn");
-    const historyList = document.getElementById("history-list");
     const clearBtn = document.getElementById("clear-history-btn");
+    const historyList = document.getElementById("history-list");
+
     button.addEventListener("click",()=>{
       let text = input.value.toUpperCase().trim();
       if(!text) return;
-
       if(!this.history.includes(text)) this.history.push(text);
       this.updateHistoryUI();
-
       this.generateAnimatedText(text);
       this.currentAnimationText = text;
       if(this.popSound) this.popSound.play();
