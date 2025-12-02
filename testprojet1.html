@@ -36,7 +36,7 @@
 
     #right-panel h2 {
       margin-top: 0;
-      color: #ff3eb5; /* Default/Pink color */
+      color: #ff3eb5;
       font-size: 22px;
       text-align: center;
       margin-bottom: 15px;
@@ -58,10 +58,9 @@
       transform: translateY(-2px);
     }
 
-    #generate-btn {
+    .control-btn {
       width: 100%;
       padding: 10px;
-      background: #ff3eb5;
       color: white;
       border: none;
       border-radius: 8px;
@@ -69,27 +68,40 @@
       cursor: pointer;
       transition: all 0.3s ease;
       font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    #generate-btn {
+      background: #ff3eb5;
+    }
+
+    #random-btn {
+      background: #333;
+    }
+
+    #export-btn {
+      background: #009688;
       margin-bottom: 15px;
     }
 
-    #generate-btn:hover {
+    .control-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(255, 62, 181, 0.3);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
-    #generate-btn:active {
+    .control-btn:active {
       transform: translateY(0);
     }
 
     /* Color Picker Section */
-    .color-picker {
-      margin-bottom: 20px;
+    .color-picker, .animation-controls, .info-section {
+      margin-bottom: 15px;
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 8px;
     }
 
-    .color-picker-title {
+    .picker-title {
       font-size: 14px;
       font-weight: 700;
       color: #333;
@@ -113,17 +125,54 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    .color-swatch:hover {
-      transform: scale(1.1);
-    }
-
     .color-swatch.active {
       border-color: #333;
       transform: scale(1.1);
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
 
-    /* History Section */
+    /* Controls (Sliders) */
+    .control-group {
+      margin-bottom: 10px;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .control-group input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 8px;
+      background: #ddd;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ff3eb5;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    /* Info Section */
+    .info-section p {
+      margin: 5px 0;
+      font-size: 12px;
+    }
+
+    .info-section strong {
+      color: #ff3eb5;
+    }
+
+    /* History Section (styles kept from previous step) */
     .history-section {
       flex: 1;
       display: flex;
@@ -147,20 +196,6 @@
       gap: 8px;
       overflow-y: auto;
       margin-bottom: 10px;
-    }
-
-    #history-list::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #history-list::-webkit-scrollbar-track {
-      background: rgba(255, 62, 181, 0.1);
-      border-radius: 10px;
-    }
-
-    #history-list::-webkit-scrollbar-thumb {
-      background: #ff3eb5;
-      border-radius: 10px;
     }
 
     .history-item {
@@ -219,16 +254,36 @@
 <div id="phaser-example"></div>
 
 <div id="right-panel">
-  <h2>Créer une animation avec ton texte</h2>
+  <h2>Créateur d'Animation Dynamique</h2>
 
   <div class="color-picker">
-    <div class="color-picker-title">Choisis une couleur :</div>
-    <div id="color-options">
-          </div>
+    <div class="picker-title">🎨 Thème de Couleur</div>
+    <div id="color-options"></div>
+  </div>
+
+  <div class="info-section">
+    <div class="picker-title">ℹ️ Infos Thème Actuel</div>
+    <p>Couleur: <strong id="info-hex">#FF3EB5</strong></p>
+    <p>Police: <strong id="info-font">Arial</strong></p>
+  </div>
+
+  <div class="animation-controls">
+    <div class="picker-title">⚙️ Contrôles Blocs</div>
+    <div class="control-group">
+      <label for="speed-slider">Vitesse (plus bas = plus rapide)</label>
+      <input type="range" id="speed-slider" min="50" max="600" value="300">
+    </div>
+    <div class="control-group">
+      <label for="amplitude-slider">Amplitude (taille du mouvement)</label>
+      <input type="range" id="amplitude-slider" min="1" max="50" value="15">
+    </div>
   </div>
   
   <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…" maxlength="20">
-  <button id="generate-btn">Générer l'animation</button>
+  <button id="generate-btn" class="control-btn">Générer l'animation</button>
+  <button id="random-btn" class="control-btn">Surprise Me! 🎲</button>
+  <button id="export-btn" class="control-btn">Exporter en PNG 🖼️</button>
+
 
   <div class="history-section">
     <div class="history-title">Historique</div>
@@ -250,15 +305,19 @@ class Example extends Phaser.Scene {
       'green': { hex: 0x3eff8a, style: { color: '#008800', fontFamily: 'Courier New', fontWeight: 'bold' }, shapeIndex: 3 },
       'red': { hex: 0xff3e3e, style: { color: '#ff3e3e', fontFamily: 'Times New Roman', fontWeight: 'bold' }, shapeIndex: 4 }
     };
-    this.currentTheme = 'pink'; // Thème par défaut
-    this.phaseDuration = 6000;
-    this.timeSincePhase = 0;
+    this.funnyTexts = [
+      "CODE MAGIQUE", "HELLO WORLD", "PHASER ROCKS", "L'OEUF OU LA POULE", "GÉNIAL!", "PIXELS PARTOUT"
+    ];
+    this.currentTheme = 'pink';
     this.history = [];
     this.currentAnimationText = '';
     this.popSound = null;
     this.shapes = ['square','circle','diamond','triangle','star']; 
-    this.letters = []; // Liste des éléments de texte actuels
-    this.oldLetters = []; // Liste des éléments de texte précédents pour l'animation de sortie
+    this.letters = []; 
+    this.oldLetters = []; 
+    this.blockTweens = []; // Stockage des tweens de pulsation des blocs
+    this.speed = 300; // Vitesse d'animation (initiale)
+    this.amplitude = 15; // Amplitude d'animation (initiale)
   }
 
   preload() {
@@ -275,52 +334,27 @@ class Example extends Phaser.Scene {
     this.setupMouseFleeEffect();
     this.setupAudio();
     this.setupColorPicker(); 
-    this.applyTheme(this.currentTheme); 
+    this.setupAnimationControls(); // Nouveau
+    this.applyTheme(this.currentTheme, { updateControls: true }); 
   }
   
   createShapeTextures(){
     var g = this.make.graphics({ x:0, y:0, add:false });
     var size = 50;
+    var shapesData = [
+      { key: 'square', func: () => g.fillRect(0,0,size,size) },
+      { key: 'circle', func: () => g.fillCircle(size/2,size/2,size/2) },
+      { key: 'diamond', func: () => { g.beginPath(); g.moveTo(size/2,0); g.lineTo(size,size/2); g.lineTo(size/2,size); g.lineTo(0,size/2); g.closePath(); g.fillPath(); } },
+      { key: 'triangle', func: () => { g.beginPath(); g.moveTo(size/2, 0); g.lineTo(size, size); g.lineTo(0, size); g.closePath(); g.fillPath(); } },
+      { key: 'star', func: () => g.fillRect(15,15,20,20) }
+    ];
 
-    // Square (index 0)
-    g.fillStyle(0xffffff,1);
-    g.fillRect(0,0,size,size);
-    g.generateTexture('square',size,size);
-
-    // Circle (index 1)
-    g.clear();
-    g.fillStyle(0xffffff,1);
-    g.fillCircle(size/2,size/2,size/2);
-    g.generateTexture('circle',size,size);
-
-    // Diamond (index 2)
-    g.clear();
-    g.fillStyle(0xffffff,1);
-    g.beginPath();
-    g.moveTo(size/2,0);
-    g.lineTo(size,size/2);
-    g.lineTo(size/2,size);
-    g.lineTo(0,size/2);
-    g.closePath();
-    g.fillPath();
-    g.generateTexture('diamond',size,size);
-
-    // Triangle (index 3)
-    g.clear();
-    g.fillStyle(0xffffff,1);
-    g.beginPath();
-    g.moveTo(size/2, 0);
-    g.lineTo(size, size);
-    g.lineTo(0, size);
-    g.closePath();
-    g.fillPath();
-    g.generateTexture('triangle', size, size);
-
-    // Star (index 4) - Simplified as a smaller, rotating square for difference
-    g.clear();
-    g.fillStyle(0xffffff,1);
-    g.fillRect(15,15,20,20);
-    g.generateTexture('star', size, size);
+    shapesData.forEach(function(s){
+      g.clear();
+      g.fillStyle(0xffffff,1);
+      s.func();
+      g.generateTexture(s.key,size,size);
+    });
   }
   
   createBlocks(){
@@ -345,56 +379,83 @@ class Example extends Phaser.Scene {
     this.blocks = blocks;
     this.originalPositions = blocks.getChildren().map(function(b){return {x:b.x, y:b.y};});
     this.particles = this.add.particles('spark');
-    
     this.cols = cols;
+    
+    // Applique la pulsation initiale
+    this.applyBlockPulse(this.currentTheme);
   }
 
+  // Nouvelle méthode pour gérer la pulsation
+  applyBlockPulse(themeName){
+    // Détruire les tweens de pulsation existants
+    this.blockTweens.forEach(tween => tween.stop());
+    this.blockTweens = [];
+
+    var self = this;
+    var children = this.blocks.getChildren();
+    var cols = this.cols; 
+
+    children.forEach(function(child,idx){ 
+      // Ajout d'une pulsation selon le thème
+      var duration = (themeName === 'red') ? 300 : 600; 
+      var scaleTo = (themeName === 'blue') ? 0.45 : 0.35;
+
+      var tween = self.tweens.add({
+        targets: child, 
+        scale: scaleTo, 
+        ease:'sine.inout', 
+        duration: duration, 
+        delay: (idx%cols)*40, 
+        yoyo: true, 
+        repeat: -1 
+      });
+      this.blockTweens.push(tween);
+    }, this);
+  }
+  
   setupBlockInteractions(){
     var self=this;
     this.blocks.getChildren().forEach(function(block){
+      // Laissez le pointerover gérer le scale:0.5 comme un effet amusant
       block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
       block.on('pointerdown', function(){ 
         self.blockHit(block);
       });
     });
   }
-  
-  blockHit(block){
-    if(this.popSound){ try{this.popSound.play();}catch{} }
-    var hexColor = this.colorConfigs[this.currentTheme].hex;
-    this.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:hexColor}).explode(20, block.x, block.y);
-  }
 
-  applyTheme(themeName){
+  applyTheme(themeName, { updateControls = false, regenerateText = true }){
     var config = this.colorConfigs[themeName];
     var hex = config.hex;
     this.currentTheme = themeName;
-    this.timeSincePhase = 0; 
 
-    // 1. Mettre à jour les couleurs des blocs et la texture de base
+    // 1. Mettre à jour les couleurs des blocs, la texture de base et la pulsation
     var shapeKey = this.shapes[config.shapeIndex % this.shapes.length];
     this.blocks.getChildren().forEach(function(block){ 
       block.setTexture(shapeKey);
       block.setTint(hex);
     });
+    this.applyBlockPulse(themeName);
 
     // 2. Mettre à jour l'animation de texte si elle est visible
-    if(this.currentAnimationText){
-      // Régénère le texte pour appliquer le nouveau style/couleur sans animation de transition
+    if(this.currentAnimationText && regenerateText){
+      // Si on change juste de thème, on ne veut pas l'animation GAUCHE->DROITE
       this.generateAnimatedText(this.currentAnimationText, { instant: true }); 
     }
 
-    // 3. Mettre à jour l'historique UI
-    this.updateHistoryUI();
-    
-    // 4. Mettre à jour l'interface
+    // 3. Mettre à jour l'interface
     document.getElementById('generate-btn').style.background = config.style.color;
-    document.getElementById('generate-btn').style.boxShadow = `0 5px 15px rgba(${hex>>16 & 0xFF}, ${(hex>>8) & 0xFF}, ${hex & 0xFF}, 0.3)`;
     document.getElementById('text-input').style.borderColor = config.style.color;
     document.querySelector('#right-panel h2').style.color = config.style.color;
     document.querySelector('.history-title').style.color = config.style.color;
-    document.querySelector('#clear-history-btn').style.color = config.style.color;
-    document.querySelector('#clear-history-btn').style.borderColor = config.style.color;
+    document.querySelector('.clear-history-btn').style.color = config.style.color;
+    document.querySelector('.clear-history-btn').style.borderColor = config.style.color;
+
+    // 4. Mettre à jour les infos du panneau
+    document.getElementById('info-hex').textContent = `#${hex.toString(16).toUpperCase()}`;
+    document.getElementById('info-font').textContent = config.style.fontFamily;
+    document.querySelector('.control-group input[type="range"]::-webkit-slider-thumb').style.backgroundColor = config.style.color;
+
 
     // 5. Mettre à jour les indicateurs de sélection de couleur
     document.querySelectorAll('.color-swatch').forEach(swatch => {
@@ -404,6 +465,15 @@ class Example extends Phaser.Scene {
         swatch.classList.remove('active');
       }
     });
+
+    // 6. Mettre à jour les contrôles UI si nécessaire (utile pour le mode aléatoire)
+    if (updateControls) {
+      document.getElementById('speed-slider').value = this.speed;
+      document.getElementById('amplitude-slider').value = this.amplitude;
+    }
+    
+    // 7. Mettre à jour l'historique UI (pour la classe 'active')
+    this.updateHistoryUI();
   }
 
   setupColorPicker(){
@@ -418,7 +488,7 @@ class Example extends Phaser.Scene {
         swatch.dataset.color = themeName;
         
         swatch.addEventListener('click', function(){
-          self.applyTheme(themeName);
+          self.applyTheme(themeName, { regenerateText: true });
         });
 
         colorOptions.appendChild(swatch);
@@ -426,9 +496,23 @@ class Example extends Phaser.Scene {
     }
   }
 
+  setupAnimationControls(){
+    var self = this;
+    var speedSlider = document.getElementById('speed-slider');
+    var amplitudeSlider = document.getElementById('amplitude-slider');
+
+    speedSlider.addEventListener('input', function(){
+      self.speed = parseInt(this.value);
+    });
+
+    amplitudeSlider.addEventListener('input', function(){
+      self.amplitude = parseInt(this.value);
+    });
+  }
+
 
   update(time, delta) {
-    
+    // ... (Logique de souris et de mouvement de bloc) ...
     if(this.input.activePointer.isDown){
       var mx=this.input.x, my=this.input.y;
       this.blocks.getChildren().forEach(function(block){
@@ -445,6 +529,8 @@ class Example extends Phaser.Scene {
     var self=this;
     var config = self.colorConfigs[self.currentTheme];
     var phase = config.shapeIndex;
+    var amplitude = self.amplitude;
+    var speed = self.speed;
 
     this.blocks.getChildren().forEach(function(block,i){
       var orig=self.originalPositions[i];
@@ -453,34 +539,34 @@ class Example extends Phaser.Scene {
       // Différents schémas d'animation basés sur la phase/couleur
       switch(phase){
         case 0: // Pink - Waves in both axis
-          offsetX=Math.sin(time/300 + orig.y*0.12)*12; 
-          offsetY=Math.cos(time/400 + orig.x*0.08)*8;
-          block.angle = Math.sin(time/500)*5;
+          offsetX=Math.sin(time/speed + orig.y*0.12)*amplitude; 
+          offsetY=Math.cos(time/(speed+100) + orig.x*0.08)*(amplitude*0.6);
+          block.angle = Math.sin(time/(speed*1.5))*5;
           break;
         case 1: // Blue - Circular/spiral movement
           var dist=Phaser.Math.Distance.Between(orig.x, orig.y, 400, 300);
-          offsetX=Math.sin(time/400 + dist*0.05)*18; 
-          offsetY=Math.cos(time/400 + dist*0.05)*18;
+          offsetX=Math.sin(time/speed + dist*0.05)*amplitude; 
+          offsetY=Math.cos(time/speed + dist*0.05)*amplitude;
           block.angle = time/50 % 360;
           break;
         case 2: // Yellow - Diagonal / Swirling
-          offsetX=Math.sin(time/220 + (orig.x+orig.y)*0.06)*15; 
-          offsetY=Math.cos(time/280 + (orig.x-orig.y)*0.05)*10;
-          block.angle = Math.sin(time/300)*10;
+          offsetX=Math.sin(time/(speed*0.8) + (orig.x+orig.y)*0.06)*amplitude; 
+          offsetY=Math.cos(time/(speed*0.9) + (orig.x-orig.y)*0.05)*(amplitude*0.7);
+          block.angle = Math.sin(time/speed)*10;
           break;
         case 3: // Green - Vertical/Horizontal only (Grid)
-          offsetX=Math.sin(time/350 + orig.y*0.1) * 10;
-          offsetY=Math.sin(time/350 + orig.x*0.1) * 10;
+          offsetX=Math.sin(time/speed + orig.y*0.1) * (amplitude*0.7);
+          offsetY=Math.sin(time/speed + orig.x*0.1) * (amplitude*0.7);
           block.angle = 0;
           break;
         case 4: // Red - Random shake/pulse
-          offsetX=Math.sin(time/100 + i)*5;
-          offsetY=Math.cos(time/120 + i)*5;
+          offsetX=Math.sin(time/100 + i)*(amplitude*0.3);
+          offsetY=Math.cos(time/120 + i)*(amplitude*0.3);
           block.angle = Math.random() * 5 - 2.5;
           break;
-        default: // Fallback to original
-          offsetX=Math.sin(time/300 + orig.y*0.12)*12; 
-          offsetY=Math.cos(time/400 + orig.x*0.08)*8;
+        default:
+          offsetX=Math.sin(time/speed + orig.y*0.12)*amplitude; 
+          offsetY=Math.cos(time/(speed+100) + orig.x*0.08)*(amplitude*0.6);
           block.angle = 0;
           break;
       }
@@ -490,46 +576,43 @@ class Example extends Phaser.Scene {
     });
   }
   
-  // Nouvelle fonction pour gérer l'animation de sortie
   animateOldTextOut(){
     if(this.oldLetters && this.oldLetters.length > 0){
       var gameWidth = this.cameras.main.width;
       var self = this;
       
       this.oldLetters.forEach(function(item, idx){
-        // Lancer l'animation de sortie vers la droite
         self.tweens.add({
           targets: item,
-          x: gameWidth + 50, // Déplace l'élément juste à l'extérieur de l'écran à droite
+          x: gameWidth + 50, 
           alpha: 0,
-          duration: 300, // Durée rapide
+          duration: 300, 
           ease: 'Quad.easeIn',
-          delay: idx * 20, // Petit délai pour un effet d'échelonnage
+          delay: idx * 20, 
           onComplete: function(){
             item.destroy();
           }
         });
       });
-      this.oldLetters = []; // Vider la liste
+      this.oldLetters = []; 
     }
   }
 
   generateAnimatedText(text, options = { instant: false }){
     if(!text) return;
-    
-    // 1. Déplacer et détruire l'ancien texte AVANT de créer le nouveau
+
+    // 1. Déplacer et détruire l'ancien texte
     if(this.letters.length > 0){
       this.oldLetters = this.letters;
       if(!options.instant){
         this.animateOldTextOut();
       } else {
-        // Destruction immédiate si on change juste le thème
         this.oldLetters.forEach(function(l){l.destroy();});
         this.oldLetters = [];
       }
     }
     
-    this.letters=[]; // Préparer la nouvelle liste de lettres
+    this.letters=[]; 
 
     var config = this.colorConfigs[this.currentTheme];
     var style = { ...config.style, fontSize:'40px' }; 
@@ -547,7 +630,7 @@ class Example extends Phaser.Scene {
     for(var i=0;i<text.length;i++){
       (function(self,ch,idx){
         var targetX = targetStartX + idx * charWidth;
-        var startX = -50; // Point de départ hors écran à gauche
+        var startX = options.instant ? targetX : -50; 
         
         // Créer le cercle de fond
         var bgCircle = self.add.circle(startX, centerY, 35, bgColor, 0.8).setDepth(99).setStrokeStyle(3, config.hex, 1);
@@ -561,22 +644,19 @@ class Example extends Phaser.Scene {
         var indexDelay = idx * 30;
 
         if(!options.instant){
-          // *** NOUVELLE ANIMATION D'ENTRÉE (GAUCHE -> CENTRE) ***
-          
-          // Animation pour le fond et la lettre
+          // Animation d'entrée (GAUCHE -> CENTRE)
           self.tweens.add({
             targets: [bgCircle, letter],
             x: targetX,
-            duration: 350, // Haute vitesse
+            duration: 350, 
             ease: 'Quad.easeOut', 
             delay: baseDelay + indexDelay,
             onComplete: function(){
-              // Une fois l'entrée terminée, lance l'animation de flottement continue
               self.addContinuousFloatAnimation(bgCircle, letter, targetX, centerY, config.shapeIndex, idx);
             }
           });
           
-          // Animation de zoom au début de l'entrée (pour le BG et la lettre)
+          // Animation de zoom au début de l'entrée
           bgCircle.setScale(0.5);
           letter.setScale(0.5);
           self.tweens.add({
@@ -588,17 +668,14 @@ class Example extends Phaser.Scene {
           });
         } else {
           // Mode instantané (changement de thème)
-          bgCircle.x = targetX;
-          letter.x = targetX;
           self.addContinuousFloatAnimation(bgCircle, letter, targetX, centerY, config.shapeIndex, idx);
         }
       })(this,text[i],i);
     }
   }
   
-  // Fonction réutilisable pour les animations continues (le "flottement")
   addContinuousFloatAnimation(bgCircle, letter, targetX, centerY, shapeIndex, idx){
-    // Reset les tweens précédents pour le flottement
+    // Arrête les tweens continus précédents
     this.tweens.killTweensOf([bgCircle, letter]);
 
     switch(shapeIndex){
@@ -625,13 +702,143 @@ class Example extends Phaser.Scene {
     }
   }
 
+  createTextEngine(){
+    var input=document.getElementById("text-input");
+    var button=document.getElementById("generate-btn");
+    var randomBtn = document.getElementById("random-btn"); // Nouveau
+    var exportBtn = document.getElementById("export-btn"); // Nouveau
+    var clearBtn=document.getElementById("clear-history-btn");
+    var self=this;
+
+    button.addEventListener("click", function(){
+      var text=input.value.toUpperCase().trim();
+      self.processGeneration(text);
+      input.value = '';
+    });
+    
+    randomBtn.addEventListener("click", function(){ // Nouveau
+      self.generateRandom();
+    });
+
+    exportBtn.addEventListener("click", function(){ // Nouveau
+      self.exportImage();
+    });
+
+    input.addEventListener('keypress', function(e){
+      if(e.key === 'Enter'){
+        button.click();
+      }
+    });
+
+    clearBtn.addEventListener("click", function(){
+      self.history = [];
+      self.updateHistoryUI();
+      self.clearAnimatedText();
+      self.currentAnimationText = '';
+    });
+  }
+
+  processGeneration(text){
+    if(!text) return;
+
+    // Add to history
+    var historyItem = { 
+      text: text, 
+      color: this.currentTheme,
+      speed: this.speed,
+      amplitude: this.amplitude
+    };
+    var alreadyInHistory = this.history.some(item => item.text === text);
+    if(!alreadyInHistory){
+      this.history.push(historyItem);
+    }
+    this.updateHistoryUI();
+    
+    // Generate animation
+    this.generateAnimatedText(text);
+    this.currentAnimationText = text;
+    
+    // Play sound
+    this.playSoundOnce();
+  }
+
+  generateRandom(){
+    var keys = Object.keys(this.colorConfigs);
+    var randomColor = keys[Phaser.Math.RND.between(0, keys.length - 1)];
+    
+    var randomText = this.funnyTexts[Phaser.Math.RND.between(0, this.funnyTexts.length - 1)];
+    
+    // Générer des valeurs d'animation aléatoires dans la plage des curseurs
+    this.speed = Phaser.Math.RND.between(100, 500);
+    this.amplitude = Phaser.Math.RND.between(5, 40);
+
+    // Appliquer le thème (met à jour les curseurs et l'UI)
+    this.applyTheme(randomColor, { updateControls: true, regenerateText: false });
+
+    // Exécuter la génération
+    this.processGeneration(randomText);
+  }
+
+  updateHistoryUI(){
+    var historyList=document.getElementById("history-list");
+    historyList.innerHTML = '';
+    var self = this;
+    var currentText = self.currentAnimationText;
+    var currentTheme = self.currentTheme;
+
+    this.history.forEach(function(item){
+      var itemText = item.text;
+      var itemColor = item.color;
+      
+      var element = document.createElement('div');
+      element.className = 'history-item';
+      
+      // Vérifie si la couleur et le texte correspondent au thème/texte actuel
+      if(itemText === currentText && itemColor === currentTheme && item.speed === self.speed && item.amplitude === self.amplitude){
+        element.classList.add('active');
+        element.style.backgroundColor = self.colorConfigs[itemColor].style.color;
+        element.style.borderColor = self.colorConfigs[itemColor].style.color;
+        element.style.color = 'white';
+      } else {
+        element.style.backgroundColor = '';
+        element.style.borderColor = 'rgba(255, 62, 181, 0.2)';
+        element.style.color = '#333';
+      }
+      element.textContent = `${itemText} (${itemColor}, Sp:${item.speed}, Amp:${item.amplitude})`;
+      
+      element.addEventListener('click', function(){
+        // Appliquer les paramètres de l'historique
+        self.speed = item.speed;
+        self.amplitude = item.amplitude;
+        self.applyTheme(itemColor, { updateControls: true, regenerateText: false }); 
+        self.processGeneration(itemText);
+      });
+
+      historyList.appendChild(element);
+    });
+  }
+
   clearAnimatedText(){
-    // Cette fonction est appelée par le bouton "Effacer l'historique"
     if(this.letters){
       this.oldLetters = this.letters;
       this.letters = [];
-      this.animateOldTextOut(); // Anime la sortie vers la droite
+      this.animateOldTextOut(); 
     }
+  }
+
+  exportImage(){
+    var self = this;
+    
+    // Assurez-vous que les tweens de bloc continuent de jouer pendant le snapshot
+    // Utilisation de renderer.snapshot pour capturer le canvas Phaser
+    self.game.renderer.snapshot(function(image){
+      var link = document.createElement('a');
+      link.download = 'PhaserAnimation_' + new Date().getTime() + '.png';
+      link.href = image.src;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
   }
 
   setupAudio(){
@@ -663,7 +870,6 @@ class Example extends Phaser.Scene {
         var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
         var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
         
-        // Flee effect - stronger when closer (distance < 1000)
         if(distance < 1000){
           var fleeForce = (1000 - distance) / 100000 * 6000;
           block.x += Math.cos(angle + Math.PI) * fleeForce;
@@ -674,7 +880,7 @@ class Example extends Phaser.Scene {
   }
 }
 
-var config = { type: Phaser.AUTO, width: window.innerWidth*0.70, height: window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example, render: { antialias: true } };
+var config = { type: Phaser.AUTO, width: window.innerWidth*0.70, height: window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example, render: { antialias: true, powerPreference: "high-performance" } };
 new Phaser.Game(config);
 </script>
 
