@@ -1,502 +1,496 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Phaser — Texte animé + shapes foncées (final)</title>
-
-  <!-- Police cute -->
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phaser Shapes + Text Generator with History</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
-
   <style>
-    :root{
-      --accent: #ff3eb5;
-      --bg: #b8ffb8;
-      --panel-bg: rgba(255,255,255,0.95);
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      background: #b8ffb8;
     }
-    html,body{ height:100%; margin:0; padding:0; font-family:'Fredoka', Arial, sans-serif; background:var(--bg); overflow:hidden; }
-    /* Layout */
-    #phaser-example{ width:70vw; height:100vh; float:left; }
-    #right-panel{ width:30vw; height:100vh; float:right; background:var(--panel-bg); padding:20px; box-sizing:border-box; backdrop-filter: blur(6px); display:flex; flex-direction:column; gap:14px; }
-    h2{ margin:0; color:var(--accent); font-size:20px; text-align:center; }
-    #controls{ display:flex; gap:8px; align-items:center; }
-    #text-input{ flex:1; padding:10px; border-radius:10px; border:2px solid var(--accent); outline:none; font-size:16px; }
-    #generate-btn{ padding:10px 14px; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; }
-    #generate-btn:active{ transform:translateY(1px); }
-    .color-palette{ display:flex; gap:10px; justify-content:center; align-items:center; }
-    .color-swatch{ width:36px; height:36px; border-radius:50%; border:3px solid rgba(255,255,255,0.6); box-shadow:0 6px 14px rgba(0,0,0,0.12); cursor:pointer; transition: transform .18s ease, box-shadow .18s ease; }
-    .color-swatch.selected{ transform:scale(1.08); box-shadow:0 12px 22px rgba(0,0,0,0.2); border:3px solid #fff; }
-    .palette-label{ text-align:center; font-size:12px; color:var(--accent); font-weight:700; text-transform:uppercase; margin-top:4px; }
-    .history-section{ flex:1; display:flex; flex-direction:column; gap:8px; overflow:auto; }
-    .history-title{ color:var(--accent); font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
-    #history-list{ display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:6px; }
-    .history-item{ padding:8px; border-radius:8px; background:rgba(255,62,181,0.06); border:1px solid rgba(255,62,181,0.12); font-size:13px; cursor:pointer; }
-    .history-item.active{ background:var(--accent); color:white; font-weight:700; }
-    .clear-history-btn{ padding:10px; border-radius:10px; border:1px solid var(--accent); color:var(--accent); background:transparent; cursor:pointer; font-weight:700; }
-    .small-note{ font-size:12px; color:#333; text-align:center; }
-    @media(max-width:900px){
-      #phaser-example{ width:100vw; height:60vh; }
-      #right-panel{ width:100vw; height:40vh; position:fixed; bottom:0; left:0; display:block; overflow:auto; }
+
+    /* Phaser zone */
+    #phaser-example {
+      width: 70vw;
+      height: 100vh;
+    }
+
+    /* Right-side interface */
+    #right-panel {
+      width: 30vw;
+      height: 100vh;
+      background: rgba(255,255,255,0.95);
+      padding: 20px;
+      box-sizing: border-box;
+      backdrop-filter: blur(5px);
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #right-panel h2 {
+      margin-top: 0;
+      color: #ff3eb5;
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    #text-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      border: 2px solid #ff3eb5;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    #text-input:focus {
+      box-shadow: 0 0 10px rgba(255, 62, 181, 0.3);
+      transform: translateY(-2px);
+    }
+
+    #generate-btn {
+      width: 100%;
+      padding: 10px;
+      background: #ff3eb5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    #generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 62, 181, 0.3);
+    }
+
+    #generate-btn:active {
+      transform: translateY(0);
+    }
+
+    /* History Section */
+    .history-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 10px;
+    }
+
+    .history-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ff3eb5;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    #history-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    #history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #history-list::-webkit-scrollbar-track {
+      background: rgba(255, 62, 181, 0.1);
+      border-radius: 10px;
+    }
+
+    #history-list::-webkit-scrollbar-thumb {
+      background: #ff3eb5;
+      border-radius: 10px;
+    }
+
+    .history-item {
+      padding: 10px;
+      background: rgba(255, 62, 181, 0.08);
+      border: 1px solid rgba(255, 62, 181, 0.2);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 12px;
+      color: #333;
+      word-break: break-word;
+      font-weight: 500;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 62, 181, 0.15);
+      border-color: #ff3eb5;
+      transform: translateX(3px);
+    }
+
+    .history-item.active {
+      background: #ff3eb5;
+      color: white;
+      border-color: #ff3eb5;
+      font-weight: 600;
+    }
+
+    .clear-history-btn {
+      width: 100%;
+      padding: 8px;
+      background: rgba(255, 62, 181, 0.1);
+      color: #ff3eb5;
+      border: 1px solid #ff3eb5;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .clear-history-btn:hover {
+      background: #ff3eb5;
+      color: white;
+    }
+
+    #phaser-text {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <div id="phaser-example"></div>
+<div id="phaser-example"></div>
 
-  <div id="right-panel">
-    <h2>Créer une animation avec ton texte</h2>
+<div id="right-panel">
+  <h2>Créer une animation avec ton texte</h2>
+  <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…" maxlength="20">
+  <button id="generate-btn">Générer l'animation</button>
 
-    <div id="controls">
-      <input id="text-input" type="text" placeholder="Écris un mot ou une phrase… (max 20)" maxlength="20" />
-      <button id="generate-btn">Générer</button>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;">
-      <div class="palette-label">Choisis une couleur</div>
-      <div class="color-palette" id="color-palette"></div>
-    </div>
-
-    <div class="history-section">
-      <div class="history-title">Historique</div>
-      <div id="history-list"></div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="clear-history-btn" id="clear-history-btn">Effacer l'historique</button>
-      </div>
-      <div class="small-note">Clique sur un élément de l'historique pour rejouer l'animation.</div>
-    </div>
+  <div class="history-section">
+    <div class="history-title">Historique</div>
+    <div id="history-list"></div>
+    <button class="clear-history-btn" id="clear-history-btn">Effacer l'historique</button>
   </div>
 
+  <div id="phaser-text"></div>
+</div>
+
 <script>
-/*
-  Version finale robuste.
-  - Grid de shapes animées (avec teintes plus foncées pour les tiles)
-  - 5 couleurs sélectionnables (texte + variantes d'animations)
-  - Musique courte générée par WebAudio à chaque clic
-  - API safe: window.registerShapeVariant(name, fn)
-*/
+class Example extends Phaser.Scene {
+  constructor() {
+    super();
+    this.phase = 0;
+    this.phaseDuration = 6000;
+    this.timeSincePhase = 0;
+    this.history = [];
+    this.currentAnimationText = '';
+    this.popSound = null;
+  }
 
-/* ---------- Couleurs (teintes PLus foncées pour shapes) ---------- */
-const COLORS = [
-  { key: 'pink', label: 'Fuchsia', color:'#ff3eb5' },
-  { key: 'mint', label: 'Mint', color:'#34d399' },
-  { key: 'sun',  label: 'Sun',  color:'#ffb86b' },
-  { key: 'lav',  label: 'Lavande', color:'#9b7bff' },
-  { key: 'aqua', label: 'Aqua', color:'#00c2ff' }
-];
-
-/* TEINTES PLUS FONCÉES pour les tiles (tileTint) */
-const COLOR_MAP = {
-  pink:  { tileTint: 0xff6fae, tileAlpha:0.98, tileScale:0.36, variant:'twirl', bgCircle:0x2b0018, textColor:'#ffffff', stroke:'#ff3eb5', intensity:3 },
-  mint:  { tileTint: 0x0f8f5f, tileAlpha:0.95, tileScale:0.36, variant:'bounce', bgCircle:0x022916, textColor:'#ffffff', stroke:'#34a37d', intensity:2 },
-  sun:   { tileTint: 0xb87630, tileAlpha:0.96, tileScale:0.36, variant:'wave', bgCircle:0x2f1600, textColor:'#ffffff', stroke:'#c87a2b', intensity:2.2 },
-  lav:   { tileTint: 0x5b3fff, tileAlpha:0.95, tileScale:0.36, variant:'spin', bgCircle:0x120036, textColor:'#ffffff', stroke:'#5d3cff', intensity:2.6 },
-  aqua:  { tileTint: 0x007aa3, tileAlpha:0.96, tileScale:0.36, variant:'jitter', bgCircle:0x001f2b, textColor:'#ffffff', stroke:'#007fb3', intensity:3.4 }
-};
-
-/* ---------- Phaser Scene ---------- */
-class FinalScene extends Phaser.Scene {
-  constructor(){ super({ key:'FinalScene' }); this.blocks=null; this.originalPositions=[]; this.letters=[]; this.history=[]; this.currentText=''; this.shapes=['square','circle','diamond']; this.phase=0; this.phaseDuration=6000; this.timeSincePhase=0; this.colorKey=COLORS[0].key; this.registeredVariants={}; }
-
-  preload(){
+  preload() {
     this.load.setBaseURL('https://labs.phaser.io');
-    this.load.image('spark','assets/particles/blue.png');
-    this.load.audio('pop','assets/audio/SoundEffects/pop.wav');
+    this.load.image('spark', 'assets/particles/blue.png');
+    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
   }
 
-  create(){
-    try{
-      this.createTexturesIfNeeded();
-      this.createGrid();
-      this.setupParticles();
-      this.setupPointerInteractions();
-      this.setupAudio();
-      this.applyColorToGrid(this.colorKey);
-      // register default variants
-      this.registerDefaultVariants();
-    }catch(err){
-      console.error('Erreur create():', err);
+  create() {
+    // Graphics for shapes
+    var g = this.make.graphics({ x:0, y:0, add:false });
+
+    // Square
+    g.fillStyle(0xff3eb5,1);
+    g.fillRect(0,0,50,50);
+    g.generateTexture('square',50,50);
+
+    // Circle
+    g.clear();
+    g.fillStyle(0xff3eb5,1);
+    g.fillCircle(25,25,25);
+    g.generateTexture('circle',50,50);
+
+    // Diamond
+    g.clear();
+    g.fillStyle(0xff3eb5,1);
+    g.beginPath();
+    g.moveTo(25,0);
+    g.lineTo(50,25);
+    g.lineTo(25,50);
+    g.lineTo(0,25);
+    g.closePath();
+    g.fillPath();
+    g.generateTexture('diamond',50,50);
+
+    // Create blocks - FULL PAGE LAYOUT
+    // Calculate grid dimensions to fill entire width
+    var gameWidth = this.cameras.main.width;
+    var gameHeight = this.cameras.main.height;
+    var cellWidth = 60;
+    var cellHeight = 60;
+    var cols = Math.ceil(gameWidth / cellWidth) + 1;
+    var rows = Math.ceil(gameHeight / cellHeight) + 1;
+    var totalBlocks = cols * rows;
+
+    var shapes = ['square','circle','diamond'];
+    var blocks = this.add.group();
+    for(var i=0;i<totalBlocks;i++){
+      var key = shapes[i%shapes.length];
+      var sprite = this.add.image(0,0,key).setScale(0.3);
+      sprite.setInteractive();
+      blocks.add(sprite);
     }
+
+    Phaser.Actions.GridAlign(blocks.getChildren(), { width:cols, height:rows, cellWidth:cellWidth, cellHeight:cellHeight, x:0, y:0 });
+
+    this.blocks = blocks;
+    this.originalPositions = blocks.getChildren().map(function(b){return {x:b.x, y:b.y};});
+    this.particles = this.add.particles('spark');
+    this.shapes = shapes;
+
+    var self=this;
+    blocks.getChildren().forEach(function(block){
+      block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
+      block.on('pointerdown', function(){ 
+        if(self.sound){ try{self.sound.play('pop');}catch{} }
+        self.particles.createEmitter({x:block.x, y:block.y, speed:{min:-150,max:150}, lifespan:500, scale:{start:0.5,end:0}, quantity:20, tint:0xff3eb5}).explode(20, block.x, block.y);
+      });
+    });
+
+    // Pulse animation
+    var children = blocks.getChildren();
+    children.forEach(function(child,idx){ self.tweens.add({targets:child, scale:0.35, ease:'sine.inout', duration:600, delay:(idx%cols)*40, yoyo:true, repeat:-1 }); });
+
+    // Text engine
+    this.createTextEngine();
+    
+    // Setup mouse flee effect
+    this.setupMouseFleeEffect();
+    
+    // Setup audio
+    this.setupAudio();
   }
 
-  update(time, delta){
+  update(time, delta) {
     this.timeSincePhase += delta;
-    if(this.timeSincePhase > this.phaseDuration){
-      this.phase = (this.phase + 1) % this.shapes.length;
-      this.timeSincePhase = 0;
-      const nextShape = this.shapes[this.phase];
-      if(this.blocks) this.blocks.getChildren().forEach(b => b.setTexture(nextShape));
+    if(this.timeSincePhase>this.phaseDuration){
+      this.phase=(this.phase+1)%this.shapes.length;
+      this.timeSincePhase=0;
+
+      // Change shape automatically
+      var newShape = this.shapes[this.phase];
+      this.blocks.getChildren().forEach(function(block){ block.setTexture(newShape); });
     }
+
+    if(this.input.activePointer.isDown){
+      var mx=this.input.x, my=this.input.y;
+      this.blocks.getChildren().forEach(function(block){
+        var angle=Phaser.Math.Angle.Between(block.x, block.y, mx, my);
+        block.x += Math.cos(angle)*0.6;
+        block.y += Math.sin(angle)*0.6;
+      });
+    }
+
     this.animateBlocks(time);
   }
 
-  createTexturesIfNeeded(){
-    if(this.textures.exists('square')) return;
-    const g = this.make.graphics({ add:false });
-    g.fillStyle(0xffffff,1); g.fillRect(0,0,50,50); g.generateTexture('square',50,50);
-    g.clear(); g.fillStyle(0xffffff,1); g.fillCircle(25,25,25); g.generateTexture('circle',50,50);
-    g.clear(); g.fillStyle(0xffffff,1); g.beginPath(); g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath(); g.fillPath(); g.generateTexture('diamond',50,50);
-  }
-
-  createGrid(){
-    if(this.blocks){
-      try{ this.blocks.getChildren().forEach(c => c.destroy()); }catch(e){}
-      try{ this.blocks.clear(true); }catch(e){}
-      this.blocks = null;
-      this.originalPositions = [];
-    }
-
-    const w = this.cameras.main.width, h = this.cameras.main.height;
-    const cellW = 60, cellH = 60;
-    const cols = Math.ceil(w / cellW) + 1;
-    const rows = Math.ceil(h / cellH) + 1;
-    const total = cols * rows;
-
-    this.blocks = this.add.group();
-    for(let i=0;i<total;i++){
-      const key = this.shapes[i % this.shapes.length];
-      const s = this.add.image(0,0,key).setScale(0.36).setAlpha(0.98);
-      s.setInteractive();
-      this.blocks.add(s);
-    }
-    Phaser.Actions.GridAlign(this.blocks.getChildren(), { width: cols, height: rows, cellWidth: cellW, cellHeight: cellH, x:0, y:0 });
-    this.originalPositions = this.blocks.getChildren().map(b => ({ x:b.x, y:b.y }));
-    // interactions
-    this.blocks.getChildren().forEach(b => {
-      b.on('pointerover', ()=> { this.tweens.add({ targets:b, scale:0.5, duration:140, yoyo:true }); });
-      b.on('pointerdown', ()=> {
-        try{ if(this.sound) this.sound.play('pop'); }catch(e){}
-        if(this.particles) this.particles.createEmitter({ x:b.x, y:b.y, speed:{min:-100,max:100}, lifespan:400, scale:{start:0.4,end:0}, quantity:14, tint: COLOR_MAP[this.colorKey].tileTint }).explode(14, b.x, b.y);
-      });
-    });
-  }
-
-  setupParticles(){
-    if(this.particles){ try{ this.particles.destroy(); }catch(e){} }
-    this.particles = this.add.particles('spark');
-  }
-
-  setupPointerInteractions(){
-    this.input.on('pointermove', pointer => {
-      if(!this.blocks || !this.originalPositions) return;
-      const px = pointer.x, py = pointer.y;
-      this.blocks.getChildren().forEach((b,i) => {
-        const op = this.originalPositions[i];
-        const dist = Phaser.Math.Distance.Between(op.x, op.y, px, py);
-        if(dist < 900){
-          const angle = Phaser.Math.Angle.Between(op.x, op.y, px, py);
-          const force = (900 - dist) / 9000 * 20 * (1 + (COLOR_MAP[this.colorKey].intensity || 1)/3);
-          b.x += Math.cos(angle + Math.PI) * force;
-          b.y += Math.sin(angle + Math.PI) * force;
-        }
-      });
-    });
-
-    this.input.on('pointerdown', () => {
-      if(!this.originalPositions) return;
-      for(let i=0;i<3;i++){
-        const idx = Phaser.Math.Between(0, this.originalPositions.length-1);
-        const op = this.originalPositions[idx];
-        this.tweens.add({ targets: op, x: op.x + Phaser.Math.Between(-10,10), y: op.y + Phaser.Math.Between(-10,10), duration:260, yoyo:true });
-      }
-    });
-  }
-
-  setupAudio(){
-    try{ this.audioEngine = new AudioEngineSafe(); }catch(e){ this.audioEngine = null; console.warn('AudioEngine failed init'); }
-    try{ this.popSound = this.sound.add('pop'); }catch(e){ this.popSound = null; }
-  }
-
-  applyColorToGrid(key){
-    if(!this.blocks) return;
-    const map = COLOR_MAP[key];
-    this.blocks.getChildren().forEach(b => {
-      try{ b.setTint(map.tileTint); b.setAlpha(map.tileAlpha); b.setScale(map.tileScale || 0.36); }catch(e){}
-    });
-  }
-
   animateBlocks(time){
-    if(!this.blocks) return;
-    const children = this.blocks.getChildren();
-    for(let i=0;i<children.length;i++){
-      const b = children[i];
-      const op = this.originalPositions[i];
-      if(!op) continue;
-      let offsetX=0, offsetY=0;
-      const intensity = COLOR_MAP[this.colorKey].intensity || 1;
-      switch(this.phase){
-        case 0: offsetX = Math.sin(time/300 + op.y*0.12)*(12 + intensity); offsetY = Math.cos(time/400 + op.x*0.08)*(8 + intensity/2); break;
-        case 1: const dx = op.x - (this.cameras.main.width/2); const dy = op.y - (this.cameras.main.height/2); const dist = Math.sqrt(dx*dx + dy*dy); offsetX = Math.sin(time/250 + dist*0.05)*(18 + intensity*1.4); offsetY = Math.cos(time/350 + dist*0.03)*(12 + intensity); break;
-        case 2: offsetX = Math.sin(time/220 + (op.x+op.y)*0.06)*(15 + intensity); offsetY = Math.cos(time/280 + (op.x-op.y)*0.05)*(10 + intensity/1.2); break;
+    var self=this;
+    this.blocks.getChildren().forEach(function(block,i){
+      var orig=self.originalPositions[i];
+      var offsetX=0, offsetY=0;
+      
+      // HORIZONTAL animation patterns
+      switch(self.phase){
+        case 0: 
+          offsetX=Math.sin(time/300 + orig.y*0.12)*12; 
+          offsetY=Math.cos(time/400 + orig.x*0.08)*8;
+          break;
+        case 1: 
+          var dx=orig.x-400, dy=orig.y-300, dist=Math.sqrt(dx*dx+dy*dy); 
+          offsetX=Math.sin(time/250 + dist*0.05)*18; 
+          offsetY=Math.cos(time/350 + dist*0.03)*12;
+          break;
+        case 2: 
+          offsetX=Math.sin(time/220 + (orig.x+orig.y)*0.06)*15; 
+          offsetY=Math.cos(time/280 + (orig.x-orig.y)*0.05)*10;
+          break;
       }
-      // variant hook (safe)
-      const variantFn = this.registeredVariants[COLOR_MAP[this.colorKey].variant];
-      if(variantFn){
-        try{
-          const res = variantFn(b, i, time, op) || {};
-          if(res.delta){ offsetX += res.delta.x || 0; offsetY += res.delta.y || 0; }
-        }catch(e){ console.error('variant error', e); }
-      }
-      b.x = op.x + offsetX;
-      b.y = op.y + offsetY;
-    }
+      
+      block.x = orig.x + offsetX;
+      block.y = orig.y + offsetY;
+    });
   }
 
-  /* Génère le texte (entrée gauche → centre). Nettoie l'ancien proprement (centre → droite). */
-  generateAnimatedText(text, colorKey){
-    if(!text || text.trim()==='') return;
-    text = text.toUpperCase().slice(0, 20);
+  createTextEngine(){
+    var input=document.getElementById("text-input");
+    var button=document.getElementById("generate-btn");
+    var historyList=document.getElementById("history-list");
+    var clearBtn=document.getElementById("clear-history-btn");
+    var self=this;
 
-    // sortie de l'ancien texte vers la droite puis destruction
-    if(this.letters && this.letters.length){
-      const old = this.letters.slice();
-      this.letters = [];
-      this.tweens.add({
-        targets: old,
-        x: `+=${this.cameras.main.width * 0.6}`,
-        alpha: 0,
-        duration: 420,
-        ease: 'power2.in',
-        onComplete: (t, targets) => { targets.forEach(o => { try{o.destroy(); }catch(e){} }); }
+    button.addEventListener("click", function(){
+      var text=input.value.toUpperCase().trim();
+      if(!text) return;
+
+      // Add to history
+      if(!self.history.includes(text)){
+        self.history.push(text);
+      }
+
+      // Update UI
+      self.updateHistoryUI();
+      
+      // Generate animation
+      self.generateAnimatedText(text);
+      self.currentAnimationText = text;
+      
+      // Play sound once on click
+      self.playSoundOnce();
+      
+      input.value = '';
+    });
+
+    input.addEventListener('keypress', function(e){
+      if(e.key === 'Enter'){
+        button.click();
+      }
+    });
+
+    clearBtn.addEventListener("click", function(){
+      self.history = [];
+      self.updateHistoryUI();
+      self.clearAnimatedText();
+    });
+  }
+
+  updateHistoryUI(){
+    var historyList=document.getElementById("history-list");
+    historyList.innerHTML = '';
+    var self = this;
+
+    this.history.forEach(function(text){
+      var item = document.createElement('div');
+      item.className = 'history-item';
+      if(text === self.currentAnimationText){
+        item.classList.add('active');
+      }
+      item.textContent = text;
+      
+      item.addEventListener('click', function(){
+        self.generateAnimatedText(text);
+        self.currentAnimationText = text;
+        self.updateHistoryUI();
+        self.playSoundOnce();
       });
+
+      historyList.appendChild(item);
+    });
+  }
+
+  generateAnimatedText(text){
+    if(!text) return;
+    if(this.letters) this.letters.forEach(function(l){l.destroy();});
+    this.letters=[];
+
+    // Position au centre de l'écran
+    var centerY = this.cameras.main.height / 2;
+    
+    var charWidth = 35;
+    var totalWidth = text.length * charWidth;
+    var centerX = this.cameras.main.width / 2;
+    var startX = centerX - totalWidth / 2;
+    
+    var self = this;
+    for(var i=0;i<text.length;i++){
+      (function(self,ch,idx){
+        var xPos = startX + idx * charWidth;
+        
+        // Create a background circle behind the text
+        var bgCircle = self.add.circle(xPos, centerY, 35, 0xb8ffb8, 0.8).setDepth(99);
+        self.letters.push(bgCircle);
+        
+        // Entrance animation for background
+        self.tweens.add({targets:bgCircle, scale:1, alpha:0.8, duration:800+idx*50, ease:"elastic.out"});
+        
+        // Continuous floating animation for background
+        self.tweens.add({targets:bgCircle, y:centerY+10, duration:2000+idx*100, ease:"sine.inout", delay:800+idx*50, yoyo:true, repeat:-1});
+        
+        // Create text
+        var letter=self.add.text(xPos, centerY, ch, {fontFamily:'Arial', fontSize:'40px', color:'#ff3eb5', fontWeight: 'bold'}).setOrigin(0.5).setDepth(100);
+        self.letters.push(letter);
+        
+        // Entrance animation for text
+        self.tweens.add({targets:letter, y:centerY-15, angle:360, alpha:1, duration:800+idx*50, ease:"elastic.out"});
+        
+        // Continuous floating animation for text
+        self.tweens.add({targets:letter, y:centerY+10, duration:2000+idx*100, ease:"sine.inout", delay:800+idx*50, yoyo:true, repeat:-1});
+      })(this,text[i],i);
     }
-
-    // history update
-    if(!this.history.includes(text)) this.history.unshift(text);
-    else { const idx = this.history.indexOf(text); if(idx > -1){ this.history.splice(idx,1); this.history.unshift(text); } }
-    if(window.updateHistoryUI) window.updateHistoryUI(this.history, text);
-
-    // set color
-    if(COLOR_MAP[colorKey]) this.colorKey = colorKey;
-    this.applyColorToGrid(this.colorKey);
-
-    // play melody
-    if(this.audioEngine){
-      try{
-        // resume context on first gesture if suspended
-        if(this.audioEngine.ctx && this.audioEngine.ctx.state === 'suspended') this.audioEngine.ctx.resume().catch(()=>{});
-        this.audioEngine.playFor(this.colorKey);
-      }catch(e){ console.warn('audio play err', e); }
-    }
-    try{ if(this.popSound) this.popSound.play(); }catch(e){}
-
-    // compute positions
-    const centerX = this.cameras.main.width/2, centerY = this.cameras.main.height/2;
-    const charW = 44, totalW = text.length * charW;
-    const startX = -Math.max(200, totalW);
-
-    for(let i=0;i<text.length;i++){
-      const ch = text[i];
-      const finalX = centerX - totalW/2 + i*charW + charW/2;
-      // bg circle (darker behind text for contrast)
-      const bg = this.add.circle(startX + i*12, centerY, 36, COLOR_MAP[this.colorKey].bgCircle).setDepth(90);
-      bg.setAlpha(0);
-      const letter = this.add.text(startX + i*12, centerY, ch, { fontFamily:'Fredoka, Arial', fontSize:'44px', fontWeight:700, color: COLOR_MAP[this.colorKey].textColor }).setOrigin(0.5).setDepth(95);
-      try{ letter.setStroke(COLOR_MAP[this.colorKey].stroke, 6); }catch(e){}
-      // tween entry
-      this.tweens.add({ targets: bg, x: finalX, alpha: 0.9, scale: { from: 0.6, to: 1 }, ease: 'back.out', duration: 360, delay: i*45 });
-      this.tweens.add({ targets: letter, x: finalX, y: centerY - 8, alpha: 1, ease:'expo.out', duration: 420, delay: i*45 + 30, onComplete: () => {
-        if(this.particles) this.particles.createEmitter({ x: finalX, y: centerY, speed:{min:-60,max:60}, lifespan:280, scale:{start:0.35,end:0}, quantity:6, tint: COLOR_MAP[this.colorKey].tileTint }).explode(6, finalX, centerY);
-      }});
-      // floating
-      this.tweens.add({ targets: [bg, letter], y: centerY + 10, duration: 2200 + i*60, ease:'sine.inout', yoyo:true, repeat:-1, delay:420 });
-      this.letters.push(bg); this.letters.push(letter);
-    }
-
-    this.currentText = text;
-    if(window.updateHistoryUI) window.updateHistoryUI(this.history, this.currentText);
   }
 
   clearAnimatedText(){
-    if(this.letters && this.letters.length){
-      this.letters.forEach(o => { try{o.destroy(); }catch(e){} });
+    if(this.letters){
+      this.letters.forEach(function(l){l.destroy();});
       this.letters = [];
-      this.currentText = '';
     }
   }
 
-  registerVariant(name, fn){
-    if(typeof fn !== 'function'){ console.warn('variant must be function'); return; }
-    this.registeredVariants[name] = fn;
-    console.info('Variant registered:', name);
-  }
-
-  registerDefaultVariants(){
-    // built-in safe variants
-    this.registerVariant('twirl', (b,i,time) => { b.rotation = Math.sin(time/1000 + i*0.01)*0.6; return { delta:{x:0,y:0} }; });
-    this.registerVariant('bounce', (b,i,time) => { return { delta:{x:0, y: Math.sin(time/450 + i*0.02)*8 } }; });
-    this.registerVariant('wave', (b,i,time) => { return { delta:{ x: Math.sin(time/1800 + i*0.04)*6, y:0 } }; });
-    this.registerVariant('spin', (b,i,time) => { b.rotation = Math.cos(time/800 + i*0.01)*0.4; return { delta:{x:0,y:0} }; });
-    this.registerVariant('jitter', (b,i,time) => { return { delta:{ x:(Math.sin(time/70 + i)*0.7), y:(Math.cos(time/60 + i)*0.7) } }; });
-  }
-}
-
-/* ---------- Audio engine safe (WebAudio) ---------- */
-class AudioEngineSafe {
-  constructor(){
-    try{ this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ this.ctx = null; console.warn('WebAudio not available'); }
-    this.melodies = {
-      pink: [440, 660, 880, 660],
-      mint: [330, 392, 440, 392],
-      sun:  [494, 440, 392, 330],
-      lav:  [262, 330, 392, 523],
-      aqua: [220, 262, 330, 392]
-    };
-  }
-  playTone(freq, duration = 0.12, when = 0){
-    if(!this.ctx) return;
-    const t = this.ctx.currentTime + when;
-    const o = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(freq, t);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(t); o.stop(t + duration + 0.03);
-  }
-  playFor(key){
-    if(!this.ctx) return;
-    const seq = this.melodies[key] || this.melodies['pink'];
-    seq.forEach((f,i) => this.playTone(f, 0.1 + i*0.01, i*0.08));
-    // small bass
-    this.playTone(120, 0.06, seq.length * 0.08);
-  }
-}
-
-/* ---------- Phaser config & boot ---------- */
-const config = {
-  type: Phaser.AUTO,
-  parent: 'phaser-example',
-  width: Math.floor(window.innerWidth * 0.70),
-  height: window.innerHeight,
-  backgroundColor: '#b8ffb8',
-  scene: FinalScene,
-  render: { antialias: true }
-};
-
-const game = new Phaser.Game(config);
-
-/* ---------- UI wiring (one-time attach) ---------- */
-document.addEventListener('DOMContentLoaded', () => {
-  const paletteDiv = document.getElementById('color-palette');
-  const generateBtn = document.getElementById('generate-btn');
-  const textInput = document.getElementById('text-input');
-  const historyList = document.getElementById('history-list');
-  const clearBtn = document.getElementById('clear-history-btn');
-
-  // create swatches
-  COLORS.forEach((c, idx) => {
-    const sw = document.createElement('div');
-    sw.className = 'color-swatch';
-    sw.style.background = c.color;
-    sw.dataset.key = c.key;
-    if(idx === 0) sw.classList.add('selected');
-    paletteDiv.appendChild(sw);
-  });
-
-  // updateHistoryUI (exposed to scene)
-  window.updateHistoryUI = function(historyArray, active){
-    historyList.innerHTML = '';
-    historyArray.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'history-item' + (item === active ? ' active' : '');
-      div.textContent = item;
-      div.addEventListener('click', () => {
-        const scene = game.scene.keys['FinalScene'];
-        if(scene) scene.generateAnimatedText(item, scene.colorKey);
-      });
-      historyList.appendChild(div);
-    });
-  };
-
-  // palette click
-  paletteDiv.addEventListener('click', (ev) => {
-    const sw = ev.target.closest('.color-swatch');
-    if(!sw) return;
-    document.querySelectorAll('.color-swatch').forEach(el => el.classList.toggle('selected', el === sw));
-    const key = sw.dataset.key;
-    const scene = game.scene.keys['FinalScene'];
-    if(scene){
-      scene.colorKey = key;
-      scene.applyColorToGrid(key);
-      // audio feedback
-      if(scene.audioEngine) scene.audioEngine.playFor(key);
+  setupAudio(){
+    var self = this;
+    try {
+      this.popSound = this.sound.add('pop', { loop: false, volume: 0.5 });
+    } catch(e){
+      console.log('Audio setup skipped');
     }
-  });
+  }
 
-  // generate button
-  generateBtn.addEventListener('click', () => {
-    const txt = textInput.value.trim();
-    if(!txt) return;
-    const scene = game.scene.keys['FinalScene'];
-    if(scene){
-      // resume audio if suspended (Chrome policy)
-      if(scene.audioEngine && scene.audioEngine.ctx && scene.audioEngine.ctx.state === 'suspended'){
-        scene.audioEngine.ctx.resume().catch(()=>{});
+  playSoundOnce(){
+    if(this.popSound){
+      try {
+        this.popSound.stop();
+        this.popSound.play();
+      } catch(e){
+        console.log('Sound play error');
       }
-      const sw = document.querySelector('.color-swatch.selected');
-      const key = sw ? sw.dataset.key : COLORS[0].key;
-      scene.generateAnimatedText(txt, key);
-      try{ if(scene.popSound) scene.popSound.play(); }catch(e){}
-      textInput.value = '';
     }
-  });
-
-  textInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') generateBtn.click(); });
-if(window.game && game.scene.keys['FinalScene'])
-    game.scene.keys['FinalScene'].tweens.killAll();
-
-  // clear history
-  clearBtn.addEventListener('click', () => {
-    const scene = game.scene.keys['FinalScene'];
-    if(scene){
-      scene.history = [];
-      scene.clearAnimatedText();
-      window.updateHistoryUI([], '');
-    }
-  });
-
-  // responsive resize handling
-  let resizeTimer = null;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      try{
-        const newW = Math.floor(window.innerWidth * 0.70);
-        const newH = window.innerHeight;
-        game.scale.resize(newW, newH);
-        const scene = game.scene.keys['FinalScene'];
-        if(scene){
-          scene.createGrid(); // recreate safe grid to fit new size
-        }
-      }catch(e){ console.warn('resize error', e); }
-    }, 150);
-  });
-
-  // expose variant registration function
-  window.registerShapeVariant = function(name, fn){
-    const scene = game.scene.keys['FinalScene'];
-    if(scene) scene.registerVariant(name, fn);
-  };
-});
-
-/* ---------- Register built-in variants (example) ---------- */
-window.addEventListener('load', () => {
-  // they are registered from scene.registerDefaultVariants too, but we expose this for extra safety
-  const scene = game.scene && game.scene.keys && game.scene.keys['FinalScene'];
-  if(scene){
-    // already registered in scene, nothing needed
   }
-  console.info('Code final prêt — tu peux ajouter des variantes avec window.registerShapeVariant("nom", fn)');
-});
 
-/* ---------- Global error logging (console) ---------- */
-window.addEventListener('error', function(e){ console.error('Uncaught error:', e.error || e.message); });
+  setupMouseFleeEffect(){
+    var self = this;
+    this.input.on('pointermove', function(pointer){
+      if(!self.blocks) return;
 
+      self.blocks.getChildren().forEach(function(block){
+        var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
+        var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
+        
+        // Flee effect - stronger when closer (distance < 150)
+        if(distance < 1000){
+          var fleeForce = (1000 - distance) / 100000 * 6000;
+          block.x += Math.cos(angle + Math.PI) * fleeForce;
+          block.y += Math.sin(angle + Math.PI) * fleeForce;
+        }
+      });
+    });
+  }
+}
+
+var config = { type: Phaser.AUTO, width: window.innerWidth*0.70, height: window.innerHeight, backgroundColor:'#b8ffb8', parent:'phaser-example', scene:Example, render: { antialias: true } };
+new Phaser.Game(config);
 </script>
 
 </body>
