@@ -1,502 +1,729 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Phaser — Texte animé + shapes foncées (final)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Shapes + Text Generator Pro</title>
+    <!-- Chargement de Phaser 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            font-family: 'Inter', Arial, sans-serif;
+            overflow: hidden;
+            background: #e0f7fa; /* Light cyan background */
+        }
 
-  <!-- Police cute -->
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+        /* Phaser zone */
+        #phaser-example {
+            width: 70vw;
+            height: 100vh;
+            border-right: 3px solid #00bcd4; /* Cyan border */
+        }
 
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+        /* Right-side interface */
+        #right-panel {
+            width: 30vw;
+            height: 100vh;
+            background: #ffffff;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
 
-  <style>
-    :root{
-      --accent: #ff3eb5;
-      --bg: #b8ffb8;
-      --panel-bg: rgba(255,255,255,0.95);
-    }
-    html,body{ height:100%; margin:0; padding:0; font-family:'Fredoka', Arial, sans-serif; background:var(--bg); overflow:hidden; }
-    /* Layout */
-    #phaser-example{ width:70vw; height:100vh; float:left; }
-    #right-panel{ width:30vw; height:100vh; float:right; background:var(--panel-bg); padding:20px; box-sizing:border-box; backdrop-filter: blur(6px); display:flex; flex-direction:column; gap:14px; }
-    h2{ margin:0; color:var(--accent); font-size:20px; text-align:center; }
-    #controls{ display:flex; gap:8px; align-items:center; }
-    #text-input{ flex:1; padding:10px; border-radius:10px; border:2px solid var(--accent); outline:none; font-size:16px; }
-    #generate-btn{ padding:10px 14px; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; }
-    #generate-btn:active{ transform:translateY(1px); }
-    .color-palette{ display:flex; gap:10px; justify-content:center; align-items:center; }
-    .color-swatch{ width:36px; height:36px; border-radius:50%; border:3px solid rgba(255,255,255,0.6); box-shadow:0 6px 14px rgba(0,0,0,0.12); cursor:pointer; transition: transform .18s ease, box-shadow .18s ease; }
-    .color-swatch.selected{ transform:scale(1.08); box-shadow:0 12px 22px rgba(0,0,0,0.2); border:3px solid #fff; }
-    .palette-label{ text-align:center; font-size:12px; color:var(--accent); font-weight:700; text-transform:uppercase; margin-top:4px; }
-    .history-section{ flex:1; display:flex; flex-direction:column; gap:8px; overflow:auto; }
-    .history-title{ color:var(--accent); font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; }
-    #history-list{ display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:6px; }
-    .history-item{ padding:8px; border-radius:8px; background:rgba(255,62,181,0.06); border:1px solid rgba(255,62,181,0.12); font-size:13px; cursor:pointer; }
-    .history-item.active{ background:var(--accent); color:white; font-weight:700; }
-    .clear-history-btn{ padding:10px; border-radius:10px; border:1px solid var(--accent); color:var(--accent); background:transparent; cursor:pointer; font-weight:700; }
-    .small-note{ font-size:12px; color:#333; text-align:center; }
-    @media(max-width:900px){
-      #phaser-example{ width:100vw; height:60vh; }
-      #right-panel{ width:100vw; height:40vh; position:fixed; bottom:0; left:0; display:block; overflow:auto; }
-    }
-  </style>
+        #right-panel h2 {
+            margin-top: 0;
+            color: #00bcd4;
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        /* Input and Button */
+        #text-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border: 2px solid #00bcd4;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        #text-input:focus {
+            border-color: #ff5722; /* Orange focus */
+            box-shadow: 0 0 12px rgba(0, 188, 212, 0.5);
+        }
+
+        #generate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #ff5722, #ff9800); /* Orange gradient */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        #generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 87, 34, 0.6);
+        }
+
+        #generate-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 87, 34, 0.4);
+        }
+
+        /* Color Selection */
+        .color-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00bcd4;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #e0f7fa;
+            padding-bottom: 5px;
+        }
+
+        #color-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .color-option {
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-option[data-color="#FF5722"] { background-color: #FF5722; } /* Deep Orange */
+        .color-option[data-color="#4CAF50"] { background-color: #4CAF50; } /* Green */
+        .color-option[data-color="#2196F3"] { background-color: #2196F3; } /* Blue */
+
+        .color-option.selected {
+            border-color: #ff5722;
+            box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* History Section */
+        .history-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+
+        .history-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ff5722;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        #history-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding-right: 5px; /* Space for scrollbar */
+        }
+
+        /* Scrollbar styling for a cleaner look */
+        #history-list::-webkit-scrollbar { width: 6px; }
+        #history-list::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 10px; }
+        #history-list::-webkit-scrollbar-thumb { background: #00bcd4; border-radius: 10px; }
+        
+        .history-item {
+            padding: 10px;
+            background: rgba(0, 188, 212, 0.08);
+            border: 1px solid rgba(0, 188, 212, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            color: #333;
+            word-break: break-word;
+            font-weight: 500;
+        }
+
+        .history-item:hover {
+            background: rgba(0, 188, 212, 0.15);
+            border-color: #00bcd4;
+            transform: translateX(3px);
+        }
+
+        .history-item.active {
+            background: #ff5722;
+            color: white;
+            border-color: #ff5722;
+            font-weight: 600;
+        }
+
+        .clear-history-btn {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 87, 34, 0.1);
+            color: #ff5722;
+            border: 1px solid #ff5722;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .clear-history-btn:hover {
+            background: #ff5722;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="phaser-example"></div>
+<div id="phaser-example"></div>
 
-  <div id="right-panel">
-    <h2>Créer une animation avec ton texte</h2>
-
-    <div id="controls">
-      <input id="text-input" type="text" placeholder="Écris un mot ou une phrase… (max 20)" maxlength="20" />
-      <button id="generate-btn">Générer</button>
+<div id="right-panel">
+    <h2>Générateur d'Animation Pro</h2>
+    <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…" maxlength="20">
+    
+    <div class="color-title">1. Choisir la couleur/l'animation</div>
+    <div id="color-options">
+        <div class="color-option selected" data-color="#FF5722" data-anim="PULSE_WAVE">ORANGE - Vague</div>
+        <div class="color-option" data-color="#4CAF50" data-anim="SPIRAL_FLOW">VERT - Spirale</div>
+        <div class="color-option" data-color="#2196F3" data-anim="RIPPLE_GRID">BLEU - Ondulation</div>
     </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;">
-      <div class="palette-label">Choisis une couleur</div>
-      <div class="color-palette" id="color-palette"></div>
-    </div>
+    
+    <button id="generate-btn">Générer l'animation et la musique</button>
 
     <div class="history-section">
-      <div class="history-title">Historique</div>
-      <div id="history-list"></div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
+        <div class="history-title">Historique</div>
+        <div id="history-list"></div>
         <button class="clear-history-btn" id="clear-history-btn">Effacer l'historique</button>
-      </div>
-      <div class="small-note">Clique sur un élément de l'historique pour rejouer l'animation.</div>
     </div>
-  </div>
+</div>
 
 <script>
-/*
-  Version finale robuste.
-  - Grid de shapes animées (avec teintes plus foncées pour les tiles)
-  - 5 couleurs sélectionnables (texte + variantes d'animations)
-  - Musique courte générée par WebAudio à chaque clic
-  - API safe: window.registerShapeVariant(name, fn)
-*/
-
-/* ---------- Couleurs (teintes PLus foncées pour shapes) ---------- */
-const COLORS = [
-  { key: 'pink', label: 'Fuchsia', color:'#ff3eb5' },
-  { key: 'mint', label: 'Mint', color:'#34d399' },
-  { key: 'sun',  label: 'Sun',  color:'#ffb86b' },
-  { key: 'lav',  label: 'Lavande', color:'#9b7bff' },
-  { key: 'aqua', label: 'Aqua', color:'#00c2ff' }
-];
-
-/* TEINTES PLUS FONCÉES pour les tiles (tileTint) */
-const COLOR_MAP = {
-  pink:  { tileTint: 0xff6fae, tileAlpha:0.98, tileScale:0.36, variant:'twirl', bgCircle:0x2b0018, textColor:'#ffffff', stroke:'#ff3eb5', intensity:3 },
-  mint:  { tileTint: 0x0f8f5f, tileAlpha:0.95, tileScale:0.36, variant:'bounce', bgCircle:0x022916, textColor:'#ffffff', stroke:'#34a37d', intensity:2 },
-  sun:   { tileTint: 0xb87630, tileAlpha:0.96, tileScale:0.36, variant:'wave', bgCircle:0x2f1600, textColor:'#ffffff', stroke:'#c87a2b', intensity:2.2 },
-  lav:   { tileTint: 0x5b3fff, tileAlpha:0.95, tileScale:0.36, variant:'spin', bgCircle:0x120036, textColor:'#ffffff', stroke:'#5d3cff', intensity:2.6 },
-  aqua:  { tileTint: 0x007aa3, tileAlpha:0.96, tileScale:0.36, variant:'jitter', bgCircle:0x001f2b, textColor:'#ffffff', stroke:'#007fb3', intensity:3.4 }
-};
-
-/* ---------- Phaser Scene ---------- */
-class FinalScene extends Phaser.Scene {
-  constructor(){ super({ key:'FinalScene' }); this.blocks=null; this.originalPositions=[]; this.letters=[]; this.history=[]; this.currentText=''; this.shapes=['square','circle','diamond']; this.phase=0; this.phaseDuration=6000; this.timeSincePhase=0; this.colorKey=COLORS[0].key; this.registeredVariants={}; }
-
-  preload(){
-    this.load.setBaseURL('https://labs.phaser.io');
-    this.load.image('spark','assets/particles/blue.png');
-    this.load.audio('pop','assets/audio/SoundEffects/pop.wav');
-  }
-
-  create(){
-    try{
-      this.createTexturesIfNeeded();
-      this.createGrid();
-      this.setupParticles();
-      this.setupPointerInteractions();
-      this.setupAudio();
-      this.applyColorToGrid(this.colorKey);
-      // register default variants
-      this.registerDefaultVariants();
-    }catch(err){
-      console.error('Erreur create():', err);
-    }
-  }
-
-  update(time, delta){
-    this.timeSincePhase += delta;
-    if(this.timeSincePhase > this.phaseDuration){
-      this.phase = (this.phase + 1) % this.shapes.length;
-      this.timeSincePhase = 0;
-      const nextShape = this.shapes[this.phase];
-      if(this.blocks) this.blocks.getChildren().forEach(b => b.setTexture(nextShape));
-    }
-    this.animateBlocks(time);
-  }
-
-  createTexturesIfNeeded(){
-    if(this.textures.exists('square')) return;
-    const g = this.make.graphics({ add:false });
-    g.fillStyle(0xffffff,1); g.fillRect(0,0,50,50); g.generateTexture('square',50,50);
-    g.clear(); g.fillStyle(0xffffff,1); g.fillCircle(25,25,25); g.generateTexture('circle',50,50);
-    g.clear(); g.fillStyle(0xffffff,1); g.beginPath(); g.moveTo(25,0); g.lineTo(50,25); g.lineTo(25,50); g.lineTo(0,25); g.closePath(); g.fillPath(); g.generateTexture('diamond',50,50);
-  }
-
-  createGrid(){
-    if(this.blocks){
-      try{ this.blocks.getChildren().forEach(c => c.destroy()); }catch(e){}
-      try{ this.blocks.clear(true); }catch(e){}
-      this.blocks = null;
-      this.originalPositions = [];
+class Example extends Phaser.Scene {
+    constructor() {
+        super();
+        this.activeColor = '#FF5722'; // Default color: Deep Orange
+        this.activeAnim = 'PULSE_WAVE'; // Default animation
+        this.phase = 0;
+        this.phaseDuration = 6000;
+        this.timeSincePhase = 0;
+        this.history = [];
+        this.currentAnimationText = '';
+        this.popSound = null;
+        this.bgMusic = null;
+        this.blocks = null;
+        this.originalPositions = [];
     }
 
-    const w = this.cameras.main.width, h = this.cameras.main.height;
-    const cellW = 60, cellH = 60;
-    const cols = Math.ceil(w / cellW) + 1;
-    const rows = Math.ceil(h / cellH) + 1;
-    const total = cols * rows;
-
-    this.blocks = this.add.group();
-    for(let i=0;i<total;i++){
-      const key = this.shapes[i % this.shapes.length];
-      const s = this.add.image(0,0,key).setScale(0.36).setAlpha(0.98);
-      s.setInteractive();
-      this.blocks.add(s);
+    preload() {
+        this.load.setBaseURL('https://labs.phaser.io');
+        this.load.image('spark', 'assets/particles/blue.png');
+        this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+        // Musique d'ambiance - Remplacez par votre propre musique si possible (doit être un lien direct)
+        // J'utilise un son d'exemple de Phaser Labs
+        this.load.audio('music', 'assets/audio/oedipus_prefix_bgm.mp3');
     }
-    Phaser.Actions.GridAlign(this.blocks.getChildren(), { width: cols, height: rows, cellWidth: cellW, cellHeight: cellH, x:0, y:0 });
-    this.originalPositions = this.blocks.getChildren().map(b => ({ x:b.x, y:b.y }));
-    // interactions
-    this.blocks.getChildren().forEach(b => {
-      b.on('pointerover', ()=> { this.tweens.add({ targets:b, scale:0.5, duration:140, yoyo:true }); });
-      b.on('pointerdown', ()=> {
-        try{ if(this.sound) this.sound.play('pop'); }catch(e){}
-        if(this.particles) this.particles.createEmitter({ x:b.x, y:b.y, speed:{min:-100,max:100}, lifespan:400, scale:{start:0.4,end:0}, quantity:14, tint: COLOR_MAP[this.colorKey].tileTint }).explode(14, b.x, b.y);
-      });
-    });
-  }
 
-  setupParticles(){
-    if(this.particles){ try{ this.particles.destroy(); }catch(e){} }
-    this.particles = this.add.particles('spark');
-  }
+    create() {
+        this.generateTextures();
+        this.createBlocks();
+        this.setupAudio();
+        this.setupInteractions();
+        this.createTextEngine();
 
-  setupPointerInteractions(){
-    this.input.on('pointermove', pointer => {
-      if(!this.blocks || !this.originalPositions) return;
-      const px = pointer.x, py = pointer.y;
-      this.blocks.getChildren().forEach((b,i) => {
-        const op = this.originalPositions[i];
-        const dist = Phaser.Math.Distance.Between(op.x, op.y, px, py);
-        if(dist < 900){
-          const angle = Phaser.Math.Angle.Between(op.x, op.y, px, py);
-          const force = (900 - dist) / 9000 * 20 * (1 + (COLOR_MAP[this.colorKey].intensity || 1)/3);
-          b.x += Math.cos(angle + Math.PI) * force;
-          b.y += Math.sin(angle + Math.PI) * force;
+        // Ajout du listener de redimensionnement
+        window.addEventListener('resize', this.handleResize.bind(this));
+        this.handleResize(); // Appel initial pour s'assurer que tout est correctement dimensionné
+    }
+
+    handleResize() {
+        const newWidth = window.innerWidth * 0.70;
+        const newHeight = window.innerHeight;
+
+        // Redimensionner le canvas Phaser
+        this.game.scale.resize(newWidth, newHeight);
+        
+        // Recalculer et repositionner la grille
+        this.recalculateGrid(newWidth, newHeight);
+
+        // Recentrer le texte animé
+        if (this.currentAnimationText) {
+            this.generateAnimatedText(this.currentAnimationText);
         }
-      });
-    });
-
-    this.input.on('pointerdown', () => {
-      if(!this.originalPositions) return;
-      for(let i=0;i<3;i++){
-        const idx = Phaser.Math.Between(0, this.originalPositions.length-1);
-        const op = this.originalPositions[idx];
-        this.tweens.add({ targets: op, x: op.x + Phaser.Math.Between(-10,10), y: op.y + Phaser.Math.Between(-10,10), duration:260, yoyo:true });
-      }
-    });
-  }
-
-  setupAudio(){
-    try{ this.audioEngine = new AudioEngineSafe(); }catch(e){ this.audioEngine = null; console.warn('AudioEngine failed init'); }
-    try{ this.popSound = this.sound.add('pop'); }catch(e){ this.popSound = null; }
-  }
-
-  applyColorToGrid(key){
-    if(!this.blocks) return;
-    const map = COLOR_MAP[key];
-    this.blocks.getChildren().forEach(b => {
-      try{ b.setTint(map.tileTint); b.setAlpha(map.tileAlpha); b.setScale(map.tileScale || 0.36); }catch(e){}
-    });
-  }
-
-  animateBlocks(time){
-    if(!this.blocks) return;
-    const children = this.blocks.getChildren();
-    for(let i=0;i<children.length;i++){
-      const b = children[i];
-      const op = this.originalPositions[i];
-      if(!op) continue;
-      let offsetX=0, offsetY=0;
-      const intensity = COLOR_MAP[this.colorKey].intensity || 1;
-      switch(this.phase){
-        case 0: offsetX = Math.sin(time/300 + op.y*0.12)*(12 + intensity); offsetY = Math.cos(time/400 + op.x*0.08)*(8 + intensity/2); break;
-        case 1: const dx = op.x - (this.cameras.main.width/2); const dy = op.y - (this.cameras.main.height/2); const dist = Math.sqrt(dx*dx + dy*dy); offsetX = Math.sin(time/250 + dist*0.05)*(18 + intensity*1.4); offsetY = Math.cos(time/350 + dist*0.03)*(12 + intensity); break;
-        case 2: offsetX = Math.sin(time/220 + (op.x+op.y)*0.06)*(15 + intensity); offsetY = Math.cos(time/280 + (op.x-op.y)*0.05)*(10 + intensity/1.2); break;
-      }
-      // variant hook (safe)
-      const variantFn = this.registeredVariants[COLOR_MAP[this.colorKey].variant];
-      if(variantFn){
-        try{
-          const res = variantFn(b, i, time, op) || {};
-          if(res.delta){ offsetX += res.delta.x || 0; offsetY += res.delta.y || 0; }
-        }catch(e){ console.error('variant error', e); }
-      }
-      b.x = op.x + offsetX;
-      b.y = op.y + offsetY;
-    }
-  }
-
-  /* Génère le texte (entrée gauche → centre). Nettoie l'ancien proprement (centre → droite). */
-  generateAnimatedText(text, colorKey){
-    if(!text || text.trim()==='') return;
-    text = text.toUpperCase().slice(0, 20);
-
-    // sortie de l'ancien texte vers la droite puis destruction
-    if(this.letters && this.letters.length){
-      const old = this.letters.slice();
-      this.letters = [];
-      this.tweens.add({
-        targets: old,
-        x: `+=${this.cameras.main.width * 0.6}`,
-        alpha: 0,
-        duration: 420,
-        ease: 'power2.in',
-        onComplete: (t, targets) => { targets.forEach(o => { try{o.destroy(); }catch(e){} }); }
-      });
     }
 
-    // history update
-    if(!this.history.includes(text)) this.history.unshift(text);
-    else { const idx = this.history.indexOf(text); if(idx > -1){ this.history.splice(idx,1); this.history.unshift(text); } }
-    if(window.updateHistoryUI) window.updateHistoryUI(this.history, text);
+    generateTextures() {
+        // Crée des textures une seule fois
+        if (this.textures.exists('square')) return;
+        
+        var g = this.make.graphics({ x:0, y:0, add:false });
+        
+        // --- Square ---
+        g.fillStyle(0xffffff, 1);
+        g.fillRect(0, 0, 50, 50);
+        g.generateTexture('square', 50, 50);
 
-    // set color
-    if(COLOR_MAP[colorKey]) this.colorKey = colorKey;
-    this.applyColorToGrid(this.colorKey);
+        // --- Circle ---
+        g.clear();
+        g.fillStyle(0xffffff, 1);
+        g.fillCircle(25, 25, 25);
+        g.generateTexture('circle', 50, 50);
 
-    // play melody
-    if(this.audioEngine){
-      try{
-        // resume context on first gesture if suspended
-        if(this.audioEngine.ctx && this.audioEngine.ctx.state === 'suspended') this.audioEngine.ctx.resume().catch(()=>{});
-        this.audioEngine.playFor(this.colorKey);
-      }catch(e){ console.warn('audio play err', e); }
-    }
-    try{ if(this.popSound) this.popSound.play(); }catch(e){}
-
-    // compute positions
-    const centerX = this.cameras.main.width/2, centerY = this.cameras.main.height/2;
-    const charW = 44, totalW = text.length * charW;
-    const startX = -Math.max(200, totalW);
-
-    for(let i=0;i<text.length;i++){
-      const ch = text[i];
-      const finalX = centerX - totalW/2 + i*charW + charW/2;
-      // bg circle (darker behind text for contrast)
-      const bg = this.add.circle(startX + i*12, centerY, 36, COLOR_MAP[this.colorKey].bgCircle).setDepth(90);
-      bg.setAlpha(0);
-      const letter = this.add.text(startX + i*12, centerY, ch, { fontFamily:'Fredoka, Arial', fontSize:'44px', fontWeight:700, color: COLOR_MAP[this.colorKey].textColor }).setOrigin(0.5).setDepth(95);
-      try{ letter.setStroke(COLOR_MAP[this.colorKey].stroke, 6); }catch(e){}
-      // tween entry
-      this.tweens.add({ targets: bg, x: finalX, alpha: 0.9, scale: { from: 0.6, to: 1 }, ease: 'back.out', duration: 360, delay: i*45 });
-      this.tweens.add({ targets: letter, x: finalX, y: centerY - 8, alpha: 1, ease:'expo.out', duration: 420, delay: i*45 + 30, onComplete: () => {
-        if(this.particles) this.particles.createEmitter({ x: finalX, y: centerY, speed:{min:-60,max:60}, lifespan:280, scale:{start:0.35,end:0}, quantity:6, tint: COLOR_MAP[this.colorKey].tileTint }).explode(6, finalX, centerY);
-      }});
-      // floating
-      this.tweens.add({ targets: [bg, letter], y: centerY + 10, duration: 2200 + i*60, ease:'sine.inout', yoyo:true, repeat:-1, delay:420 });
-      this.letters.push(bg); this.letters.push(letter);
+        // --- Diamond ---
+        g.clear();
+        g.fillStyle(0xffffff, 1);
+        g.beginPath();
+        g.moveTo(25, 0);
+        g.lineTo(50, 25);
+        g.lineTo(25, 50);
+        g.lineTo(0, 25);
+        g.closePath();
+        g.fillPath();
+        g.generateTexture('diamond', 50, 50);
+        
+        g.destroy();
+        this.shapes = ['square', 'circle', 'diamond'];
     }
 
-    this.currentText = text;
-    if(window.updateHistoryUI) window.updateHistoryUI(this.history, this.currentText);
-  }
+    createBlocks() {
+        if (this.blocks) return; // Ne pas créer deux fois
+        
+        var gameWidth = this.cameras.main.width;
+        var gameHeight = this.cameras.main.height;
+        
+        var cellWidth = 60;
+        var cellHeight = 60;
+        var cols = Math.ceil(gameWidth / cellWidth) + 1;
+        var rows = Math.ceil(gameHeight / cellHeight) + 1;
+        var totalBlocks = cols * rows;
 
-  clearAnimatedText(){
-    if(this.letters && this.letters.length){
-      this.letters.forEach(o => { try{o.destroy(); }catch(e){} });
-      this.letters = [];
-      this.currentText = '';
+        this.cols = cols;
+        this.rows = rows;
+
+        this.blocks = this.add.group();
+        for (var i = 0; i < totalBlocks; i++) {
+            var key = this.shapes[i % this.shapes.length];
+            // Utilise la couleur active pour le tint initial
+            var sprite = this.add.image(0, 0, key).setScale(0.3).setTint(Phaser.Display.Color.HexStringToColor(this.activeColor).color);
+            sprite.setInteractive();
+            sprite.offsetX = 0; // Ajout d'offset pour l'effet de fuite
+            sprite.offsetY = 0;
+            this.blocks.add(sprite);
+        }
+        
+        // Stocke les positions initiales pour les animations
+        Phaser.Actions.GridAlign(this.blocks.getChildren(), { width: cols, height: rows, cellWidth: cellWidth, cellHeight: cellHeight, x: 0, y: 0 });
+        this.originalPositions = this.blocks.getChildren().map(function(b){ return { x: b.x, y: b.y }; });
+        
+        this.particles = this.add.particles('spark').setDepth(5);
+        this.applyPulseTween();
     }
-  }
+    
+    recalculateGrid(width, height) {
+        // Recalculer la grille si la taille a changé
+        if (!this.blocks) return;
+        
+        var gameWidth = width || this.cameras.main.width;
+        var gameHeight = height || this.cameras.main.height;
+        var cellWidth = 60;
+        var cellHeight = 60;
+        var cols = Math.ceil(gameWidth / cellWidth) + 1;
+        var rows = Math.ceil(gameHeight / cellHeight) + 1;
 
-  registerVariant(name, fn){
-    if(typeof fn !== 'function'){ console.warn('variant must be function'); return; }
-    this.registeredVariants[name] = fn;
-    console.info('Variant registered:', name);
-  }
+        // Si le nombre de blocs a changé significativement (peu probable avec le +1), il faudrait recréer.
+        // Ici, on se contente de réaligner et de mettre à jour les positions d'origine.
+        
+        Phaser.Actions.GridAlign(this.blocks.getChildren(), { 
+            width: cols, 
+            height: rows, 
+            cellWidth: cellWidth, 
+            cellHeight: cellHeight, 
+            x: 0, 
+            y: 0 
+        });
+        
+        this.originalPositions = this.blocks.getChildren().map(function(b){ return { x: b.x, y: b.y }; });
+        this.cols = cols;
+        this.rows = rows;
+    }
 
-  registerDefaultVariants(){
-    // built-in safe variants
-    this.registerVariant('twirl', (b,i,time) => { b.rotation = Math.sin(time/1000 + i*0.01)*0.6; return { delta:{x:0,y:0} }; });
-    this.registerVariant('bounce', (b,i,time) => { return { delta:{x:0, y: Math.sin(time/450 + i*0.02)*8 } }; });
-    this.registerVariant('wave', (b,i,time) => { return { delta:{ x: Math.sin(time/1800 + i*0.04)*6, y:0 } }; });
-    this.registerVariant('spin', (b,i,time) => { b.rotation = Math.cos(time/800 + i*0.01)*0.4; return { delta:{x:0,y:0} }; });
-    this.registerVariant('jitter', (b,i,time) => { return { delta:{ x:(Math.sin(time/70 + i)*0.7), y:(Math.cos(time/60 + i)*0.7) } }; });
-  }
+    applyPulseTween() {
+        // Annule les tweens existants sur l'échelle
+        this.blocks.getChildren().forEach(block => this.tweens.killTweensOf(block));
+
+        var children = this.blocks.getChildren();
+        children.forEach((child, idx) => {
+            this.tweens.add({
+                targets: child,
+                scale: 0.35,
+                ease: 'sine.inout',
+                duration: 600,
+                delay: (idx % this.cols) * 40,
+                yoyo: true,
+                repeat: -1
+            });
+        });
+    }
+
+    setupInteractions() {
+        var self = this;
+        this.blocks.getChildren().forEach(function(block){
+            block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
+            block.on('pointerdown', function(){ 
+                if(self.popSound){ try{self.popSound.play();}catch{} }
+                self.particles.createEmitter({
+                    x: block.x, 
+                    y: block.y, 
+                    speed: { min: -150, max: 150 }, 
+                    lifespan: 500, 
+                    scale: { start: 0.5, end: 0 }, 
+                    quantity: 20, 
+                    tint: Phaser.Display.Color.HexStringToColor(self.activeColor).color
+                }).explode(20, block.x, block.y);
+            });
+        });
+
+        // Setup mouse flee effect (improved)
+        this.input.on('pointermove', function(pointer){
+            if(!self.blocks) return;
+
+            self.blocks.getChildren().forEach(function(block){
+                var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
+                var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
+                
+                // Flee effect - stronger when closer (distance < 200)
+                if(distance < 200){
+                    var fleeForce = (200 - distance) / 200 * 5;
+                    block.offsetX = (block.offsetX || 0) + Math.cos(angle + Math.PI) * fleeForce;
+                    block.offsetY = (block.offsetY || 0) + Math.sin(angle + Math.PI) * fleeForce;
+                }
+            });
+        });
+    }
+
+    update(time, delta) {
+        this.timeSincePhase += delta;
+        if(this.timeSincePhase > this.phaseDuration){
+            this.phase = (this.phase + 1) % this.shapes.length;
+            this.timeSincePhase = 0;
+
+            // Transition douce pour le changement de forme
+            var newShape = this.shapes[this.phase];
+            var self = this;
+            this.blocks.getChildren().forEach((block, index) => {
+                this.tweens.add({
+                    targets: block,
+                    scale: 0,
+                    duration: 250,
+                    delay: index % 5 * 20,
+                    onComplete: function(){
+                        block.setTexture(newShape);
+                        self.tweens.add({
+                            targets: block,
+                            scale: 0.3,
+                            duration: 300,
+                            ease: 'Back.easeOut'
+                        });
+                    }
+                });
+            });
+        }
+
+        this.animateBlocks(time);
+    }
+
+    animateBlocks(time) {
+        var self = this;
+        this.blocks.getChildren().forEach(function(block, i){
+            var orig = self.originalPositions[i];
+            var offsetX = 0, offsetY = 0;
+            
+            // Logique d'animation basée sur la couleur/anim active
+            switch(self.activeAnim){
+                case 'PULSE_WAVE': // Animation ORANGE/DEFAUT: Vague Sinusoïdale (Lent)
+                    offsetX = Math.sin(time / 350 + orig.y * 0.1) * 15;
+                    offsetY = Math.cos(time / 450 + orig.x * 0.08) * 10;
+                    break;
+                case 'SPIRAL_FLOW': // Animation VERT: Mouvement en spirale vers le centre
+                    var dx = orig.x - self.cameras.main.width / 2;
+                    var dy = orig.y - self.cameras.main.height / 2;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    var angle = Math.atan2(dy, dx) + time * 0.0005; // Rotation lente
+                    
+                    offsetX = Math.cos(angle) * (dist * 0.1) + Math.sin(time / 200 + i * 0.1) * 5;
+                    offsetY = Math.sin(angle) * (dist * 0.1) + Math.cos(time / 300 + i * 0.1) * 5;
+                    break;
+                case 'RIPPLE_GRID': // Animation BLEU: Ondulation par rapport au centre de la grille
+                    var dx = orig.x - self.cameras.main.width / 2;
+                    var dy = orig.y - self.cameras.main.height / 2;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    var ripple = Math.sin(time / 200 + dist * 0.02) * 8; // Petit déplacement
+                    offsetX = (dx / dist) * ripple;
+                    offsetY = (dy / dist) * ripple;
+                    break;
+            }
+            
+            // Application des animations de phase + décalage de fuite
+            block.x = orig.x + offsetX + (block.offsetX || 0);
+            block.y = orig.y + offsetY + (block.offsetY || 0);
+
+            // Retour progressif des blocs après l'effet de fuite
+            block.offsetX = (block.offsetX || 0) * 0.95;
+            block.offsetY = (block.offsetY || 0) * 0.95;
+        });
+    }
+
+    createTextEngine() {
+        var input = document.getElementById("text-input");
+        var button = document.getElementById("generate-btn");
+        var colorOptions = document.querySelectorAll('.color-option');
+        var self = this;
+
+        // 1. Gestion des options de couleur
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Désélectionne tout
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+                // Sélectionne l'élément cliqué
+                this.classList.add('selected');
+                
+                self.activeColor = this.getAttribute('data-color');
+                self.activeAnim = this.getAttribute('data-anim');
+
+                // Applique immédiatement la couleur aux blocs
+                const tintValue = Phaser.Display.Color.HexStringToColor(self.activeColor).color;
+                self.blocks.getChildren().forEach(block => block.setTint(tintValue));
+            });
+        });
+
+        // 2. Gestion du bouton Générer
+        button.addEventListener("click", function() {
+            var text = input.value.toUpperCase().trim();
+            if (!text) return;
+
+            // Ajout à l'historique
+            if (!self.history.includes(text)) {
+                self.history.push(text);
+            }
+
+            self.updateHistoryUI();
+            
+            // Génère l'animation
+            self.generateAnimatedText(text);
+            self.currentAnimationText = text;
+            
+            // Démarre la musique
+            self.startBackgroundMusic();
+            
+            input.value = '';
+        });
+
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                button.click();
+            }
+        });
+
+        // 3. Gestion du bouton Effacer l'historique
+        document.getElementById("clear-history-btn").addEventListener("click", function(){
+            self.history = [];
+            self.updateHistoryUI();
+            self.clearAnimatedText();
+            self.stopBackgroundMusic();
+        });
+
+        // Affichage initial de l'historique
+        this.updateHistoryUI();
+    }
+
+    updateHistoryUI() {
+        var historyList = document.getElementById("history-list");
+        historyList.innerHTML = '';
+        var self = this;
+
+        this.history.forEach(function(text){
+            var item = document.createElement('div');
+            item.className = 'history-item';
+            if(text === self.currentAnimationText){
+                item.classList.add('active');
+            }
+            item.textContent = text;
+            
+            item.addEventListener('click', function(){
+                self.generateAnimatedText(text);
+                self.currentAnimationText = text;
+                self.updateHistoryUI();
+                self.startBackgroundMusic(); // Redémarre la musique si on clique sur un élément
+            });
+
+            historyList.appendChild(item);
+        });
+    }
+
+    generateAnimatedText(text) {
+        if (!text) return;
+        this.clearAnimatedText(); // Nettoie l'ancien texte
+        
+        this.letters = [];
+        
+        var centerY = this.cameras.main.height / 2;
+        var charWidth = 40; // Augmenté pour la visibilité
+        var totalWidth = text.length * charWidth;
+        var centerX = this.cameras.main.width / 2;
+        var startX = centerX - totalWidth / 2 + charWidth/2;
+        
+        const letterColor = this.activeColor;
+        const tint = Phaser.Display.Color.HexStringToColor(letterColor).color;
+
+        var self = this;
+        for (var i = 0; i < text.length; i++) {
+            (function(ch, idx) {
+                var xPos = startX + idx * charWidth;
+                
+                // 1. Background Circle
+                var bgCircle = self.add.circle(xPos, centerY, 40, 0xeeeeee, 1).setDepth(99);
+                bgCircle.setStrokeStyle(4, tint, 1);
+                self.letters.push(bgCircle);
+                
+                // 2. Text
+                var letter = self.add.text(xPos, centerY, ch, {
+                    fontFamily: 'Inter', 
+                    fontSize: '50px', 
+                    color: letterColor, 
+                    fontWeight: '900'
+                }).setOrigin(0.5).setDepth(100);
+                self.letters.push(letter);
+                
+                // Animation d'entrée
+                self.tweens.add({
+                    targets: [bgCircle, letter], 
+                    y: centerY, // Assure le positionnement de départ
+                    scale: { from: 0.1, to: 1 }, 
+                    alpha: { from: 0, to: 1 },
+                    duration: 1000 + idx * 80, 
+                    ease: "Back.easeOut"
+                });
+                
+                // Animation continue basée sur la couleur
+                self.applyTextAnimation(bgCircle, letter, idx, centerY);
+
+            })(text[i], i);
+        }
+    }
+
+    applyTextAnimation(bgCircle, letter, index, centerY) {
+        // Annule les tweens continus précédents
+        this.tweens.killTweensOf(bgCircle);
+        this.tweens.killTweensOf(letter);
+
+        // Les animations d'entrée doivent être terminées avant de commencer l'animation continue.
+        const delay = 1000 + index * 80;
+
+        switch (this.activeAnim) {
+            case 'PULSE_WAVE': // Orange/Vague: Flottement et pulsation
+                this.tweens.add({ targets: [bgCircle, letter], y: centerY + 10, duration: 2000 + index * 100, ease: "sine.inout", delay: delay, yoyo: true, repeat: -1 });
+                this.tweens.add({ targets: bgCircle, scale: 1.1, duration: 1500, ease: "sine.inout", delay: delay, yoyo: true, repeat: -1 });
+                break;
+            case 'SPIRAL_FLOW': // Vert/Spirale: Petite rotation et zoom
+                this.tweens.add({ targets: [bgCircle, letter], angle: 5, duration: 3000, ease: "sine.inout", delay: delay, yoyo: true, repeat: -1 });
+                this.tweens.add({ targets: [bgCircle, letter], scale: 1.05, duration: 1000 + index * 50, ease: "power1", delay: delay, yoyo: true, repeat: -1 });
+                break;
+            case 'RIPPLE_GRID': // Bleu/Ondulation: Décalage horizontal doux
+                this.tweens.add({ targets: [bgCircle, letter], x: letter.x + 10, duration: 1800 + index * 150, ease: "back.inout", delay: delay, yoyo: true, repeat: -1 });
+                break;
+        }
+    }
+
+    clearAnimatedText() {
+        if (this.letters) {
+            this.letters.forEach(l => { 
+                this.tweens.killTweensOf(l); // Arrête les tweens continus
+                l.destroy(); 
+            });
+            this.letters = [];
+        }
+    }
+
+    setupAudio() {
+        try {
+            this.popSound = this.sound.add('pop', { loop: false, volume: 0.3 });
+            this.bgMusic = this.sound.add('music', { loop: true, volume: 0.15 });
+        } catch(e) {
+            console.log('Audio setup error. Audio will be skipped.', e);
+        }
+    }
+
+    startBackgroundMusic() {
+        if (this.bgMusic) {
+            try {
+                if (this.bgMusic.isPlaying) {
+                    this.bgMusic.stop();
+                }
+                this.bgMusic.play();
+            } catch(e) {
+                console.log('Error playing music.');
+            }
+        }
+    }
+
+    stopBackgroundMusic() {
+        if (this.bgMusic && this.bgMusic.isPlaying) {
+            try {
+                this.bgMusic.stop();
+            } catch(e) {
+                console.log('Error stopping music.');
+            }
+        }
+    }
 }
 
-/* ---------- Audio engine safe (WebAudio) ---------- */
-class AudioEngineSafe {
-  constructor(){
-    try{ this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ this.ctx = null; console.warn('WebAudio not available'); }
-    this.melodies = {
-      pink: [440, 660, 880, 660],
-      mint: [330, 392, 440, 392],
-      sun:  [494, 440, 392, 330],
-      lav:  [262, 330, 392, 523],
-      aqua: [220, 262, 330, 392]
-    };
-  }
-  playTone(freq, duration = 0.12, when = 0){
-    if(!this.ctx) return;
-    const t = this.ctx.currentTime + when;
-    const o = this.ctx.createOscillator();
-    const g = this.ctx.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(freq, t);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-    o.connect(g); g.connect(this.ctx.destination);
-    o.start(t); o.stop(t + duration + 0.03);
-  }
-  playFor(key){
-    if(!this.ctx) return;
-    const seq = this.melodies[key] || this.melodies['pink'];
-    seq.forEach((f,i) => this.playTone(f, 0.1 + i*0.01, i*0.08));
-    // small bass
-    this.playTone(120, 0.06, seq.length * 0.08);
-  }
-}
-
-/* ---------- Phaser config & boot ---------- */
-const config = {
-  type: Phaser.AUTO,
-  parent: 'phaser-example',
-  width: Math.floor(window.innerWidth * 0.70),
-  height: window.innerHeight,
-  backgroundColor: '#b8ffb8',
-  scene: FinalScene,
-  render: { antialias: true }
+// Configuration du jeu Phaser
+var config = { 
+    type: Phaser.AUTO, 
+    width: window.innerWidth * 0.70, 
+    height: window.innerHeight, 
+    backgroundColor: '#e0f7fa', 
+    parent: 'phaser-example', 
+    scene: Example, 
+    render: { antialias: true } 
 };
-
-const game = new Phaser.Game(config);
-
-/* ---------- UI wiring (one-time attach) ---------- */
-document.addEventListener('DOMContentLoaded', () => {
-  const paletteDiv = document.getElementById('color-palette');
-  const generateBtn = document.getElementById('generate-btn');
-  const textInput = document.getElementById('text-input');
-  const historyList = document.getElementById('history-list');
-  const clearBtn = document.getElementById('clear-history-btn');
-
-  // create swatches
-  COLORS.forEach((c, idx) => {
-    const sw = document.createElement('div');
-    sw.className = 'color-swatch';
-    sw.style.background = c.color;
-    sw.dataset.key = c.key;
-    if(idx === 0) sw.classList.add('selected');
-    paletteDiv.appendChild(sw);
-  });
-
-  // updateHistoryUI (exposed to scene)
-  window.updateHistoryUI = function(historyArray, active){
-    historyList.innerHTML = '';
-    historyArray.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'history-item' + (item === active ? ' active' : '');
-      div.textContent = item;
-      div.addEventListener('click', () => {
-        const scene = game.scene.keys['FinalScene'];
-        if(scene) scene.generateAnimatedText(item, scene.colorKey);
-      });
-      historyList.appendChild(div);
-    });
-  };
-
-  // palette click
-  paletteDiv.addEventListener('click', (ev) => {
-    const sw = ev.target.closest('.color-swatch');
-    if(!sw) return;
-    document.querySelectorAll('.color-swatch').forEach(el => el.classList.toggle('selected', el === sw));
-    const key = sw.dataset.key;
-    const scene = game.scene.keys['FinalScene'];
-    if(scene){
-      scene.colorKey = key;
-      scene.applyColorToGrid(key);
-      // audio feedback
-      if(scene.audioEngine) scene.audioEngine.playFor(key);
-    }
-  });
-
-  // generate button
-  generateBtn.addEventListener('click', () => {
-    const txt = textInput.value.trim();
-    if(!txt) return;
-    const scene = game.scene.keys['FinalScene'];
-    if(scene){
-      // resume audio if suspended (Chrome policy)
-      if(scene.audioEngine && scene.audioEngine.ctx && scene.audioEngine.ctx.state === 'suspended'){
-        scene.audioEngine.ctx.resume().catch(()=>{});
-      }
-      const sw = document.querySelector('.color-swatch.selected');
-      const key = sw ? sw.dataset.key : COLORS[0].key;
-      scene.generateAnimatedText(txt, key);
-      try{ if(scene.popSound) scene.popSound.play(); }catch(e){}
-      textInput.value = '';
-    }
-  });
-
-  textInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') generateBtn.click(); });
-if(window.game && game.scene.keys['FinalScene'])
-    game.scene.keys['FinalScene'].tweens.killAll();
-
-  // clear history
-  clearBtn.addEventListener('click', () => {
-    const scene = game.scene.keys['FinalScene'];
-    if(scene){
-      scene.history = [];
-      scene.clearAnimatedText();
-      window.updateHistoryUI([], '');
-    }
-  });
-
-  // responsive resize handling
-  let resizeTimer = null;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      try{
-        const newW = Math.floor(window.innerWidth * 0.70);
-        const newH = window.innerHeight;
-        game.scale.resize(newW, newH);
-        const scene = game.scene.keys['FinalScene'];
-        if(scene){
-          scene.createGrid(); // recreate safe grid to fit new size
-        }
-      }catch(e){ console.warn('resize error', e); }
-    }, 150);
-  });
-
-  // expose variant registration function
-  window.registerShapeVariant = function(name, fn){
-    const scene = game.scene.keys['FinalScene'];
-    if(scene) scene.registerVariant(name, fn);
-  };
-});
-
-/* ---------- Register built-in variants (example) ---------- */
-window.addEventListener('load', () => {
-  // they are registered from scene.registerDefaultVariants too, but we expose this for extra safety
-  const scene = game.scene && game.scene.keys && game.scene.keys['FinalScene'];
-  if(scene){
-    // already registered in scene, nothing needed
-  }
-  console.info('Code final prêt — tu peux ajouter des variantes avec window.registerShapeVariant("nom", fn)');
-});
-
-/* ---------- Global error logging (console) ---------- */
-window.addEventListener('error', function(e){ console.error('Uncaught error:', e.error || e.message); });
-
+new Phaser.Game(config);
 </script>
 
 </body>
