@@ -447,6 +447,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   textInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') generateBtn.click(); });
+if(window.game && game.scene.keys['FinalScene'])
+    game.scene.keys['FinalScene'].tweens.killAll();
 
   // clear history
   clearBtn.addEventListener('click', () => {
