@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -77,10 +76,8 @@
 </head>
 <body>
 
-<!-- Zone Animation -->
 <div id="phaser-example"></div>
 
-<!-- Zone Interface -->
 <div id="right-panel">
     <h2>Créer une animation avec ton texte</h2>
     <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…">
@@ -98,24 +95,33 @@ class Example extends Phaser.Scene
         this.phase = 0;
         this.phaseDuration = 6000;
         this.timeSincePhase = 0;
+        // Pour éviter le warning : 'ParticleEmitterManager was removed in Phaser 3.60.'
+        this.particles = null; 
     }
 
     preload ()
     {
-        this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
+        // 1. Changement de l'URL de base pour résoudre l'erreur CORS
+        // On utilise les assets du dépôt GitHub de Phaser qui supporte le CORS.
+        this.load.setBaseURL('https://raw.githubusercontent.com/phaserjs/phaser/v3.85.0/assets');
 
-        this.load.image('square', 'assets/sprites/50x50.png');
-        this.load.image('circle', 'assets/sprites/blue_ball.png');
-        this.load.image('diamond', 'assets/sprites/diamond.png');
+        // 2. Mise à jour des chemins des assets pour correspondre à la structure du dépôt GitHub
+        this.load.image('square', 'sprites/50x50.png');
+        this.load.image('circle', 'balls/blue_ball.png'); 
+        this.load.image('diamond', 'sprites/diamond.png');
 
-        this.load.image('spark', 'assets/particles/blue.png');
-        this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+        this.load.image('spark', 'particles/blue.png'); // Clé 'spark' pour l'image blue.png
+        this.load.audio('pop', 'audio/pop.wav');
     }
 
     create ()
     {
         const shapes = ["square", "circle", "diamond"];
         const blocks = this.add.group();
+
+        // 3. Initialisation du système de particules AVANT de l'utiliser dans le pointerdown
+        // La clé doit être l'asset chargé ('spark' qui est 'blue.png')
+        this.particles = this.add.particles('spark'); 
 
         for (let i = 0; i < 108; i++) {
             const shape = shapes[i % shapes.length];
@@ -134,8 +140,11 @@ class Example extends Phaser.Scene
             });
 
             child.on("pointerdown", () => {
-                this.sound.play('pop');
+                // Le son 'pop' pourrait toujours générer un warning si le navigateur bloque l'autoplay,
+                // mais l'erreur CORS est résolue. Le son sera joué après un premier clic/interaction.
+                this.sound.play('pop'); 
 
+                // Utilisation du système de particules mis à jour
                 this.particles.createEmitter({
                     x: child.x,
                     y: child.y,
@@ -149,8 +158,6 @@ class Example extends Phaser.Scene
 
             blocks.add(child);
         }
-
-        this.particles = this.add.particles("spark");
 
         Phaser.Actions.GridAlign(blocks.getChildren(), {
             width: 12,
@@ -234,9 +241,9 @@ class Example extends Phaser.Scene
     generateAnimatedText(text) {
         if (!text) return;
 
-        const startX = 650;
+        // Positionnement ajusté (basé sur 70vw, ajustement par défaut 800)
+        const startX = this.sys.game.config.width * 0.5; // Centre horizontal du canvas Phaser
         const startY = 100;
-        let index = 0;
 
         // Remove previous letters
         if (this.letters) {
@@ -269,6 +276,7 @@ class Example extends Phaser.Scene
 
 const config = {
     type: Phaser.AUTO,
+    // La taille du canvas est définie ici pour prendre 70% de la largeur de la fenêtre
     width: window.innerWidth * 0.70,
     height: window.innerHeight,
     backgroundColor: '#b8ffb8',
@@ -276,7 +284,17 @@ const config = {
     scene: Example
 };
 
-new Phaser.Game(config);
+// Redimensionnement de la configuration pour un meilleur ajustement si la fenêtre change
+window.addEventListener('resize', () => {
+    config.width = window.innerWidth * 0.70;
+    config.height = window.innerHeight;
+    if (game && game.isBooted) {
+        game.scale.resize(config.width, config.height);
+    }
+});
+
+
+const game = new Phaser.Game(config);
 </script>
 
 </body>
