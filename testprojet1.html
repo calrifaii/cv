@@ -98,10 +98,7 @@
             }
 
             preload() {
-                // FIX: Removed this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
-                // The assets will now be loaded relative to your HTML file.
-
-                // These paths are now relative to testprojet1.html, e.g., assets/sprites/50x50.png
+                // Asset loading paths - THESE MUST MATCH YOUR FILE STRUCTURE EXACTLY
                 this.load.image('square', 'assets/sprites/50x50.png');
                 this.load.image('circle', 'assets/sprites/blue_ball.png');
                 this.load.image('diamond', 'assets/sprites/diamond.png');
@@ -114,7 +111,6 @@
                 const shapes = ["square", "circle", "diamond"];
                 const blocks = this.add.group();
 
-                // Get dimensions once, as the Phaser canvas is set to 70vw x 100vh
                 const gameWidth = this.sys.game.config.width;
                 const gameHeight = this.sys.game.config.height;
 
@@ -135,7 +131,8 @@
                     });
 
                     child.on("pointerdown", () => {
-                        this.sound.play('pop'); // FIX: This now works because the audio loaded successfully
+                        // The sound play function relies on the asset loading successfully
+                        this.sound.play('pop'); 
 
                         this.particles.createEmitter({
                             x: child.x,
@@ -158,8 +155,8 @@
                     height: 9,
                     cellWidth: 60,
                     cellHeight: 60,
-                    x: (gameWidth - (12 * 60)) / 2 + 30, // Center the grid horizontally
-                    y: (gameHeight - (9 * 60)) / 2 + 30  // Center the grid vertically
+                    x: (gameWidth - (12 * 60)) / 2 + 30,
+                    y: (gameHeight - (9 * 60)) / 2 + 30
                 });
 
                 this.blocks = blocks;
@@ -200,26 +197,25 @@
                     let offset = 0;
 
                     switch (this.phase) {
-                        case 0: // Horizontal Wave
+                        case 0:
                             offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
                             block.x = orig.x + offset;
                             block.y = orig.y;
                             break;
-                        case 1: // Radial Wave
+                        case 1:
                             const dx1 = orig.x - centerX;
                             const dy1 = orig.y - centerY;
                             const dist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
                             offset = Math.sin(time / 250 + dist * 0.05) * 18;
-                            // Move along the vector from center
-                            block.x = orig.x + dx1 * 0.03 * Math.sin(time/500); // Small movement on original X to create swirl
+                            block.x = orig.x + dx1 * 0.03 * Math.sin(time/500);
                             block.y = orig.y + offset;
                             break;
-                        case 2: // Diagonal Wave
+                        case 2:
                             offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
                             block.x = orig.x + offset;
-                            block.y = orig.y + offset * 0.5; // Slight diagonal offset
+                            block.y = orig.y + offset * 0.5;
                             break;
-                        case 3: // Random Flicker
+                        case 3:
                             offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25);
                             block.x = orig.x + offset * 0.8;
                             block.y = orig.y + offset;
@@ -237,17 +233,15 @@
                     this.generateAnimatedText(input.value.toUpperCase());
                 });
 
-                // Initial text generation to show the feature
                 this.generateAnimatedText("PHASER");
             }
 
             generateAnimatedText(text) {
                 if (!text) return;
 
-                const startX = this.sys.game.config.width * 0.75; // Position the text in the right-most column of the game area
+                const startX = this.sys.game.config.width * 0.75;
                 const startY = 100;
 
-                // Remove previous letters
                 if (this.letters) {
                     this.letters.forEach(l => l.destroy());
                 }
@@ -274,7 +268,6 @@
                     });
                 });
                 
-                // Also update the text in the right panel for feedback
                 const phaserTextDiv = document.getElementById("phaser-text");
                 phaserTextDiv.textContent = `Texte affiché : ${text}`;
             }
@@ -282,7 +275,6 @@
 
         const config = {
             type: Phaser.AUTO,
-            // Calculate dimensions based on the 70/30 split
             width: window.innerWidth * 0.70, 
             height: window.innerHeight,
             backgroundColor: '#b8ffb8',
