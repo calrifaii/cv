@@ -27,20 +27,27 @@ class Example extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
+        // *** FIX: Changed the Base URL to the CORS-friendly Phaser Labs server ***
+        // The original URL 'https://cdn.phaserfiles.com/v385' was causing CORS issues.
+        this.load.setBaseURL('https://labs.phaser.io'); 
+        
+        // Updated asset paths to match the new Base URL structure
         this.load.image('bg', 'assets/tweens/space.png');
         this.load.image('block', 'assets/sprites/50x50.png');
     }
 
     create() {
+        // Background image
         this.add.image(400, 300, 'bg');
 
+        // Create a Group of blocks
         const blocks = this.add.group({
             key: 'block',
-            repeat: 107,
+            repeat: 107, // Total 108 blocks (1 + 107)
             setScale: { x: 0.3, y: 0.3 }
         });
 
+        // Align the blocks in a grid
         Phaser.Actions.GridAlign(blocks.getChildren(), {
             width: 12,
             height: 9,
@@ -50,25 +57,27 @@ class Example extends Phaser.Scene {
             y: 30
         });
 
-        // 🔒 Keep all cubes the same color
+        // Keep all cubes the same color (white)
         blocks.children.iterate(child => {
-            child.setTint(0xffffff); // fixed color (white)
+            child.setTint(0xffffff); 
         });
 
         let i = 0;
 
+        // Apply tweens for a pulsing/scaling animation with a wave delay
         blocks.children.iterate(child => {
             this.tweens.add({
                 targets: child,
-                scale: 1,
+                scale: 1, // Scale up to 1 (from initial 0.3)
                 ease: 'sine.inout',
                 duration: 300,
-                delay: i * 50,
+                delay: i * 50, // Staggered delay for wave effect
                 repeat: -1,
                 yoyo: true,
                 repeatDelay: 500
             });
 
+            // Logic to reset the wave delay counter for the start of the next row (every 12 blocks)
             i++;
             if (i % 12 === 0) {
                 i = 0;
