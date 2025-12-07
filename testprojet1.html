@@ -98,7 +98,7 @@
             }
 
             preload() {
-                // Asset loading paths - THESE MUST MATCH YOUR FILE STRUCTURE EXACTLY
+                // The paths below MUST match the folders you create on GitHub
                 this.load.image('square', 'assets/sprites/50x50.png');
                 this.load.image('circle', 'assets/sprites/blue_ball.png');
                 this.load.image('diamond', 'assets/sprites/diamond.png');
@@ -131,7 +131,6 @@
                     });
 
                     child.on("pointerdown", () => {
-                        // The sound play function relies on the asset loading successfully
                         this.sound.play('pop'); 
 
                         this.particles.createEmitter({
