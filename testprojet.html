@@ -1,22 +1,45 @@
-class Example extends Phaser.Scene
-{
-    constructor ()
-    {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Animation Grid</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div id="phaser-example"></div>
+
+<script>
+class Example extends Phaser.Scene {
+    constructor() {
         super();
     }
 
-    preload ()
-    {
+    preload() {
         this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
         this.load.image('bg', 'assets/tweens/space.png');
         this.load.image('block', 'assets/sprites/50x50.png');
     }
 
-    create ()
-    {
+    create() {
         this.add.image(400, 300, 'bg');
 
-        const blocks = this.add.group({ key: 'block', repeat: 107, setScale: { x: 0.3, y: 0.3 } });
+        const blocks = this.add.group({
+            key: 'block',
+            repeat: 107,
+            setScale: { x: 0.3, y: 0.3 }
+        });
 
         Phaser.Actions.GridAlign(blocks.getChildren(), {
             width: 12,
@@ -30,7 +53,6 @@ class Example extends Phaser.Scene
         let i = 0;
 
         blocks.children.iterate(child => {
-
             this.tweens.add({
                 targets: child,
                 scale: 1,
@@ -43,12 +65,9 @@ class Example extends Phaser.Scene
             });
 
             i++;
-
-            if (i % 12 === 0)
-            {
+            if (i % 12 === 0) {
                 i = 0;
             }
-
         });
     }
 }
@@ -63,3 +82,7 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+</script>
+
+</body>
+</html>
