@@ -91,7 +91,9 @@
     <script>
         class Example extends Phaser.Scene {
             constructor() {
-                super();
+                // give the scene a key — avoids some subtle lifecycle issues
+                super({ key: 'Example' });
+
                 this.phase = 0;
                 this.phaseDuration = 6000;
                 this.timeSincePhase = 0;
@@ -111,8 +113,9 @@
                 const shapes = ["square", "circle", "diamond"];
                 const blocks = this.add.group();
 
-                const gameWidth = this.sys.game.config.width;
-                const gameHeight = this.sys.game.config.height;
+                // use the scene scale values which are more robust than sys.game.config in some cases
+                const gameWidth = this.scale.width;
+                const gameHeight = this.scale.height;
 
                 for (let i = 0; i < 108; i++) {
                     const shape = shapes[i % shapes.length];
@@ -131,7 +134,15 @@
                     });
 
                     child.on("pointerdown", () => {
-                        this.sound.play('pop'); 
+                        // play sound on user interaction (click)
+                        if (this.sound && this.sound.exists('pop')) {
+                            try {
+                                this.sound.play('pop');
+                            } catch (e) {
+                                // some browsers block autoplay until user gesture; click should allow playback
+                                console.warn('Could not play sound:', e);
+                            }
+                        }
 
                         this.particles.createEmitter({
                             x: child.x,
@@ -172,9 +183,10 @@
                     this.timeSincePhase = 0;
                 }
 
+                // Use activePointer.x / y (this.input.x / this.input.y do not exist)
                 if (this.input.activePointer.isDown) {
-                    const mx = this.input.x;
-                    const my = this.input.y;
+                    const mx = this.input.activePointer.x;
+                    const my = this.input.activePointer.y;
 
                     this.blocks.getChildren().forEach(block => {
                         const angle = Phaser.Math.Angle.Between(block.x, block.y, mx, my);
@@ -188,8 +200,8 @@
 
             animateBlocks(time) {
                 const blocks = this.blocks.getChildren();
-                const centerX = this.sys.game.config.width / 2;
-                const centerY = this.sys.game.config.height / 2;
+                const centerX = this.scale.width / 2;
+                const centerY = this.scale.height / 2;
 
                 blocks.forEach((block, i) => {
                     const orig = this.originalPositions[i];
@@ -206,7 +218,7 @@
                             const dy1 = orig.y - centerY;
                             const dist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
                             offset = Math.sin(time / 250 + dist * 0.05) * 18;
-                            block.x = orig.x + dx1 * 0.03 * Math.sin(time/500);
+                            block.x = orig.x + dx1 * 0.03 * Math.sin(time / 500);
                             block.y = orig.y + offset;
                             break;
                         case 2:
@@ -215,7 +227,8 @@
                             block.y = orig.y + offset * 0.5;
                             break;
                         case 3:
-                            offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25);
+                            // For consistent animation, use a deterministic function per index
+                            offset = Math.sin(time / 150 + i * 0.5) * (8 + (i % 18));
                             block.x = orig.x + offset * 0.8;
                             block.y = orig.y + offset;
                             break;
@@ -232,17 +245,22 @@
                     this.generateAnimatedText(input.value.toUpperCase());
                 });
 
+                // generate initial text
                 this.generateAnimatedText("PHASER");
             }
 
             generateAnimatedText(text) {
                 if (!text) return;
 
-                const startX = this.sys.game.config.width * 0.75;
+                const startX = this.scale.width * 0.75;
                 const startY = 100;
 
                 if (this.letters) {
-                    this.letters.forEach(l => l.destroy());
+                    // kill any tweens tied to previous letters before destroying them
+                    this.letters.forEach(l => {
+                        try { this.tweens.killTweensOf(l); } catch (e) { }
+                        try { l.destroy(); } catch (e) { }
+                    });
                 }
 
                 this.letters = [];
@@ -266,7 +284,7 @@
                         ease: "sine.inout"
                     });
                 });
-                
+
                 const phaserTextDiv = document.getElementById("phaser-text");
                 phaserTextDiv.textContent = `Texte affiché : ${text}`;
             }
@@ -274,8 +292,8 @@
 
         const config = {
             type: Phaser.AUTO,
-            width: window.innerWidth * 0.70, 
-            height: window.innerHeight,
+            width: Math.floor(window.innerWidth * 0.70),
+            height: Math.floor(window.innerHeight),
             backgroundColor: '#b8ffb8',
             parent: 'phaser-example',
             scene: Example
