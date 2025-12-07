@@ -11,7 +11,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: #97364;
+            background: #000;
             overflow: hidden;
         }
     </style>
@@ -48,6 +48,11 @@ class Example extends Phaser.Scene {
             cellHeight: 60,
             x: 40,
             y: 30
+        });
+
+        // 🔒 Keep all cubes the same color
+        blocks.children.iterate(child => {
+            child.setTint(0xffffff); // fixed color (white)
         });
 
         let i = 0;
