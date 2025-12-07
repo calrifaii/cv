@@ -100,29 +100,31 @@ class Example extends Phaser.Scene
 
     preload ()
     {
-        // L'URL de base est maintenue pour éviter le CORS
-        this.load.setBaseURL('https://raw.githubusercontent.com/phaserjs/phaser/v3.85.0/assets');
+        // Correction la plus fiable: utilisation du CDN labs.phaser.io qui est stable, 
+        // gère le CORS et utilise la structure de dossiers standard.
+        this.load.setBaseURL('https://labs.phaser.io/assets');
 
-        // Correction des chemins pour éviter les erreurs 404
-        this.load.image('square', 'images/wobble.png');
-        this.load.image('circle', 'images/bubble256.png'); 
-        this.load.image('diamond', 'images/diamond.png');
+        // Réutilisation des clés originales avec des chemins corrigés pour labs.phaser.io
+        this.load.image('square', 'sprites/50x50.png');
+        this.load.image('circle', 'sprites/blue_ball.png'); 
+        this.load.image('diamond', 'sprites/diamond.png');
 
         this.load.image('spark', 'particles/blue.png'); 
-        // Changement de l'extension et du nom de fichier audio
-        this.load.audio('pop', 'audio/squit.mp3'); 
+        this.load.audio('pop', 'audio/SoundEffects/pop.wav'); 
     }
 
     create ()
     {
-        // Mise à jour des clés d'assets ici pour correspondre aux nouveaux assets chargés
         const shapes = ["square", "circle", "diamond"];
         const blocks = this.add.group();
 
+        // ⚠️ La clé de texture pour le système de particules doit être 'spark', 
+        // qui est l'image 'particles/blue.png' que nous avons chargée.
         this.particles = this.add.particles('spark'); 
 
         for (let i = 0; i < 108; i++) {
             const shape = shapes[i % shapes.length];
+            // setScale(0.3) permet de réduire la taille des assets (ils sont souvent plus grands sur labs.phaser.io)
             const child = this.add.image(0, 0, shape).setScale(0.3);
 
             child.setTint(0xff3eb5); // rose
@@ -138,7 +140,7 @@ class Example extends Phaser.Scene
             });
 
             child.on("pointerdown", () => {
-                // Le son fonctionne désormais avec le nouvel asset mp3
+                // Le son fonctionnera après la première interaction utilisateur
                 this.sound.play('pop'); 
 
                 this.particles.createEmitter({
@@ -203,22 +205,18 @@ class Example extends Phaser.Scene
 
             switch (this.phase) {
                 case 0:
-                    // Vague verticale
                     offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
                     break;
                 case 1:
-                    // Vague radiale
                     const dx = orig.x - 400;
                     const dy = orig.y - 300;
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     offset = Math.sin(time / 250 + dist * 0.05) * 18;
                     break;
                 case 2:
-                    // Vague diagonale
                     offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
                     break;
                 case 3:
-                    // Tremblement aléatoire
                     offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25);
                     break;
             }
