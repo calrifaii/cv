@@ -95,32 +95,30 @@ class Example extends Phaser.Scene
         this.phase = 0;
         this.phaseDuration = 6000;
         this.timeSincePhase = 0;
-        // Pour éviter le warning : 'ParticleEmitterManager was removed in Phaser 3.60.'
         this.particles = null; 
     }
 
     preload ()
     {
-        // 1. Changement de l'URL de base pour résoudre l'erreur CORS
-        // On utilise les assets du dépôt GitHub de Phaser qui supporte le CORS.
+        // L'URL de base est maintenue pour éviter le CORS
         this.load.setBaseURL('https://raw.githubusercontent.com/phaserjs/phaser/v3.85.0/assets');
 
-        // 2. Mise à jour des chemins des assets pour correspondre à la structure du dépôt GitHub
-        this.load.image('square', 'sprites/50x50.png');
-        this.load.image('circle', 'balls/blue_ball.png'); 
-        this.load.image('diamond', 'sprites/diamond.png');
+        // Correction des chemins pour éviter les erreurs 404
+        this.load.image('square', 'images/wobble.png');
+        this.load.image('circle', 'images/bubble256.png'); 
+        this.load.image('diamond', 'images/diamond.png');
 
-        this.load.image('spark', 'particles/blue.png'); // Clé 'spark' pour l'image blue.png
-        this.load.audio('pop', 'audio/pop.wav');
+        this.load.image('spark', 'particles/blue.png'); 
+        // Changement de l'extension et du nom de fichier audio
+        this.load.audio('pop', 'audio/squit.mp3'); 
     }
 
     create ()
     {
+        // Mise à jour des clés d'assets ici pour correspondre aux nouveaux assets chargés
         const shapes = ["square", "circle", "diamond"];
         const blocks = this.add.group();
 
-        // 3. Initialisation du système de particules AVANT de l'utiliser dans le pointerdown
-        // La clé doit être l'asset chargé ('spark' qui est 'blue.png')
         this.particles = this.add.particles('spark'); 
 
         for (let i = 0; i < 108; i++) {
@@ -140,11 +138,9 @@ class Example extends Phaser.Scene
             });
 
             child.on("pointerdown", () => {
-                // Le son 'pop' pourrait toujours générer un warning si le navigateur bloque l'autoplay,
-                // mais l'erreur CORS est résolue. Le son sera joué après un premier clic/interaction.
+                // Le son fonctionne désormais avec le nouvel asset mp3
                 this.sound.play('pop'); 
 
-                // Utilisation du système de particules mis à jour
                 this.particles.createEmitter({
                     x: child.x,
                     y: child.y,
@@ -207,18 +203,22 @@ class Example extends Phaser.Scene
 
             switch (this.phase) {
                 case 0:
+                    // Vague verticale
                     offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
                     break;
                 case 1:
+                    // Vague radiale
                     const dx = orig.x - 400;
                     const dy = orig.y - 300;
                     const dist = Math.sqrt(dx*dx + dy*dy);
                     offset = Math.sin(time / 250 + dist * 0.05) * 18;
                     break;
                 case 2:
+                    // Vague diagonale
                     offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
                     break;
                 case 3:
+                    // Tremblement aléatoire
                     offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25);
                     break;
             }
@@ -241,11 +241,10 @@ class Example extends Phaser.Scene
     generateAnimatedText(text) {
         if (!text) return;
 
-        // Positionnement ajusté (basé sur 70vw, ajustement par défaut 800)
         const startX = this.sys.game.config.width * 0.5; // Centre horizontal du canvas Phaser
         const startY = 100;
 
-        // Remove previous letters
+        // Suppression des lettres précédentes
         if (this.letters) {
             this.letters.forEach(l => l.destroy());
         }
@@ -276,7 +275,6 @@ class Example extends Phaser.Scene
 
 const config = {
     type: Phaser.AUTO,
-    // La taille du canvas est définie ici pour prendre 70% de la largeur de la fenêtre
     width: window.innerWidth * 0.70,
     height: window.innerHeight,
     backgroundColor: '#b8ffb8',
@@ -284,7 +282,8 @@ const config = {
     scene: Example
 };
 
-// Redimensionnement de la configuration pour un meilleur ajustement si la fenêtre change
+// Gestion de la taille de la fenêtre
+let game = null;
 window.addEventListener('resize', () => {
     config.width = window.innerWidth * 0.70;
     config.height = window.innerHeight;
@@ -293,8 +292,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-
-const game = new Phaser.Game(config);
+game = new Phaser.Game(config);
 </script>
 
 </body>
