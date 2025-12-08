@@ -1,61 +1,47 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Phaser Waves + Text Generator</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+<meta charset="UTF-8">
+<title>Phaser Waves – Fixed Generate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
-    <style>
-        body {
-            margin: 0;
-            background: #b8ffb8;
-            display: flex;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
+<style>
+body {
+    margin: 0;
+    background: #b8ffb8;
+    display: flex;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
 
-        #phaser-example {
-            width: 70vw;
-            height: 100vh;
-        }
+#phaser-example {
+    width: 70vw;
+    height: 100vh;
+}
 
-        #right-panel {
-            width: 30vw;
-            min-width: 300px;
-            background: #ffffffcc;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+#right-panel {
+    width: 30vw;
+    min-width: 300px;
+    padding: 20px;
+    background: #ffffffcc;
+}
 
-        h2 {
-            color: #ff3eb5;
-            text-align: center;
-        }
+input, button {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 2px solid #ff3eb5;
+}
 
-        input, button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: 2px solid #ff3eb5;
-        }
-
-        button {
-            background: #ff3eb5;
-            color: white;
-            cursor: pointer;
-        }
-
-        pre {
-            margin-top: 20px;
-            height: 45vh;
-            overflow-y: auto;
-            border: 2px dashed #ff3eb5;
-            padding: 10px;
-        }
-    </style>
+button {
+    background: #ff3eb5;
+    color: white;
+    cursor: pointer;
+}
+</style>
 </head>
 
 <body>
@@ -64,161 +50,49 @@
 
 <div id="right-panel">
     <h2>Text Wave Generator</h2>
-    <input id="text-input" placeholder="Type something...">
+    <input id="text-input" placeholder="Type text">
     <button id="generate-btn">Generate</button>
-    <pre id="code-output"></pre>
 </div>
 
 <script>
 class Example extends Phaser.Scene {
 
-    blocks;
-    originalPositions;
     letters = [];
-    particles;
-    isDragging = false;
-    phase = 0;
-    timer = 0;
-
-    constructor() {
-        super('Example');
-    }
 
     preload() {
-        this.load.image('square', 'https://labs.phaser.io/assets/sprites/50x50.png');
-        this.load.image('circle', 'https://labs.phaser.io/assets/sprites/blue_ball.png');
-        this.load.image('diamond', 'https://labs.phaser.io/assets/sprites/diamond.png');
-        this.load.image('spark', 'https://labs.phaser.io/assets/particles/blue.png');
-        this.load.audio('pop', 'https://labs.phaser.io/assets/audio/SoundEffects/pop.wav');
+        this.load.audio('pop','https://labs.phaser.io/assets/audio/SoundEffects/pop.wav');
     }
 
     create() {
-        this.particles = this.add.particles('spark');
-        this.createGrid();
-        this.createTextEngine();
+        // ✅ IMPORTANT: disable Phaser pointer capture for DOM UI
+        this.input.manager.enabled = false;
 
-        this.input.on('pointerdown', () => this.isDragging = true);
-        this.input.on('pointerup', () => this.isDragging = false);
-    }
-
-    createGrid() {
-        this.blocks = this.add.group();
-        const shapes = ['square', 'circle', 'diamond'];
-
-        for (let i = 0; i < 108; i++) {
-            const block = this.add.image(0, 0, shapes[i % 3])
-                .setScale(0.3)
-                .setTint(0xff3eb5)
-                .setInteractive();
-
-            block.on('pointerdown', () => this.explode(block));
-            this.blocks.add(block);
-        }
-
-        Phaser.Actions.GridAlign(this.blocks.getChildren(), {
-            width: 12,
-            height: 9,
-            cellWidth: 60,
-            cellHeight: 60,
-            x: 60,
-            y: 60
-        });
-
-        this.originalPositions = this.blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
-    }
-
-    explode(block) {
-        this.sound.play('pop');
-
-        this.particles.createEmitter({
-            x: block.x,
-            y: block.y,
-            speed: { min: -200, max: 200 },
-            lifespan: 400,
-            quantity: 20,
-            scale: { start: 0.5, end: 0 },
-            tint: 0xff3eb5
-        });
-    }
-
-    update(time, delta) {
-        this.timer += delta;
-
-        if (this.timer > 5000) {
-            this.phase = (this.phase + 1) % 4;
-            this.timer = 0;
-        }
-
-        const mx = this.input.activePointer.x;
-        const my = this.input.activePointer.y;
-
-        this.blocks.getChildren().forEach((b, i) => {
-            const o = this.originalPositions[i];
-            let offset = 0;
-
-            switch (this.phase) {
-                case 0:
-                    offset = Math.sin(time * 0.003 + o.y * 0.1) * 12;
-                    b.x = o.x + offset;
-                    b.y = o.y;
-                    break;
-                case 1:
-                    offset = Math.sin(time * 0.004 + i * 0.5) * 15;
-                    b.y = o.y + offset;
-                    break;
-                case 2:
-                    offset = Math.sin(time * 0.003 + (o.x + o.y) * 0.02) * 10;
-                    b.x = o.x + offset;
-                    b.y = o.y + offset;
-                    break;
-                case 3:
-                    offset = Math.sin(time * 0.006 + i) * 20;
-                    b.x = o.x + offset;
-                    break;
-            }
-
-            if (this.isDragging) {
-                const a = Phaser.Math.Angle.Between(b.x, b.y, mx, my);
-                b.x += Math.cos(a);
-                b.y += Math.sin(a);
-            }
-        });
-
-        this.animateText(time);
-    }
-
-    createTextEngine() {
         const input = document.getElementById('text-input');
         const btn = document.getElementById('generate-btn');
 
-        btn.onclick = () => {
-            const text = input.value.toUpperCase();
+        // ✅ SAFEST WAY: addEventListener with arrow fn
+        btn.addEventListener('click', () => {
+            const text = input.value.trim();
             if (!text) return;
 
-            // ✅ Sound plays here (user gesture)
             this.sound.play('pop');
-
-            this.generateText(text);
-
-            document.getElementById('code-output').textContent =
-`letters.forEach((l,i)=>{
-  l.x = baseX + Math.sin(time*0.005+i*0.3)*30;
-});`;
-        };
+            this.generateText(text.toUpperCase());
+        });
     }
 
     generateText(text) {
+        // clear old text
         this.letters.forEach(l => l.destroy());
         this.letters = [];
 
-        const x = this.scale.width * 0.75;
-        const startY = this.scale.height / 2 - text.length * 22;
+        const baseX = this.scale.width * 0.75;
+        const startY = this.scale.height / 2 - text.length * 20;
 
-        [...text].forEach((c, i) => {
-            const t = this.add.text(x, startY + i * 45, c, {
-                fontFamily: 'Arial',   // ✅ NOT bold
+        [...text].forEach((char, i) => {
+            const t = this.add.text(baseX, startY + i * 45, char, {
+                fontFamily: 'Arial',
                 fontSize: '56px',
-                color: '#000',
+                color: '#000000',
                 stroke: '#ff3eb5',
                 strokeThickness: 6
             }).setOrigin(0.5);
@@ -228,13 +102,11 @@ class Example extends Phaser.Scene {
         });
     }
 
-    animateText(time) {
+    update(time) {
         this.letters.forEach(l => {
-            l.x = Phaser.Math.Linear(
-                l.x,
-                this.scale.width * 0.75 + Math.sin(time * 0.005 + l.index * 0.3) * 30,
-                0.1
-            );
+            const wave =
+                Math.sin(time * 0.005 + l.index * 0.3) * 30;
+            l.x = Phaser.Math.Linear(l.x, this.scale.width * 0.75 + wave, 0.1);
         });
     }
 }
