@@ -20,7 +20,6 @@
 
         /* Zone Phaser à gauche */
         #phaser-example {
-            /* Use a flexible layout */
             flex-grow: 1;
             width: 70vw;
             height: 100vh;
@@ -35,10 +34,8 @@
             padding: 20px;
             box-sizing: border-box;
             backdrop-filter: blur(5px);
-            z-index: 10; /* Ensure it stays above the Phaser canvas */
+            z-index: 10;
         }
-
-        /* ... [Your existing CSS for H2, input, button, and #phaser-text remains the same] ... */
 
         #right-panel h2 {
             margin-top: 0;
@@ -83,6 +80,11 @@
             overflow-y: auto;
             font-size: 14px;
         }
+        
+        #code-output {
+            white-space: pre-wrap; /* Ensures code wraps within the box */
+            word-wrap: break-word;
+        }
     </style>
 </head>
 
@@ -104,10 +106,11 @@
     <script>
         // --- SCENE CLASS: Example ---
         class Example extends Phaser.Scene {
-            // Class properties for cleaner syntax
+            // Class properties for cleaner syntax and easier access
             blocks;
             originalPositions;
             letters = [];
+            isDragging = false;
             
             // Animation state
             phase = 0;
@@ -132,31 +135,24 @@
                 this.load.image('circle', 'assets/sprites/blue_ball.png');
                 this.load.image('diamond', 'assets/sprites/diamond.png');
                 this.load.image('spark', 'assets/particles/blue.png');
-                
-                // Audio pre-decoding (can sometimes help with playback)
                 this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav'); 
             }
 
             create() {
                 this.input.mouse.disableContextMenu(); // Good practice for web games
-
-                // 1. Particle System Setup
                 this.particles = this.add.particles("spark").setDepth(1);
 
-                // 2. Block Grid Setup
                 this.createBlocks();
-
-                // 3. UI and Text Engine Setup
                 this.createTextEngine();
 
-                // 4. Input Listener for Block Movement
+                // Input Listeners
                 this.input.on('pointerdown', this.handleInputStart, this);
                 this.input.on('pointerup', this.handleInputStop, this);
-
-                // 5. Responsive Resize Handler
+                
+                // Responsive Resize Handler
                 window.addEventListener('resize', this.updateGameSize.bind(this));
             }
-
+            
             // --- BLOCK GRID METHODS ---
 
             createBlocks() {
@@ -207,7 +203,6 @@
             }
 
             handleBlockClick(pointer, child) {
-                // Ensure sound playback is attempted on user gesture
                 this.playPopSound(); 
 
                 this.particles.createEmitter({
@@ -222,9 +217,9 @@
             }
 
             playPopSound() {
+                // Check if sound manager exists and the key is loaded
                 if (this.sound && this.sound.keyExists('pop')) {
                     try {
-                        // Use a dedicated method to handle play logic
                         this.sound.play('pop');
                     } catch (e) {
                         console.warn('Could not play sound:', e);
@@ -233,13 +228,7 @@
                      console.warn('Sound key "pop" not loaded or does not exist.');
                 }
             }
-
-
-            // --- UPDATE LOOP & ANIMATION ---
-
-            // Flag to track mouse drag state
-            isDragging = false; 
-
+            
             handleInputStart() {
                 this.isDragging = true;
             }
@@ -248,23 +237,26 @@
                 this.isDragging = false;
             }
 
+            // --- UPDATE LOOP & ANIMATION ---
+
             update(time, delta) {
                 // Update block animation phase
                 this.timeSincePhase += delta;
+                
+                // Changed from % 4 to % 5 to accommodate the new clean phase (Phase 4)
                 if (this.timeSincePhase > this.phaseDuration) {
-                    this.phase = (this.phase + 1) % 4;
+                    this.phase = (this.phase + 1) % 5; 
                     this.timeSincePhase = 0;
                 }
 
-                // 1. Block Movement (Optimized)
+                // 1. Block Movement (for mouse drag)
                 if (this.isDragging) {
                     const mx = this.input.activePointer.x;
                     const my = this.input.activePointer.y;
                     
                     this.blocks.getChildren().forEach(block => {
-                        // Use Phaser's built-in functions for cleaner vector math
                         const angle = Phaser.Math.Angle.Between(block.x, block.y, mx, my);
-                        block.x += Math.cos(angle) * 0.8; // Increased speed slightly for a better feel
+                        block.x += Math.cos(angle) * 0.8;
                         block.y += Math.sin(angle) * 0.8;
                     });
                 }
@@ -276,7 +268,6 @@
                 this.animateWaveText(time); 
             }
 
-            // This is where we apply the core animation using sine waves
             animateBlocks(time) {
                 const blocks = this.blocks.getChildren();
                 const centerX = this.scale.width / 2;
@@ -284,52 +275,63 @@
 
                 blocks.forEach((block, i) => {
                     const orig = this.originalPositions[i];
-                    let offset = 0;
-                    
-                    // Simple easing function to smoothly transition between phases
-                    const easeFactor = Phaser.Math.SmootherStep(this.timeSincePhase, 0, this.phaseDuration);
-
-                    switch (this.phase) {
-                        // Wave 1: Horizontal X-wave based on Y position (Vertical lines move)
-                        case 0:
-                            offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
-                            block.x = orig.x + offset;
-                            block.y = orig.y;
-                            break;
-                        
-                        // Wave 2: Radial Wave centered on canvas
-                        case 1:
-                            // Pre-calculate distance at the start, use here for efficient update
-                            const dx1 = orig.x - centerX;
-                            const dy1 = orig.y - centerY;
-                            const dist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-                            
-                            offset = Math.sin(time / 250 + dist * 0.05) * 18;
-                            // Add a subtle rotation effect
-                            block.x = orig.x + dx1 * 0.03 * Math.sin(time / 500); 
-                            block.y = orig.y + offset;
-                            break;
-                        
-                        // Wave 3: Diagonal Wave (X and Y coupled)
-                        case 2:
-                            offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
-                            block.x = orig.x + offset;
-                            block.y = orig.y + offset * 0.5;
-                            break;
-                        
-                        // Wave 4: Random Index Wave (Chaotic, individual movement)
-                        case 3:
-                            // The offset is proportional to the index (i) for variety
-                            offset = Math.sin(time / 150 + i * 0.5) * (8 + (i % 18)); 
-                            block.x = orig.x + offset * 0.8;
-                            block.y = orig.y + offset;
-                            break;
-                    }
                     
                     // Restore position if not dragging (simple spring-back)
                     if (!this.isDragging) {
-                        block.x = Phaser.Math.Linear(block.x, orig.x, 0.05); // Lerp back to original X
-                        block.y = Phaser.Math.Linear(block.y, orig.y, 0.05); // Lerp back to original Y
+                        block.x = Phaser.Math.Linear(block.x, orig.x, 0.05);
+                        block.y = Phaser.Math.Linear(block.y, orig.y, 0.05);
+                    }
+
+
+                    switch (this.phase) {
+                        
+                        // PHASE 0: EXPAND FROM CENTER (Requested Animation)
+                        case 0:
+                            const dx = orig.x - centerX;
+                            const dy = orig.y - centerY;
+                            const angle = Math.atan2(dy, dx);
+                            
+                            // Use distance to create phase lag, use time for movement
+                            const distFromCenter = Math.sqrt(dx * dx + dy * dy); 
+                            
+                            // Sine wave for expanding/contracting distance
+                            const offsetMag = Math.sin(time / 400 + distFromCenter * 0.01) * 35; // 35 is max displacement
+                            
+                            // Apply offset along the original angle from the center
+                            block.x = orig.x + Math.cos(angle) * offsetMag;
+                            block.y = orig.y + Math.sin(angle) * offsetMag;
+                            break;
+                            
+                        // Phase 1: Radial Wave (Original Code)
+                        case 1:
+                            const dx1 = orig.x - centerX;
+                            const dy1 = orig.y - centerY;
+                            const dist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                            const offset = Math.sin(time / 250 + dist * 0.05) * 18;
+                            block.x = orig.x + dx1 * 0.03 * Math.sin(time / 500);
+                            block.y = orig.y + offset;
+                            break;
+                        
+                        // Phase 2: Diagonal Wave (Original Code)
+                        case 2:
+                            const offset2 = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
+                            block.x = orig.x + offset2;
+                            block.y = orig.y + offset2 * 0.5;
+                            break;
+                        
+                        // Phase 3: Chaotic/Individual Wave (Original Code)
+                        case 3:
+                            const offset3 = Math.sin(time / 150 + i * 0.5) * (8 + (i % 18));
+                            block.x = orig.x + offset3 * 0.8;
+                            block.y = orig.y + offset3;
+                            break;
+                            
+                        // PHASE 4: RETURN TO ORIGINAL POSITION (Clean State)
+                        case 4:
+                            // Stops further animation offsets; the isDragging check handles the smooth return
+                            block.x = orig.x;
+                            block.y = orig.y;
+                            break;
                     }
                 });
             }
@@ -341,7 +343,6 @@
                 const button = document.getElementById("generate-btn");
                 const codeOutput = document.getElementById("code-output");
 
-                // Use the scene context for event handling
                 button.addEventListener("click", () => {
                     const textValue = input.value.toUpperCase();
                     this.generateAnimatedText(textValue);
@@ -356,11 +357,10 @@
             generateAnimatedText(text) {
                 if (!text) return;
 
-                const startX = this.scale.width * 0.75; // Center text a bit better
-                const startY = this.scale.height / 2 - (text.length * 20); // Center vertically
+                const startX = this.scale.width * 0.75; 
+                const startY = this.scale.height / 2 - (text.length * 20); 
 
                 if (this.letters.length > 0) {
-                    // Destroy previous letters array contents
                     this.letters.forEach(l => {
                         this.tweens.killTweensOf(l);
                         l.destroy();
@@ -371,10 +371,10 @@
                 [...text].forEach((char, i) => {
                     const letter = this.add.text(
                         startX, 
-                        startY + i * 45, // Increased spacing for vertical text
+                        startY + i * 45, 
                         char, 
                         {
-                            fontFamily: 'Arial Black', // Use a bolder font for visual impact
+                            fontFamily: 'Arial Black', 
                             fontSize: '60px',
                             color: '#000000',
                             stroke: '#ff3eb5',
@@ -382,7 +382,6 @@
                         }
                     ).setOrigin(0.5);
 
-                    // Add a unique property for the wave offset calculation
                     letter.waveIndex = i; 
                     this.letters.push(letter);
                 });
@@ -396,8 +395,11 @@
                 const frequency = 0.3; // How spread out the wave is
 
                 this.letters.forEach((letter) => {
+                    // Calculate the target wave X position
                     const waveX = Math.sin(time * 0.005 + letter.waveIndex * frequency) * amplitude;
-                    letter.x = letter.x - (letter.x - (this.scale.width * 0.75 + waveX)) * 0.1; // Simple linear easing to the target
+                    
+                    // Use simple linear easing to smoothly move the letter towards the target
+                    letter.x = letter.x - (letter.x - (this.scale.width * 0.75 + waveX)) * 0.1; 
                 });
             }
             
@@ -453,7 +455,6 @@ if (this.waveLetters) {
             backgroundColor: '#b8ffb8',
             parent: 'phaser-example',
             scene: Example,
-            // Ensure WebGL is preferred for performance
             dom: {
                 createContainer: true
             }
