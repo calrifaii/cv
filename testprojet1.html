@@ -8,7 +8,11 @@
 
     <title>Phaser Waves + Text Generator</title>
 
+
+
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+
+
 
     <style>
 
@@ -28,6 +32,8 @@
 
         }
 
+
+
         /* Zone Phaser à gauche */
 
         #phaser-example {
@@ -37,6 +43,8 @@
             height: 100vh;
 
         }
+
+
 
         /* Zone interface à droite */
 
@@ -56,6 +64,8 @@
 
         }
 
+
+
         #right-panel h2 {
 
             margin-top: 0;
@@ -67,6 +77,8 @@
             text-align: center;
 
         }
+
+
 
         #text-input {
 
@@ -85,6 +97,8 @@
             outline: none;
 
         }
+
+
 
         #generate-btn {
 
@@ -106,11 +120,15 @@
 
         }
 
+
+
         #generate-btn:hover {
 
             background: #ff1ea0;
 
         }
+
+
 
         #phaser-text {
 
@@ -134,9 +152,13 @@
 
 <body>
 
+
+
 <!-- Zone Animation -->
 
 <div id="phaser-example"></div>
+
+
 
 <!-- Zone Interface -->
 
@@ -148,9 +170,13 @@
 
     <button id="generate-btn">Générer l’animation</button>
 
+
+
     <div id="phaser-text"></div>
 
 </div>
+
+
 
 <script>
 
@@ -172,17 +198,13 @@ class Example extends Phaser.Scene
 
     }
 
+
+
     preload ()
 
     {
 
-        // CORRECTION 1: Suppression de setBaseURL pour éviter les problèmes de CORS.
-
-        // Les assets doivent être dans des dossiers relatifs (assets/sprites/, assets/audio/, etc.)
-
-        // par rapport à ce fichier HTML.
-
-        // this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
+        this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
 
 
 
@@ -200,17 +222,11 @@ class Example extends Phaser.Scene
 
     }
 
+
+
     create ()
 
     {
-
-        // CORRECTION 2: Initialisation du système de particules AVANT qu'il ne soit utilisé
-
-        // dans le gestionnaire d'événements 'pointerdown'.
-
-        this.particles = this.add.particles("spark");
-
-
 
         const shapes = ["square", "circle", "diamond"];
 
@@ -252,13 +268,7 @@ class Example extends Phaser.Scene
 
             child.on("pointerdown", () => {
 
-                // Le son "pop" ne sera joué que si l'asset a été chargé (correction 1)
-
-                if (this.sound.get('pop')) {
-
-                    this.sound.play('pop');
-
-                }
+                this.sound.play('pop');
 
 
 
@@ -287,6 +297,10 @@ class Example extends Phaser.Scene
             blocks.add(child);
 
         }
+
+
+
+        this.particles = this.add.particles("spark");
 
 
 
@@ -319,6 +333,8 @@ class Example extends Phaser.Scene
         this.createTextEngine();
 
     }
+
+
 
     update(time, delta)
 
@@ -361,6 +377,8 @@ class Example extends Phaser.Scene
         this.animateBlocks(time);
 
     }
+
+
 
     animateBlocks(time)
 
@@ -422,6 +440,8 @@ class Example extends Phaser.Scene
 
     }
 
+
+
     /** TEXT ENGINE **/
 
     createTextEngine() {
@@ -440,19 +460,19 @@ class Example extends Phaser.Scene
 
     }
 
+
+
     generateAnimatedText(text) {
 
         if (!text) return;
 
 
 
-        // CORRECTION 3: Utilisation de la taille du jeu pour centrer le texte
-
-        const gameWidth = this.sys.game.config.width;
-
-        const startX = gameWidth / 2;
+        const startX = 650;
 
         const startY = 100;
+
+        let index = 0;
 
 
 
@@ -477,8 +497,6 @@ class Example extends Phaser.Scene
                 fontFamily: 'Arial',
 
                 fontSize: '40px',
-
-                // CORRECTION 4: Ajout de la couleur du texte pour qu'il soit visible
 
                 color: '#ff3eb5'
 
@@ -520,9 +538,7 @@ const config = {
 
     type: Phaser.AUTO,
 
-    // CORRECTION 5: S'assurer que la largeur et la hauteur sont des nombres entiers pour éviter les problèmes d'affichage
-
-    width: Math.floor(window.innerWidth * 0.70),
+    width: window.innerWidth * 0.70,
 
     height: window.innerHeight,
 
@@ -539,9 +555,6 @@ const config = {
 new Phaser.Game(config);
 
 </script>
-
-
-
 </body>
 
 </html>
