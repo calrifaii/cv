@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Phaser Waves – Fixed Generate</title>
+<title>Phaser Wave Generator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
@@ -11,20 +11,19 @@ body {
     margin: 0;
     background: #b8ffb8;
     display: flex;
-    overflow: hidden;
+    height: 100vh;
     font-family: Arial, sans-serif;
 }
 
-#phaser-example {
+#phaser-container {
     width: 70vw;
     height: 100vh;
 }
 
-#right-panel {
+#ui {
     width: 30vw;
-    min-width: 300px;
     padding: 20px;
-    background: #ffffffcc;
+    background: #ffffffdd;
 }
 
 input, button {
@@ -46,78 +45,87 @@ button {
 
 <body>
 
-<div id="phaser-example"></div>
+<div id="phaser-container"></div>
 
-<div id="right-panel">
-    <h2>Text Wave Generator</h2>
-    <input id="text-input" placeholder="Type text">
-    <button id="generate-btn">Generate</button>
+<div id="ui">
+    <h2>Wave Text</h2>
+    <input id="textInput" placeholder="Type something">
+    <button id="generateBtn">Generate</button>
 </div>
 
 <script>
-class Example extends Phaser.Scene {
+class MainScene extends Phaser.Scene {
 
     letters = [];
 
     preload() {
-        this.load.audio('pop','https://labs.phaser.io/assets/audio/SoundEffects/pop.wav');
+        this.load.audio(
+            'pop',
+            'https://labs.phaser.io/assets/audio/SoundEffects/pop.wav'
+        );
     }
 
     create() {
-        // ✅ IMPORTANT: disable Phaser pointer capture for DOM UI
-        this.input.manager.enabled = false;
+        // ✅ DOM references
+        const input = document.getElementById('textInput');
+        const btn = document.getElementById('generateBtn');
 
-        const input = document.getElementById('text-input');
-        const btn = document.getElementById('generate-btn');
-
-        // ✅ SAFEST WAY: addEventListener with arrow fn
         btn.addEventListener('click', () => {
             const text = input.value.trim();
             if (!text) return;
 
-            this.sound.play('pop');
-            this.generateText(text.toUpperCase());
+            // ✅ sound works now
+            this.sound.play('pop', { volume: 0.6 });
+
+            this.createText(text);
         });
     }
 
-    generateText(text) {
-        // clear old text
+    createText(text) {
+        // remove old letters
         this.letters.forEach(l => l.destroy());
         this.letters = [];
 
-        const baseX = this.scale.width * 0.75;
-        const startY = this.scale.height / 2 - text.length * 20;
+        const centerX = this.scale.width / 2;
+        const centerY = this.scale.height / 2;
 
         [...text].forEach((char, i) => {
-            const t = this.add.text(baseX, startY + i * 45, char, {
-                fontFamily: 'Arial',
-                fontSize: '56px',
-                color: '#000000',
-                stroke: '#ff3eb5',
-                strokeThickness: 6
-            }).setOrigin(0.5);
+            const letter = this.add.text(
+                centerX,
+                centerY + i * 40,
+                char,
+                {
+                    fontFamily: 'Arial',
+                    fontSize: '52px',
+                    color: '#000000',
+                    stroke: '#ff3eb5',
+                    strokeThickness: 5
+                }
+            ).setOrigin(0.5);
 
-            t.index = i;
-            this.letters.push(t);
+            letter.baseX = centerX;
+            letter.index = i;
+
+            this.letters.push(letter);
         });
     }
 
     update(time) {
-        this.letters.forEach(l => {
-            const wave =
-                Math.sin(time * 0.005 + l.index * 0.3) * 30;
-            l.x = Phaser.Math.Linear(l.x, this.scale.width * 0.75 + wave, 0.1);
+        this.letters.forEach(letter => {
+            letter.x =
+                letter.baseX +
+                Math.sin(time * 0.005 + letter.index * 0.4) * 40;
         });
     }
 }
 
 new Phaser.Game({
     type: Phaser.AUTO,
+    parent: 'phaser-container',
     width: Math.floor(window.innerWidth * 0.7),
     height: window.innerHeight,
-    parent: 'phaser-example',
     backgroundColor: '#b8ffb8',
-    scene: Example
+    scene: MainScene
 });
 </script>
 
