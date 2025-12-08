@@ -251,7 +251,7 @@ class Example extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setBaseURL('https://labs.phaser.io');
+    // this.load.setBaseURL('https://labs.phaser.io'); // 
         this.load.image('spark', 'assets/particles/blue.png');
         this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
     
@@ -686,29 +686,16 @@ class Example extends Phaser.Scene {
             console.log('Audio setup error. Audio will be skipped.', e);
         }
     }
-
-    startBackgroundMusic() {
-        if (this.bgMusic) {
-            try {
-                if (this.bgMusic.isPlaying) {
-                    this.bgMusic.stop();
-                }
-                this.bgMusic.play();
-            } catch(e) {
-                console.log('Error playing music.');
-            }
-        }
+      playSoundOnce(){
+    if(this.popSound){
+      try {
+        this.popSound.stop();
+        this.popSound.play();
+      } catch(e){
+        console.log('Sound play error');
+      }
     }
-
-    stopBackgroundMusic() {
-        if (this.bgMusic && this.bgMusic.isPlaying) {
-            try {
-                this.bgMusic.stop();
-            } catch(e) {
-                console.log('Error stopping music.');
-            }
-        }
-    }
+  }
 }
 
 // Configuration du jeu Phaser
