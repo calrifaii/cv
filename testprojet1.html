@@ -28,7 +28,7 @@
         /* Zone interface à droite */
         #right-panel {
             width: 30vw;
-            min-width: 300px; /* Ensure panel is usable on smaller screens */
+            min-width: 300px;
             height: 100vh;
             background: #ffffffaa;
             padding: 20px;
@@ -82,7 +82,7 @@
         }
         
         #code-output {
-            white-space: pre-wrap; /* Ensures code wraps within the box */
+            white-space: pre-wrap; 
             word-wrap: break-word;
         }
     </style>
@@ -121,7 +121,7 @@
                 super({ key: 'Example' });
             }
 
-            // A utility function to ensure responsiveness
+            // Utility function for responsive design
             updateGameSize() {
                 const width = Math.floor(window.innerWidth * 0.70);
                 const height = Math.floor(window.innerHeight);
@@ -130,7 +130,7 @@
             }
 
             preload() {
-                // Ensure all keys are consistent with the asset path fix
+                // Load assets (paths must be correct on GitHub!)
                 this.load.image('square', 'assets/sprites/50x50.png');
                 this.load.image('circle', 'assets/sprites/blue_ball.png');
                 this.load.image('diamond', 'assets/sprites/diamond.png');
@@ -139,7 +139,7 @@
             }
 
             create() {
-                this.input.mouse.disableContextMenu(); // Good practice for web games
+                this.input.mouse.disableContextMenu(); 
                 this.particles = this.add.particles("spark").setDepth(1);
 
                 this.createBlocks();
@@ -172,7 +172,6 @@
                 }
 
                 this.blocks = blocks;
-                // Store initial positions once
                 this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
                 this.resizeBlocks(this.scale.width, this.scale.height);
             }
@@ -184,11 +183,9 @@
                     height: 9,
                     cellWidth: 60,
                     cellHeight: 60,
-                    // Center the grid in the canvas
                     x: (gameWidth - (12 * 60)) / 2 + 30,
                     y: (gameHeight - (9 * 60)) / 2 + 30
                 });
-                // Update original positions based on new grid alignment
                 this.originalPositions = this.blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
             }
 
@@ -203,8 +200,8 @@
             }
 
             handleBlockClick(pointer, child) {
-                this.playPopSound(); 
-
+                // We keep this here for the particle effect and hover logic, 
+                // but we moved sound playback to the HTML button click.
                 this.particles.createEmitter({
                     x: child.x,
                     y: child.y,
@@ -222,7 +219,7 @@
                     try {
                         this.sound.play('pop');
                     } catch (e) {
-                        console.warn('Could not play sound:', e);
+                        console.error('Sound Playback Error:', e);
                     }
                 } else {
                      console.warn('Sound key "pop" not loaded or does not exist.');
@@ -240,16 +237,15 @@
             // --- UPDATE LOOP & ANIMATION ---
 
             update(time, delta) {
-                // Update block animation phase
                 this.timeSincePhase += delta;
                 
-                // Changed from % 4 to % 5 to accommodate the new clean phase (Phase 4)
+                // Cycle through 5 phases (0, 1, 2, 3, 4)
                 if (this.timeSincePhase > this.phaseDuration) {
                     this.phase = (this.phase + 1) % 5; 
                     this.timeSincePhase = 0;
                 }
 
-                // 1. Block Movement (for mouse drag)
+                // Block Movement (for mouse drag)
                 if (this.isDragging) {
                     const mx = this.input.activePointer.x;
                     const my = this.input.activePointer.y;
@@ -261,10 +257,7 @@
                     });
                 }
 
-                // 2. Continuous Block Animation
                 this.animateBlocks(time);
-                
-                // 3. Continuous Text Animation
                 this.animateWaveText(time); 
             }
 
@@ -276,7 +269,7 @@
                 blocks.forEach((block, i) => {
                     const orig = this.originalPositions[i];
                     
-                    // Restore position if not dragging (simple spring-back)
+                    // Restore position if not dragging
                     if (!this.isDragging) {
                         block.x = Phaser.Math.Linear(block.x, orig.x, 0.05);
                         block.y = Phaser.Math.Linear(block.y, orig.y, 0.05);
@@ -290,36 +283,31 @@
                             const dx = orig.x - centerX;
                             const dy = orig.y - centerY;
                             const angle = Math.atan2(dy, dx);
-                            
-                            // Use distance to create phase lag, use time for movement
                             const distFromCenter = Math.sqrt(dx * dx + dy * dy); 
                             
-                            // Sine wave for expanding/contracting distance
-                            const offsetMag = Math.sin(time / 400 + distFromCenter * 0.01) * 35; // 35 is max displacement
+                            // Creates the pulsing in-and-out motion
+                            const offsetMag = Math.sin(time / 400 + distFromCenter * 0.01) * 35; 
                             
-                            // Apply offset along the original angle from the center
+                            // Apply offset along the vector from the center
                             block.x = orig.x + Math.cos(angle) * offsetMag;
                             block.y = orig.y + Math.sin(angle) * offsetMag;
                             break;
                             
-                        // Phase 1: Radial Wave (Original Code)
+                        // Phase 1: Radial Wave
                         case 1:
-                            const dx1 = orig.x - centerX;
-                            const dy1 = orig.y - centerY;
-                            const dist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                            const dist = Phaser.Math.Distance.Between(orig.x, orig.y, centerX, centerY);
                             const offset = Math.sin(time / 250 + dist * 0.05) * 18;
-                            block.x = orig.x + dx1 * 0.03 * Math.sin(time / 500);
                             block.y = orig.y + offset;
                             break;
                         
-                        // Phase 2: Diagonal Wave (Original Code)
+                        // Phase 2: Diagonal Wave
                         case 2:
                             const offset2 = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
                             block.x = orig.x + offset2;
                             block.y = orig.y + offset2 * 0.5;
                             break;
                         
-                        // Phase 3: Chaotic/Individual Wave (Original Code)
+                        // Phase 3: Chaotic/Individual Wave
                         case 3:
                             const offset3 = Math.sin(time / 150 + i * 0.5) * (8 + (i % 18));
                             block.x = orig.x + offset3 * 0.8;
@@ -328,7 +316,6 @@
                             
                         // PHASE 4: RETURN TO ORIGINAL POSITION (Clean State)
                         case 4:
-                            // Stops further animation offsets; the isDragging check handles the smooth return
                             block.x = orig.x;
                             block.y = orig.y;
                             break;
@@ -344,6 +331,9 @@
                 const codeOutput = document.getElementById("code-output");
 
                 button.addEventListener("click", () => {
+                    // Play Sound on HTML button click (fixes autoplay issues)
+                    this.playPopSound(); 
+                    
                     const textValue = input.value.toUpperCase();
                     this.generateAnimatedText(textValue);
                     this.generateCodeSnippet(textValue);
@@ -388,17 +378,15 @@
             }
 
             animateWaveText(time) {
-                // Optimized wave animation (sine wave on X position)
+                // Sine wave on X position
                 if (this.letters.length === 0) return;
                 
-                const amplitude = 30; // Max wave distance
-                const frequency = 0.3; // How spread out the wave is
+                const amplitude = 30;
+                const frequency = 0.3;
 
                 this.letters.forEach((letter) => {
-                    // Calculate the target wave X position
                     const waveX = Math.sin(time * 0.005 + letter.waveIndex * frequency) * amplitude;
-                    
-                    // Use simple linear easing to smoothly move the letter towards the target
+                    // Apply smooth movement towards the target
                     letter.x = letter.x - (letter.x - (this.scale.width * 0.75 + waveX)) * 0.1; 
                 });
             }
@@ -412,8 +400,8 @@
 
 // 2. Create Text (in 'create()' function)
 this.waveLetters = [];
-const startX = 400; // Your desired X position
-const startY = 100; // Starting Y position
+const startX = 400; // Adjust X based on your game size
+const startY = 100; 
 const textToAnimate = "${text}";
 
 [...textToAnimate].forEach((char, i) => {
@@ -449,7 +437,6 @@ if (this.waveLetters) {
         // --- GAME CONFIG ---
         const config = {
             type: Phaser.AUTO,
-            // Calculate initial dimensions based on the 70vw CSS rule
             width: Math.floor(window.innerWidth * 0.70), 
             height: Math.floor(window.innerHeight),
             backgroundColor: '#b8ffb8',
