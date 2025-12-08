@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Phaser Waves + Text Generator (Fixed)</title>
+    <title>Phaser Waves + Text Generator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
@@ -50,7 +50,7 @@
 
         pre {
             margin-top: 20px;
-            height: 50vh;
+            height: 45vh;
             overflow-y: auto;
             border: 2px dashed #ff3eb5;
             padding: 10px;
@@ -64,7 +64,7 @@
 
 <div id="right-panel">
     <h2>Text Wave Generator</h2>
-    <input id="text-input" value="PHASER WAVES">
+    <input id="text-input" placeholder="Type something...">
     <button id="generate-btn">Generate</button>
     <pre id="code-output"></pre>
 </div>
@@ -129,6 +129,7 @@ class Example extends Phaser.Scene {
 
     explode(block) {
         this.sound.play('pop');
+
         this.particles.createEmitter({
             x: block.x,
             y: block.y,
@@ -161,18 +162,15 @@ class Example extends Phaser.Scene {
                     b.x = o.x + offset;
                     b.y = o.y;
                     break;
-
                 case 1:
                     offset = Math.sin(time * 0.004 + i * 0.5) * 15;
                     b.y = o.y + offset;
                     break;
-
                 case 2:
                     offset = Math.sin(time * 0.003 + (o.x + o.y) * 0.02) * 10;
                     b.x = o.x + offset;
                     b.y = o.y + offset;
                     break;
-
                 case 3:
                     offset = Math.sin(time * 0.006 + i) * 20;
                     b.x = o.x + offset;
@@ -192,8 +190,21 @@ class Example extends Phaser.Scene {
     createTextEngine() {
         const input = document.getElementById('text-input');
         const btn = document.getElementById('generate-btn');
-        btn.onclick = () => this.generateText(input.value.toUpperCase());
-        this.generateText(input.value.toUpperCase());
+
+        btn.onclick = () => {
+            const text = input.value.toUpperCase();
+            if (!text) return;
+
+            // ✅ Sound plays here (user gesture)
+            this.sound.play('pop');
+
+            this.generateText(text);
+
+            document.getElementById('code-output').textContent =
+`letters.forEach((l,i)=>{
+  l.x = baseX + Math.sin(time*0.005+i*0.3)*30;
+});`;
+        };
     }
 
     generateText(text) {
@@ -205,22 +216,16 @@ class Example extends Phaser.Scene {
 
         [...text].forEach((c, i) => {
             const t = this.add.text(x, startY + i * 45, c, {
-                fontFamily: 'Arial Black',
-                fontSize: '60px',
+                fontFamily: 'Arial',   // ✅ NOT bold
+                fontSize: '56px',
                 color: '#000',
                 stroke: '#ff3eb5',
-                strokeThickness: 8
+                strokeThickness: 6
             }).setOrigin(0.5);
 
             t.index = i;
             this.letters.push(t);
         });
-
-        document.getElementById('code-output').textContent =
-`// Wave Text Logic
-letters.forEach((l,i)=>{
-  l.x = baseX + Math.sin(time*0.005+i*0.3)*30;
-});`;
     }
 
     animateText(time) {
