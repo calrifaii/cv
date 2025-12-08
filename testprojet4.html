@@ -423,19 +423,24 @@ class Example extends Phaser.Scene {
 
       this.lastBubbleSoundTime = 0; // in create()
 
- this.input.on('pointermove', function(pointer){
-    if(!self.blocks) return;
-    self.blocks.getChildren().forEach(function(block){
-        var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
-        var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
-        
-        if(distance < 200){
-            var fleeForce = (200 - distance) / 200 * 5;
+this.input.on('pointermove', pointer => {
+    if (!this.blocks) return;
+
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+
+    this.blocks.getChildren().forEach(block => {
+        const angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
+        const distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
+
+        if (distance < 200) {
+            const fleeForce = (200 - distance) / 200 * 5;
             block.offsetX = (block.offsetX || 0) + Math.cos(angle + Math.PI) * fleeForce;
             block.offsetY = (block.offsetY || 0) + Math.sin(angle + Math.PI) * fleeForce;
         }
     });
 });
+
 
 
     update(time, delta) {
@@ -538,13 +543,18 @@ class Example extends Phaser.Scene {
         });
 
         // 2. Gestion du bouton Générer
-        button.addEventListener("click", function() {
-            var text = input.value.toUpperCase().trim();
-            if (!text) return;
+        button.addEventListener("click", () => {
+    const text = input.value.trim();
+    if (!text) return;
 
-            if (!self.history.includes(text)) {
-                self.history.push(text);
-            }
+    this.generateAnimatedTextBlock(text);
+
+    // Play sound safely
+    if (this.popSound) {
+        try { this.popSound.play(); } catch(e) { console.log('Audio error'); }
+    }
+});
+
 
             self.updateHistoryUI();
             
