@@ -423,29 +423,18 @@ class Example extends Phaser.Scene {
 
       this.lastBubbleSoundTime = 0; // in create()
 
-  this.input.on('pointermove', function(pointer){
+ this.input.on('pointermove', function(pointer){
     if(!self.blocks) return;
-
-    var now = self.time.now;
-    if(now - self.lastBubbleSoundTime > 100){ // 100ms cooldown
-        self.lastBubbleSoundTime = now;
-
-        self.blocks.getChildren().forEach(function(block){
-            var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
-            var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
-            
-            if(distance < 200){
-                var fleeForce = (200 - distance) / 200 * 5;
-                block.offsetX = (block.offsetX || 0) + Math.cos(angle + Math.PI) * fleeForce;
-                block.offsetY = (block.offsetY || 0) + Math.sin(angle + Math.PI) * fleeForce;
-
-                // Only play the sound once per cooldown
-                if (!self.bubblePopSound.isPlaying) {
-                    self.bubblePopSound.play();
-                }
-            }
-        });
-    }
+    self.blocks.getChildren().forEach(function(block){
+        var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
+        var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
+        
+        if(distance < 200){
+            var fleeForce = (200 - distance) / 200 * 5;
+            block.offsetX = (block.offsetX || 0) + Math.cos(angle + Math.PI) * fleeForce;
+            block.offsetY = (block.offsetY || 0) + Math.sin(angle + Math.PI) * fleeForce;
+        }
+    });
 });
 
 
