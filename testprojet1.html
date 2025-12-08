@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Phaser Waves + Text Generator</title>
+    <title>Phaser Waves + Text Generator (Pro Edition)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
@@ -14,11 +15,13 @@
             background: #b8ffb8;
             display: flex;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
 
         /* Zone Phaser à gauche */
         #phaser-example {
+            /* Use a flexible layout */
+            flex-grow: 1;
             width: 70vw;
             height: 100vh;
         }
@@ -26,12 +29,16 @@
         /* Zone interface à droite */
         #right-panel {
             width: 30vw;
+            min-width: 300px; /* Ensure panel is usable on smaller screens */
             height: 100vh;
             background: #ffffffaa;
             padding: 20px;
             box-sizing: border-box;
             backdrop-filter: blur(5px);
+            z-index: 10; /* Ensure it stays above the Phaser canvas */
         }
+
+        /* ... [Your existing CSS for H2, input, button, and #phaser-text remains the same] ... */
 
         #right-panel h2 {
             margin-top: 0;
@@ -59,6 +66,7 @@
             border-radius: 10px;
             font-size: 20px;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
         #generate-btn:hover {
@@ -72,6 +80,8 @@
             border-radius: 10px;
             padding: 10px;
             color: #ff3eb5;
+            overflow-y: auto;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -82,122 +92,191 @@
 
     <div id="right-panel">
         <h2>Créer une animation avec ton texte</h2>
-        <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…">
+        <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…" value="PHASER WAVES">
         <button id="generate-btn">Générer l’animation</button>
 
-        <div id="phaser-text"></div>
+        <div id="phaser-text">
+            Code généré : <br>
+            <pre id="code-output"></pre>
+        </div>
     </div>
 
     <script>
+        // --- SCENE CLASS: Example ---
         class Example extends Phaser.Scene {
-            constructor() {
-                // give the scene a key — avoids some subtle lifecycle issues
-                super({ key: 'Example' });
+            // Class properties for cleaner syntax
+            blocks;
+            originalPositions;
+            letters = [];
+            
+            // Animation state
+            phase = 0;
+            phaseDuration = 6000;
+            timeSincePhase = 0;
 
-                this.phase = 0;
-                this.phaseDuration = 6000;
-                this.timeSincePhase = 0;
+            constructor() {
+                super({ key: 'Example' });
+            }
+
+            // A utility function to ensure responsiveness
+            updateGameSize() {
+                const width = Math.floor(window.innerWidth * 0.70);
+                const height = Math.floor(window.innerHeight);
+                this.scale.resize(width, height);
+                this.resizeBlocks(width, height);
             }
 
             preload() {
-                // The paths below MUST match the folders you create on GitHub
+                // Ensure all keys are consistent with the asset path fix
                 this.load.image('square', 'assets/sprites/50x50.png');
                 this.load.image('circle', 'assets/sprites/blue_ball.png');
                 this.load.image('diamond', 'assets/sprites/diamond.png');
-
                 this.load.image('spark', 'assets/particles/blue.png');
-                this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+                
+                // Audio pre-decoding (can sometimes help with playback)
+                this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav'); 
             }
 
             create() {
+                this.input.mouse.disableContextMenu(); // Good practice for web games
+
+                // 1. Particle System Setup
+                this.particles = this.add.particles("spark").setDepth(1);
+
+                // 2. Block Grid Setup
+                this.createBlocks();
+
+                // 3. UI and Text Engine Setup
+                this.createTextEngine();
+
+                // 4. Input Listener for Block Movement
+                this.input.on('pointerdown', this.handleInputStart, this);
+                this.input.on('pointerup', this.handleInputStop, this);
+
+                // 5. Responsive Resize Handler
+                window.addEventListener('resize', this.updateGameSize.bind(this));
+            }
+
+            // --- BLOCK GRID METHODS ---
+
+            createBlocks() {
                 const shapes = ["square", "circle", "diamond"];
                 const blocks = this.add.group();
-
-                // use the scene scale values which are more robust than sys.game.config in some cases
-                const gameWidth = this.scale.width;
-                const gameHeight = this.scale.height;
 
                 for (let i = 0; i < 108; i++) {
                     const shape = shapes[i % shapes.length];
                     const child = this.add.image(0, 0, shape).setScale(0.3);
-
-                    child.setTint(0xff3eb5); // rose
+                    child.setTint(0xff3eb5);
 
                     child.setInteractive();
-                    child.on("pointerover", () => {
-                        this.tweens.add({
-                            targets: child,
-                            scale: 0.5,
-                            duration: 150,
-                            yoyo: true
-                        });
-                    });
-
-                    child.on("pointerdown", () => {
-                        // play sound on user interaction (click)
-                        if (this.sound && this.sound.exists('pop')) {
-                            try {
-                                this.sound.play('pop');
-                            } catch (e) {
-                                // some browsers block autoplay until user gesture; click should allow playback
-                                console.warn('Could not play sound:', e);
-                            }
-                        }
-
-                        this.particles.createEmitter({
-                            x: child.x,
-                            y: child.y,
-                            speed: { min: -150, max: 150 },
-                            lifespan: 500,
-                            scale: { start: 0.5, end: 0 },
-                            quantity: 25,
-                            tint: 0xff3eb5
-                        });
-                    });
-
+                    child.on("pointerdown", this.handleBlockClick, this);
+                    child.on("pointerover", this.handleBlockHover, this);
+                    
                     blocks.add(child);
                 }
 
-                this.particles = this.add.particles("spark");
+                this.blocks = blocks;
+                // Store initial positions once
+                this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+                this.resizeBlocks(this.scale.width, this.scale.height);
+            }
 
-                Phaser.Actions.GridAlign(blocks.getChildren(), {
+            resizeBlocks(gameWidth, gameHeight) {
+                // Adjust position based on new screen size
+                Phaser.Actions.GridAlign(this.blocks.getChildren(), {
                     width: 12,
                     height: 9,
                     cellWidth: 60,
                     cellHeight: 60,
+                    // Center the grid in the canvas
                     x: (gameWidth - (12 * 60)) / 2 + 30,
                     y: (gameHeight - (9 * 60)) / 2 + 30
                 });
+                // Update original positions based on new grid alignment
+                this.originalPositions = this.blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+            }
 
-                this.blocks = blocks;
-                this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+            handleBlockHover(child) {
+                 this.tweens.add({
+                    targets: child,
+                    scale: 0.5,
+                    duration: 150,
+                    yoyo: true,
+                    ease: 'Quad.easeOut'
+                });
+            }
 
-                // TEXT ANIMATION ZONE
-                this.createTextEngine();
+            handleBlockClick(pointer, child) {
+                // Ensure sound playback is attempted on user gesture
+                this.playPopSound(); 
+
+                this.particles.createEmitter({
+                    x: child.x,
+                    y: child.y,
+                    speed: { min: -150, max: 150 },
+                    lifespan: 500,
+                    scale: { start: 0.5, end: 0 },
+                    quantity: 25,
+                    tint: 0xff3eb5
+                });
+            }
+
+            playPopSound() {
+                if (this.sound && this.sound.keyExists('pop')) {
+                    try {
+                        // Use a dedicated method to handle play logic
+                        this.sound.play('pop');
+                    } catch (e) {
+                        console.warn('Could not play sound:', e);
+                    }
+                } else {
+                     console.warn('Sound key "pop" not loaded or does not exist.');
+                }
+            }
+
+
+            // --- UPDATE LOOP & ANIMATION ---
+
+            // Flag to track mouse drag state
+            isDragging = false; 
+
+            handleInputStart() {
+                this.isDragging = true;
+            }
+
+            handleInputStop() {
+                this.isDragging = false;
             }
 
             update(time, delta) {
+                // Update block animation phase
                 this.timeSincePhase += delta;
                 if (this.timeSincePhase > this.phaseDuration) {
                     this.phase = (this.phase + 1) % 4;
                     this.timeSincePhase = 0;
                 }
 
-                // Use activePointer.x / y (this.input.x / this.input.y do not exist)
-                if (this.input.activePointer.isDown) {
+                // 1. Block Movement (Optimized)
+                if (this.isDragging) {
                     const mx = this.input.activePointer.x;
                     const my = this.input.activePointer.y;
-
+                    
                     this.blocks.getChildren().forEach(block => {
+                        // Use Phaser's built-in functions for cleaner vector math
                         const angle = Phaser.Math.Angle.Between(block.x, block.y, mx, my);
-                        block.x += Math.cos(angle) * 0.6;
-                        block.y += Math.sin(angle) * 0.6;
+                        block.x += Math.cos(angle) * 0.8; // Increased speed slightly for a better feel
+                        block.y += Math.sin(angle) * 0.8;
                     });
                 }
 
+                // 2. Continuous Block Animation
                 this.animateBlocks(time);
+                
+                // 3. Continuous Text Animation
+                this.animateWaveText(time); 
             }
 
+            // This is where we apply the core animation using sine waves
             animateBlocks(time) {
                 const blocks = this.blocks.getChildren();
                 const centerX = this.scale.width / 2;
@@ -206,97 +285,178 @@
                 blocks.forEach((block, i) => {
                     const orig = this.originalPositions[i];
                     let offset = 0;
+                    
+                    // Simple easing function to smoothly transition between phases
+                    const easeFactor = Phaser.Math.SmootherStep(this.timeSincePhase, 0, this.phaseDuration);
 
                     switch (this.phase) {
+                        // Wave 1: Horizontal X-wave based on Y position (Vertical lines move)
                         case 0:
                             offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
                             block.x = orig.x + offset;
                             block.y = orig.y;
                             break;
+                        
+                        // Wave 2: Radial Wave centered on canvas
                         case 1:
+                            // Pre-calculate distance at the start, use here for efficient update
                             const dx1 = orig.x - centerX;
                             const dy1 = orig.y - centerY;
                             const dist = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                            
                             offset = Math.sin(time / 250 + dist * 0.05) * 18;
-                            block.x = orig.x + dx1 * 0.03 * Math.sin(time / 500);
+                            // Add a subtle rotation effect
+                            block.x = orig.x + dx1 * 0.03 * Math.sin(time / 500); 
                             block.y = orig.y + offset;
                             break;
+                        
+                        // Wave 3: Diagonal Wave (X and Y coupled)
                         case 2:
                             offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
                             block.x = orig.x + offset;
                             block.y = orig.y + offset * 0.5;
                             break;
+                        
+                        // Wave 4: Random Index Wave (Chaotic, individual movement)
                         case 3:
-                            // For consistent animation, use a deterministic function per index
-                            offset = Math.sin(time / 150 + i * 0.5) * (8 + (i % 18));
+                            // The offset is proportional to the index (i) for variety
+                            offset = Math.sin(time / 150 + i * 0.5) * (8 + (i % 18)); 
                             block.x = orig.x + offset * 0.8;
                             block.y = orig.y + offset;
                             break;
                     }
+                    
+                    // Restore position if not dragging (simple spring-back)
+                    if (!this.isDragging) {
+                        block.x = Phaser.Math.Linear(block.x, orig.x, 0.05); // Lerp back to original X
+                        block.y = Phaser.Math.Linear(block.y, orig.y, 0.05); // Lerp back to original Y
+                    }
                 });
             }
 
-            /** TEXT ENGINE **/
+            // --- TEXT ENGINE METHODS ---
+
             createTextEngine() {
                 const input = document.getElementById("text-input");
                 const button = document.getElementById("generate-btn");
+                const codeOutput = document.getElementById("code-output");
 
+                // Use the scene context for event handling
                 button.addEventListener("click", () => {
-                    this.generateAnimatedText(input.value.toUpperCase());
+                    const textValue = input.value.toUpperCase();
+                    this.generateAnimatedText(textValue);
+                    this.generateCodeSnippet(textValue);
                 });
 
-                // generate initial text
-                this.generateAnimatedText("PHASER");
+                // Generate initial text
+                this.generateAnimatedText(input.value.toUpperCase());
+                this.generateCodeSnippet(input.value.toUpperCase());
             }
 
             generateAnimatedText(text) {
                 if (!text) return;
 
-                const startX = this.scale.width * 0.75;
-                const startY = 100;
+                const startX = this.scale.width * 0.75; // Center text a bit better
+                const startY = this.scale.height / 2 - (text.length * 20); // Center vertically
 
-                if (this.letters) {
-                    // kill any tweens tied to previous letters before destroying them
+                if (this.letters.length > 0) {
+                    // Destroy previous letters array contents
                     this.letters.forEach(l => {
-                        try { this.tweens.killTweensOf(l); } catch (e) { }
-                        try { l.destroy(); } catch (e) { }
+                        this.tweens.killTweensOf(l);
+                        l.destroy();
                     });
+                    this.letters = [];
                 }
 
-                this.letters = [];
-
                 [...text].forEach((char, i) => {
-                    const letter = this.add.text(startX, startY + i * 40, char, {
-                        fontFamily: 'Arial',
-                        fontSize: '40px',
-                        color: '#ff3eb5'
-                    }).setOrigin(0.5);
+                    const letter = this.add.text(
+                        startX, 
+                        startY + i * 45, // Increased spacing for vertical text
+                        char, 
+                        {
+                            fontFamily: 'Arial Black', // Use a bolder font for visual impact
+                            fontSize: '60px',
+                            color: '#000000',
+                            stroke: '#ff3eb5',
+                            strokeThickness: 8,
+                        }
+                    ).setOrigin(0.5);
 
+                    // Add a unique property for the wave offset calculation
+                    letter.waveIndex = i; 
                     this.letters.push(letter);
-
-                    this.tweens.add({
-                        targets: letter,
-                        x: startX + 30,
-                        angle: 10,
-                        yoyo: true,
-                        repeat: -1,
-                        duration: 800 + i * 30,
-                        ease: "sine.inout"
-                    });
                 });
+            }
 
-                const phaserTextDiv = document.getElementById("phaser-text");
-                phaserTextDiv.textContent = `Texte affiché : ${text}`;
+            animateWaveText(time) {
+                // Optimized wave animation (sine wave on X position)
+                if (this.letters.length === 0) return;
+                
+                const amplitude = 30; // Max wave distance
+                const frequency = 0.3; // How spread out the wave is
+
+                this.letters.forEach((letter) => {
+                    const waveX = Math.sin(time * 0.005 + letter.waveIndex * frequency) * amplitude;
+                    letter.x = letter.x - (letter.x - (this.scale.width * 0.75 + waveX)) * 0.1; // Simple linear easing to the target
+                });
+            }
+            
+            // --- CODE GENERATION ---
+
+            generateCodeSnippet(text) {
+                const code = `
+// 1. Define Scene Property
+// this.waveLetters; 
+
+// 2. Create Text (in 'create()' function)
+this.waveLetters = [];
+const startX = 400; // Your desired X position
+const startY = 100; // Starting Y position
+const textToAnimate = "${text}";
+
+[...textToAnimate].forEach((char, i) => {
+    const letter = this.add.text(startX, startY + i * 45, char, {
+        fontFamily: 'Arial Black', 
+        fontSize: '60px',
+        color: '#000000',
+        stroke: '#ff3eb5',
+        strokeThickness: 8,
+    }).setOrigin(0.5);
+    letter.waveIndex = i;
+    this.waveLetters.push(letter);
+});
+
+// 3. Animation Loop (in 'update(time, delta)' function)
+if (this.waveLetters) {
+    const amplitude = 30;
+    const frequency = 0.3;
+    const centerLineX = 400; // Must match startX from step 2
+
+    this.waveLetters.forEach((letter) => {
+        const waveX = Math.sin(time * 0.005 + letter.waveIndex * frequency) * amplitude;
+        // Apply smooth movement towards the new wave position
+        letter.x = Phaser.Math.Linear(letter.x, centerLineX + waveX, 0.1); 
+    });
+}
+                `.trim();
+
+                document.getElementById("code-output").textContent = code;
             }
         }
 
+        // --- GAME CONFIG ---
         const config = {
             type: Phaser.AUTO,
-            width: Math.floor(window.innerWidth * 0.70),
+            // Calculate initial dimensions based on the 70vw CSS rule
+            width: Math.floor(window.innerWidth * 0.70), 
             height: Math.floor(window.innerHeight),
             backgroundColor: '#b8ffb8',
             parent: 'phaser-example',
-            scene: Example
+            scene: Example,
+            // Ensure WebGL is preferred for performance
+            dom: {
+                createContainer: true
+            }
         };
 
         new Phaser.Game(config);
