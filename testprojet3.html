@@ -118,8 +118,6 @@
             color: white;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            padding: 5px;
         }
 
         .color-option[data-color="#FF5722"] { background-color: #FF5722; } /* Deep Orange */
@@ -250,49 +248,47 @@ class Example extends Phaser.Scene {
         this.bgMusic = null;
         this.blocks = null;
         this.originalPositions = [];
-        this.textObject = null; // Référence au bloc de texte unique
-        this.textBg = null; // Référence au fond du bloc de texte
     }
 
     preload() {
         this.load.setBaseURL('https://labs.phaser.io');
         this.load.image('spark', 'assets/particles/blue.png');
-        
-        // MODIFICATION ICI: Chargement de votre fichier pop.wav depuis GitHub (URL brute)
-        // >>> IMPORTANT: REMPLACEZ [YOUR_GITHUB_RAW_URL_TO_POP.WAV] par l'URL réelle
-        this.load.audio('pop_fx', '[YOUR_GITHUB_RAW_URL_TO_POP.WAV]'); 
-        
-        // Musique de fond (inchangée)
+        this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+        // Musique d'ambiance - Remplacez par votre propre musique si possible (doit être un lien direct)
+        // J'utilise un son d'exemple de Phaser Labs
         this.load.audio('music', 'assets/audio/oedipus_prefix_bgm.mp3');
     }
 
     create() {
         this.generateTextures();
         this.createBlocks();
-        this.setupAudio(); // Initialisation des objets Audio
+        this.setupAudio();
         this.setupInteractions();
         this.createTextEngine();
-        
+
+        // Ajout du listener de redimensionnement
         window.addEventListener('resize', this.handleResize.bind(this));
-        this.handleResize();
+        this.handleResize(); // Appel initial pour s'assurer que tout est correctement dimensionné
     }
 
     handleResize() {
         const newWidth = window.innerWidth * 0.70;
         const newHeight = window.innerHeight;
 
+        // Redimensionner le canvas Phaser
         this.game.scale.resize(newWidth, newHeight);
         
+        // Recalculer et repositionner la grille
         this.recalculateGrid(newWidth, newHeight);
 
-        // Recentrer le bloc de texte animé
-        if (this.textObject) {
-            this.textObject.setPosition(this.cameras.main.width / 2, this.cameras.main.height / 2);
-            this.textBg.setPosition(this.cameras.main.width / 2, this.cameras.main.height / 2);
+        // Recentrer le texte animé
+        if (this.currentAnimationText) {
+            this.generateAnimatedText(this.currentAnimationText);
         }
     }
 
     generateTextures() {
+        // Crée des textures une seule fois
         if (this.textures.exists('square')) return;
         
         var g = this.make.graphics({ x:0, y:0, add:false });
@@ -325,7 +321,7 @@ class Example extends Phaser.Scene {
     }
 
     createBlocks() {
-        if (this.blocks) return;
+        if (this.blocks) return; // Ne pas créer deux fois
         
         var gameWidth = this.cameras.main.width;
         var gameHeight = this.cameras.main.height;
@@ -342,14 +338,15 @@ class Example extends Phaser.Scene {
         this.blocks = this.add.group();
         for (var i = 0; i < totalBlocks; i++) {
             var key = this.shapes[i % this.shapes.length];
-            var tintValue = Phaser.Display.Color.HexStringToColor(this.activeColor).color;
-            var sprite = this.add.image(0, 0, key).setScale(0.3).setTint(tintValue);
+            // Utilise la couleur active pour le tint initial
+            var sprite = this.add.image(0, 0, key).setScale(0.3).setTint(Phaser.Display.Color.HexStringToColor(this.activeColor).color);
             sprite.setInteractive();
-            sprite.offsetX = 0;
+            sprite.offsetX = 0; // Ajout d'offset pour l'effet de fuite
             sprite.offsetY = 0;
             this.blocks.add(sprite);
         }
         
+        // Stocke les positions initiales pour les animations
         Phaser.Actions.GridAlign(this.blocks.getChildren(), { width: cols, height: rows, cellWidth: cellWidth, cellHeight: cellHeight, x: 0, y: 0 });
         this.originalPositions = this.blocks.getChildren().map(function(b){ return { x: b.x, y: b.y }; });
         
@@ -358,6 +355,7 @@ class Example extends Phaser.Scene {
     }
     
     recalculateGrid(width, height) {
+        // Recalculer la grille si la taille a changé
         if (!this.blocks) return;
         
         var gameWidth = width || this.cameras.main.width;
@@ -366,6 +364,9 @@ class Example extends Phaser.Scene {
         var cellHeight = 60;
         var cols = Math.ceil(gameWidth / cellWidth) + 1;
         var rows = Math.ceil(gameHeight / cellHeight) + 1;
+
+        // Si le nombre de blocs a changé significativement (peu probable avec le +1), il faudrait recréer.
+        // Ici, on se contente de réaligner et de mettre à jour les positions d'origine.
         
         Phaser.Actions.GridAlign(this.blocks.getChildren(), { 
             width: cols, 
@@ -382,6 +383,7 @@ class Example extends Phaser.Scene {
     }
 
     applyPulseTween() {
+        // Annule les tweens existants sur l'échelle
         this.blocks.getChildren().forEach(block => this.tweens.killTweensOf(block));
 
         var children = this.blocks.getChildren();
@@ -401,15 +403,9 @@ class Example extends Phaser.Scene {
     setupInteractions() {
         var self = this;
         this.blocks.getChildren().forEach(function(block){
-            
-            // Animation d'échelle au survol (inchangée)
-            block.on('pointerover', function(){ 
-                self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); 
-            });
-            
-            // Particules au clic (popSound retiré de l'interaction ici)
+            block.on('pointerover', function(){ self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); });
             block.on('pointerdown', function(){ 
-                // Le popSound est maintenant joué par le bouton Générer
+                if(self.popSound){ try{self.popSound.play();}catch{} }
                 self.particles.createEmitter({
                     x: block.x, 
                     y: block.y, 
@@ -422,6 +418,7 @@ class Example extends Phaser.Scene {
             });
         });
 
+        // Setup mouse flee effect (improved)
         this.input.on('pointermove', function(pointer){
             if(!self.blocks) return;
 
@@ -429,6 +426,7 @@ class Example extends Phaser.Scene {
                 var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
                 var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
                 
+                // Flee effect - stronger when closer (distance < 200)
                 if(distance < 200){
                     var fleeForce = (200 - distance) / 200 * 5;
                     block.offsetX = (block.offsetX || 0) + Math.cos(angle + Math.PI) * fleeForce;
@@ -444,6 +442,7 @@ class Example extends Phaser.Scene {
             this.phase = (this.phase + 1) % this.shapes.length;
             this.timeSincePhase = 0;
 
+            // Transition douce pour le changement de forme
             var newShape = this.shapes[this.phase];
             var self = this;
             this.blocks.getChildren().forEach((block, index) => {
@@ -474,37 +473,37 @@ class Example extends Phaser.Scene {
             var orig = self.originalPositions[i];
             var offsetX = 0, offsetY = 0;
             
-            var centerW = self.cameras.main.width / 2;
-            var centerH = self.cameras.main.height / 2;
-
+            // Logique d'animation basée sur la couleur/anim active
             switch(self.activeAnim){
-                case 'PULSE_WAVE': // Animation ORANGE/DEFAUT: Vague Sinusoïdale
+                case 'PULSE_WAVE': // Animation ORANGE/DEFAUT: Vague Sinusoïdale (Lent)
                     offsetX = Math.sin(time / 350 + orig.y * 0.1) * 15;
                     offsetY = Math.cos(time / 450 + orig.x * 0.08) * 10;
                     break;
                 case 'SPIRAL_FLOW': // Animation VERT: Mouvement en spirale vers le centre
-                    var dx = orig.x - centerW;
-                    var dy = orig.y - centerH;
+                    var dx = orig.x - self.cameras.main.width / 2;
+                    var dy = orig.y - self.cameras.main.height / 2;
                     var dist = Math.sqrt(dx * dx + dy * dy);
-                    var angle = Math.atan2(dy, dx) + time * 0.0005;
+                    var angle = Math.atan2(dy, dx) + time * 0.0005; // Rotation lente
                     
                     offsetX = Math.cos(angle) * (dist * 0.1) + Math.sin(time / 200 + i * 0.1) * 5;
                     offsetY = Math.sin(angle) * (dist * 0.1) + Math.cos(time / 300 + i * 0.1) * 5;
                     break;
                 case 'RIPPLE_GRID': // Animation BLEU: Ondulation par rapport au centre de la grille
-                    var dx = orig.x - centerW;
-                    var dy = orig.y - centerH;
-                    var dist = Phaser.Math.Distance.Between(orig.x, orig.y, centerW, centerH);
+                    var dx = orig.x - self.cameras.main.width / 2;
+                    var dy = orig.y - self.cameras.main.height / 2;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
                     
-                    var ripple = Math.sin(time / 200 + dist * 0.02) * 8;
+                    var ripple = Math.sin(time / 200 + dist * 0.02) * 8; // Petit déplacement
                     offsetX = (dx / dist) * ripple;
                     offsetY = (dy / dist) * ripple;
                     break;
             }
             
+            // Application des animations de phase + décalage de fuite
             block.x = orig.x + offsetX + (block.offsetX || 0);
             block.y = orig.y + offsetY + (block.offsetY || 0);
 
+            // Retour progressif des blocs après l'effet de fuite
             block.offsetX = (block.offsetX || 0) * 0.95;
             block.offsetY = (block.offsetY || 0) * 0.95;
         });
@@ -519,21 +518,17 @@ class Example extends Phaser.Scene {
         // 1. Gestion des options de couleur
         colorOptions.forEach(option => {
             option.addEventListener('click', function() {
+                // Désélectionne tout
                 colorOptions.forEach(opt => opt.classList.remove('selected'));
+                // Sélectionne l'élément cliqué
                 this.classList.add('selected');
                 
                 self.activeColor = this.getAttribute('data-color');
                 self.activeAnim = this.getAttribute('data-anim');
 
+                // Applique immédiatement la couleur aux blocs
                 const tintValue = Phaser.Display.Color.HexStringToColor(self.activeColor).color;
                 self.blocks.getChildren().forEach(block => block.setTint(tintValue));
-
-                // Si le texte est déjà affiché, mettre à jour la couleur et l'animation immédiatement
-                if (self.textObject) {
-                    self.textObject.setColor(self.activeColor);
-                    self.textBg.setStrokeStyle(4, tintValue, 1);
-                    self.applyTextBlockAnimation(self.activeAnim);
-                }
             });
         });
 
@@ -542,18 +537,18 @@ class Example extends Phaser.Scene {
             var text = input.value.toUpperCase().trim();
             if (!text) return;
 
+            // Ajout à l'historique
             if (!self.history.includes(text)) {
                 self.history.push(text);
             }
 
             self.updateHistoryUI();
             
-            // Génère l'animation comme un seul bloc
-            self.generateAnimatedTextBlock(text);
+            // Génère l'animation
+            self.generateAnimatedText(text);
             self.currentAnimationText = text;
             
-            // Lancement des sons au clic du bouton Générer
-            if (self.popSound) { try { self.popSound.play(); } catch(e) { console.log('Error playing pop sound.'); } }
+            // Démarre la musique
             self.startBackgroundMusic();
             
             input.value = '';
@@ -569,10 +564,11 @@ class Example extends Phaser.Scene {
         document.getElementById("clear-history-btn").addEventListener("click", function(){
             self.history = [];
             self.updateHistoryUI();
-            self.clearAnimatedTextBlock();
+            self.clearAnimatedText();
             self.stopBackgroundMusic();
         });
 
+        // Affichage initial de l'historique
         this.updateHistoryUI();
     }
 
@@ -590,153 +586,106 @@ class Example extends Phaser.Scene {
             item.textContent = text;
             
             item.addEventListener('click', function(){
-                // S'assurer que la couleur sélectionnée est toujours la même lors de la lecture de l'historique
-                self.activeColor = document.querySelector('.color-option.selected').getAttribute('data-color');
-                self.activeAnim = document.querySelector('.color-option.selected').getAttribute('data-anim');
-
-                self.generateAnimatedTextBlock(text);
+                self.generateAnimatedText(text);
                 self.currentAnimationText = text;
                 self.updateHistoryUI();
-                self.startBackgroundMusic();
-                // Joue le popSound à la lecture de l'historique également
-                if (self.popSound) { try { self.popSound.play(); } catch(e) { console.log('Error playing pop sound from history.'); } }
+                self.startBackgroundMusic(); // Redémarre la musique si on clique sur un élément
             });
 
             historyList.appendChild(item);
         });
     }
 
-    // NOUVELLE MÉTHODE : Création d'un seul bloc de texte
-    generateAnimatedTextBlock(text) {
-        this.clearAnimatedTextBlock();
+    generateAnimatedText(text) {
+        if (!text) return;
+        this.clearAnimatedText(); // Nettoie l'ancien texte
         
-        var centerX = this.cameras.main.width / 2;
+        this.letters = [];
+        
         var centerY = this.cameras.main.height / 2;
+        var charWidth = 40; // Augmenté pour la visibilité
+        var totalWidth = text.length * charWidth;
+        var centerX = this.cameras.main.width / 2;
+        var startX = centerX - totalWidth / 2 + charWidth/2;
+        
         const letterColor = this.activeColor;
         const tint = Phaser.Display.Color.HexStringToColor(letterColor).color;
 
-        // 1. Fond du Texte (Rectangle dynamique)
-        var tempText = this.add.text(0, 0, text, {
-            fontFamily: 'Inter', 
-            fontSize: '60px', 
-            color: letterColor, 
-            fontWeight: '900'
-        }).setOrigin(0.5);
-        
-        const padding = 20;
-        const bgWidth = tempText.width + padding * 2;
-        const bgHeight = tempText.height + padding * 2;
-        tempText.destroy();
+        var self = this;
+        for (var i = 0; i < text.length; i++) {
+            (function(ch, idx) {
+                var xPos = startX + idx * charWidth;
+                
+                // 1. Background Circle
+                var bgCircle = self.add.circle(xPos, centerY, 40, 0xeeeeee, 1).setDepth(99);
+                bgCircle.setStrokeStyle(4, tint, 1);
+                self.letters.push(bgCircle);
+                
+                // 2. Text
+                var letter = self.add.text(xPos, centerY, ch, {
+                    fontFamily: 'Inter', 
+                    fontSize: '50px', 
+                    color: letterColor, 
+                    fontWeight: '900'
+                }).setOrigin(0.5).setDepth(100);
+                self.letters.push(letter);
+                
+                // Animation d'entrée
+                self.tweens.add({
+                    targets: [bgCircle, letter], 
+                    y: centerY, // Assure le positionnement de départ
+                    scale: { from: 0.1, to: 1 }, 
+                    alpha: { from: 0, to: 1 },
+                    duration: 1000 + idx * 80, 
+                    ease: "Back.easeOut"
+                });
+                
+                // Animation continue basée sur la couleur
+                self.applyTextAnimation(bgCircle, letter, idx, centerY);
 
-        this.textBg = this.add.rectangle(centerX, centerY, bgWidth, bgHeight, 0xeeeeee, 0.9).setDepth(99);
-        this.textBg.setStrokeStyle(4, tint, 1);
-        this.textBg.setOrigin(0.5);
-
-        // 2. Objet Texte (le texte lui-même)
-        this.textObject = this.add.text(centerX, centerY, text, {
-            fontFamily: 'Inter', 
-            fontSize: '60px', 
-            color: letterColor, 
-            fontWeight: '900'
-        }).setOrigin(0.5).setDepth(100);
-        
-        // Animation d'entrée pour les deux objets
-        this.tweens.add({
-            targets: [this.textBg, this.textObject], 
-            scale: { from: 0.1, to: 1 }, 
-            alpha: { from: 0, to: 1 },
-            duration: 1200, 
-            ease: "Elastic.easeOut",
-            onComplete: () => {
-                this.applyTextBlockAnimation(this.activeAnim); // Lancer l'animation continue après l'entrée
-            }
-        });
+            })(text[i], i);
+        }
     }
 
-    // NOUVELLE MÉTHODE : Application de l'animation au bloc unique
-    applyTextBlockAnimation(animKey) {
-        if (!this.textObject) return;
+    applyTextAnimation(bgCircle, letter, index, centerY) {
+        // Annule les tweens continus précédents
+        this.tweens.killTweensOf(bgCircle);
+        this.tweens.killTweensOf(letter);
 
-        this.tweens.killTweensOf(this.textObject);
-        this.tweens.killTweensOf(this.textBg);
+        // Les animations d'entrée doivent être terminées avant de commencer l'animation continue.
+        const delay = 1000 + index * 80;
 
-        var targets = [this.textObject, this.textBg];
-        var centerX = this.cameras.main.width / 2;
-        var centerY = this.cameras.main.height / 2;
-
-        targets.forEach(t => t.setPosition(centerX, centerY).setAngle(0).setScale(1));
-
-        switch (animKey) {
-            case 'PULSE_WAVE': // Orange: Flottement et pulsation
-                this.tweens.add({ 
-                    targets: targets, 
-                    y: centerY + 15, 
-                    duration: 2500, 
-                    ease: "sine.inout", 
-                    yoyo: true, 
-                    repeat: -1 
-                });
-                this.tweens.add({ 
-                    targets: targets, 
-                    scale: 1.05, 
-                    duration: 1000, 
-                    ease: "power1", 
-                    yoyo: true, 
-                    repeat: -1 
-                });
+        switch (this.activeAnim) {
+            case 'PULSE_WAVE': // Orange/Vague: Flottement et pulsation
+                this.tweens.add({ targets: [bgCircle, letter], y: centerY + 10, duration: 2000 + index * 100, ease: "sine.inout", delay: delay, yoyo: true, repeat: -1 });
+                this.tweens.add({ targets: bgCircle, scale: 1.1, duration: 1500, ease: "sine.inout", delay: delay, yoyo: true, repeat: -1 });
                 break;
-            case 'SPIRAL_FLOW': // Vert: Rotation et petit déplacement en X
-                this.tweens.add({ 
-                    targets: targets, 
-                    angle: { from: -5, to: 5 }, 
-                    duration: 4000, 
-                    ease: "sine.inout", 
-                    yoyo: true, 
-                    repeat: -1 
-                });
-                this.tweens.add({ 
-                    targets: targets, 
-                    x: centerX + 20, 
-                    duration: 3000, 
-                    ease: "sine.inout", 
-                    yoyo: true, 
-                    repeat: -1 
-                });
+            case 'SPIRAL_FLOW': // Vert/Spirale: Petite rotation et zoom
+                this.tweens.add({ targets: [bgCircle, letter], angle: 5, duration: 3000, ease: "sine.inout", delay: delay, yoyo: true, repeat: -1 });
+                this.tweens.add({ targets: [bgCircle, letter], scale: 1.05, duration: 1000 + index * 50, ease: "power1", delay: delay, yoyo: true, repeat: -1 });
                 break;
-            case 'RIPPLE_GRID': // Bleu: Zoom/Dézoom rythmique
-                this.tweens.add({ 
-                    targets: targets, 
-                    scale: 1.1, 
-                    duration: 800, 
-                    ease: "sine.in", 
-                    yoyo: true, 
-                    repeat: -1 
-                });
+            case 'RIPPLE_GRID': // Bleu/Ondulation: Décalage horizontal doux
+                this.tweens.add({ targets: [bgCircle, letter], x: letter.x + 10, duration: 1800 + index * 150, ease: "back.inout", delay: delay, yoyo: true, repeat: -1 });
                 break;
         }
     }
 
-    // NOUVELLE MÉTHODE : Nettoyage du bloc de texte unique
-    clearAnimatedTextBlock() {
-        if (this.textObject) {
-            this.tweens.killTweensOf(this.textObject);
-            this.textObject.destroy();
-            this.textObject = null;
-        }
-        if (this.textBg) {
-            this.tweens.killTweensOf(this.textBg);
-            this.textBg.destroy();
-            this.textBg = null;
+    clearAnimatedText() {
+        if (this.letters) {
+            this.letters.forEach(l => { 
+                this.tweens.killTweensOf(l); // Arrête les tweens continus
+                l.destroy(); 
+            });
+            this.letters = [];
         }
     }
 
     setupAudio() {
         try {
-            // Utilise 'pop_fx' pour le son du bouton Générer
-            this.popSound = this.sound.add('pop_fx', { loop: false, volume: 0.3 }); 
+            this.popSound = this.sound.add('pop', { loop: false, volume: 0.3 });
             this.bgMusic = this.sound.add('music', { loop: true, volume: 0.15 });
         } catch(e) {
-            console.error('Audio setup error during resource loading.', e);
+            console.log('Audio setup error. Audio will be skipped.', e);
         }
     }
 
@@ -764,6 +713,7 @@ class Example extends Phaser.Scene {
     }
 }
 
+// Configuration du jeu Phaser
 var config = { 
     type: Phaser.AUTO, 
     width: window.innerWidth * 0.70, 
