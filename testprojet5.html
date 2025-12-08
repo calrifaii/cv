@@ -426,14 +426,28 @@
                 var self = this;
 
                 this.blocks.getChildren().forEach(function(block){
-                    // Animation d'échelle au survol + NEW SOUND
-                    block.on('pointerover', function(){
+                    
+                    // --- CHANGED: Dynamic Audio Rate based on speed ---
+                    block.on('pointerover', function(pointer){
                         self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true});
                         
-                        // Play the bubble pop sound on hover
                         if(self.hoverSound) {
-                            // Slight randomness to volume/detune for organic feel
-                            self.hoverSound.play({ volume: 0.3, detune: Phaser.Math.Between(-100, 100) });
+                            // Calculate mouse speed
+                            // pointer is passed to the event, we check velocity
+                            let speed = self.input.activePointer.velocity.length();
+                            
+                            // Map speed to rate. 
+                            // Speed usually 0-2000+. 
+                            // Rate 1.0 = normal. Rate 2.0 = fast/high pitch.
+                            // We start at 1.0 and add up to 1.5 based on speed.
+                            let rateAdjust = Phaser.Math.Clamp(speed / 600, 0, 1.5);
+
+                            self.hoverSound.play({ 
+                                volume: 0.3, 
+                                // Faster speed = Higher rate = "More Rapid" sound
+                                rate: 1.0 + rateAdjust, 
+                                detune: Phaser.Math.Between(-100, 100) + (rateAdjust * 300)
+                            });
                         }
                     });
 
