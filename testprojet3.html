@@ -406,6 +406,7 @@ class Example extends Phaser.Scene {
             });
             
             // Particules au clic (popSound retiré de l'interaction ici)
+                if(self.sound){ try{self.sound.play('pop');}catch{} }
             block.on('pointerdown', function(){ 
                 // Le popSound est maintenant joué par le bouton Générer
                 self.particles.createEmitter({
@@ -550,12 +551,11 @@ class Example extends Phaser.Scene {
             self.generateAnimatedTextBlock(text);
             self.currentAnimationText = text;
             
-            // Lancement des sons au clic du bouton Générer
-            if (self.popSound) { try { self.popSound.play(); } catch(e) { console.log('Error playing pop sound.'); } }
-            self.startBackgroundMusic();
-            
-            input.value = '';
-        });
+           // Play sound once on click
+      self.playSoundOnce();
+      
+      input.value = '';
+    });
 
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -597,8 +597,8 @@ class Example extends Phaser.Scene {
                 self.updateHistoryUI();
                 self.startBackgroundMusic();
                 // Joue le popSound à la lecture de l'historique également
-                if (self.popSound) { try { self.popSound.play(); } catch(e) { console.log('Error playing pop sound from history.'); } }
-            });
+                self.playSoundOnce();
+        });
 
             historyList.appendChild(item);
         });
@@ -728,14 +728,23 @@ class Example extends Phaser.Scene {
         }
     }
 
-    setupAudio() {
-        try {
-            // Utilise 'pop_fx' pour le son du bouton Générer
-            this.popSound = this.sound.add('pop_fx', { loop: false, volume: 0.3 }); 
-            this.bgMusic = this.sound.add('music', { loop: true, volume: 0.15 });
-        } catch(e) {
-            console.error('Audio setup error during resource loading.', e);
-        }
+   setupAudio(){
+    var self = this;
+    try {
+      this.popSound = this.sound.add('pop', { loop: false, volume: 0.5 });
+    } catch(e){
+      console.log('Audio setup skipped');
+    }
+  }
+
+  playSoundOnce(){
+    if(this.popSound){
+      try {
+        this.popSound.stop();
+        this.popSound.play();
+      } catch(e){
+        console.log('Sound play error');
+      }
     }
 
     startBackgroundMusic() {
