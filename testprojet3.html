@@ -544,6 +544,7 @@ class Example extends Phaser.Scene {
             
             // Génère l'animation
             self.generateAnimatedText(text);
+            self.playSoundOnce(); // Ajout du son
             self.currentAnimationText = text;
             
             input.value = '';
@@ -580,11 +581,12 @@ class Example extends Phaser.Scene {
             }
             item.textContent = text;
             
-            item.addEventListener('click', function(){
-                self.generateAnimatedText(text);
-                self.currentAnimationText = text;
-                self.updateHistoryUI();
-            });
+           item.addEventListener('click', function(){
+           self.generateAnimatedText(text);
+           self.playSoundOnce(); // Ajout du son
+           self.currentAnimationText = text;
+           self.updateHistoryUI();
+        });
 
             historyList.appendChild(item);
         });
