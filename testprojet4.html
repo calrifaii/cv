@@ -255,16 +255,10 @@ class Example extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setBaseURL('https://labs.phaser.io');
-        this.load.image('spark', 'assets/particles/blue.png');
-        
-        // MODIFICATION ICI: Chargement de votre fichier pop.wav depuis GitHub (URL brute)
-        // >>> IMPORTANT: REMPLACEZ [YOUR_GITHUB_RAW_URL_TO_POP.WAV] par l'URL réelle
-        this.load.audio('pop_fx', '[YOUR_GITHUB_RAW_URL_TO_POP.WAV]'); 
-        
-        // Musique de fond (inchangée)
-        this.load.audio('music', 'assets/audio/oedipus_prefix_bgm.mp3');
-    }
+         // this.load.setBaseURL('https://labs.phaser.io'); // 
+    this.load.image('spark', 'assets/particles/blue.png');
+    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav.mp3');
+  }
 
     create() {
         this.generateTextures();
@@ -730,16 +724,14 @@ class Example extends Phaser.Scene {
         }
     }
 
-    setupAudio() {
-        try {
-            // Utilise 'pop_fx' pour le son du bouton Générer
-            this.popSound = this.sound.add('pop_fx', { loop: false, volume: 0.3 }); 
-            this.bgMusic = this.sound.add('music', { loop: true, volume: 0.15 });
-        } catch(e) {
-            console.error('Audio setup error during resource loading.', e);
-        }
+  setupAudio(){
+    var self = this;
+    try {
+      this.popSound = this.sound.add('pop', { loop: false, volume: 0.5 });
+    } catch(e){
+      console.log('Audio setup skipped');
     }
-
+  }
     startBackgroundMusic() {
         if (this.bgMusic) {
             try {
