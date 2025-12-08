@@ -546,9 +546,6 @@ class Example extends Phaser.Scene {
             self.generateAnimatedText(text);
             self.currentAnimationText = text;
             
-            // Démarre la musique
-            self.startBackgroundMusic();
-            
             input.value = '';
         });
 
@@ -587,7 +584,6 @@ class Example extends Phaser.Scene {
                 self.generateAnimatedText(text);
                 self.currentAnimationText = text;
                 self.updateHistoryUI();
-                self.startBackgroundMusic(); // Redémarre la musique si on clique sur un élément
             });
 
             historyList.appendChild(item);
