@@ -1,133 +1,547 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<title>Phaser Wave Generator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
-<style>
-body {
-    margin: 0;
-    background: #b8ffb8;
-    display: flex;
-    height: 100vh;
-    font-family: Arial, sans-serif;
-}
+    <meta charset="UTF-8">
 
-#phaser-container {
-    width: 70vw;
-    height: 100vh;
-}
+    <title>Phaser Waves + Text Generator</title>
 
-#ui {
-    width: 30vw;
-    padding: 20px;
-    background: #ffffffdd;
-}
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
 
-input, button {
-    width: 100%;
-    padding: 12px;
-    font-size: 18px;
-    margin-top: 10px;
-    border-radius: 10px;
-    border: 2px solid #ff3eb5;
-}
+    <style>
 
-button {
-    background: #ff3eb5;
-    color: white;
-    cursor: pointer;
-}
-</style>
+        body {
+
+            margin: 0;
+
+            padding: 0;
+
+            background: #b8ffb8;
+
+            display: flex;
+
+            overflow: hidden;
+
+            font-family: Arial, sans-serif;
+
+        }
+
+        /* Zone Phaser à gauche */
+
+        #phaser-example {
+
+            width: 70vw;
+
+            height: 100vh;
+
+        }
+
+        /* Zone interface à droite */
+
+        #right-panel {
+
+            width: 30vw;
+
+            height: 100vh;
+
+            background: #ffffffaa;
+
+            padding: 20px;
+
+            box-sizing: border-box;
+
+            backdrop-filter: blur(5px);
+
+        }
+
+        #right-panel h2 {
+
+            margin-top: 0;
+
+            color: #ff3eb5;
+
+            font-size: 28px;
+
+            text-align: center;
+
+        }
+
+        #text-input {
+
+            width: 100%;
+
+            padding: 12px;
+
+            font-size: 18px;
+
+            margin-bottom: 15px;
+
+            border: 2px solid #ff3eb5;
+
+            border-radius: 10px;
+
+            outline: none;
+
+        }
+
+        #generate-btn {
+
+            width: 100%;
+
+            padding: 12px;
+
+            background: #ff3eb5;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 10px;
+
+            font-size: 20px;
+
+            cursor: pointer;
+
+        }
+
+        #generate-btn:hover {
+
+            background: #ff1ea0;
+
+        }
+
+        #phaser-text {
+
+            margin-top: 30px;
+
+            height: 60vh;
+
+            border: 2px dashed #ff3eb5;
+
+            border-radius: 10px;
+
+            padding: 10px;
+
+            color: #ff3eb5;
+
+        }
+
+    </style>
+
 </head>
 
 <body>
 
-<div id="phaser-container"></div>
+<!-- Zone Animation -->
 
-<div id="ui">
-    <h2>Wave Text</h2>
-    <input id="textInput" placeholder="Type something">
-    <button id="generateBtn">Generate</button>
+<div id="phaser-example"></div>
+
+<!-- Zone Interface -->
+
+<div id="right-panel">
+
+    <h2>Créer une animation avec ton texte</h2>
+
+    <input id="text-input" type="text" placeholder="Écris un mot ou une phrase…">
+
+    <button id="generate-btn">Générer l’animation</button>
+
+    <div id="phaser-text"></div>
+
 </div>
 
 <script>
-class MainScene extends Phaser.Scene {
 
-    letters = [];
+class Example extends Phaser.Scene
 
-    preload() {
-        this.load.audio(
-            'pop',
-            'https://labs.phaser.io/assets/audio/SoundEffects/pop.wav'
-        );
+{
+
+    constructor ()
+
+    {
+
+        super();
+
+        this.phase = 0;
+
+        this.phaseDuration = 6000;
+
+        this.timeSincePhase = 0;
+
     }
 
-    create() {
-        // ✅ DOM references
-        const input = document.getElementById('textInput');
-        const btn = document.getElementById('generateBtn');
+    preload ()
 
-        btn.addEventListener('click', () => {
-            const text = input.value.trim();
-            if (!text) return;
+    {
 
-            // ✅ sound works now
-            this.sound.play('pop', { volume: 0.6 });
+        // CORRECTION 1: Suppression de setBaseURL pour éviter les problèmes de CORS.
 
-            this.createText(text);
+        // Les assets doivent être dans des dossiers relatifs (assets/sprites/, assets/audio/, etc.)
+
+        // par rapport à ce fichier HTML.
+
+        // this.load.setBaseURL('https://cdn.phaserfiles.com/v385');
+
+
+
+        this.load.image('square', 'assets/sprites/50x50.png');
+
+        this.load.image('circle', 'assets/sprites/blue_ball.png');
+
+        this.load.image('diamond', 'assets/sprites/diamond.png');
+
+
+
+        this.load.image('spark', 'assets/particles/blue.png');
+
+        this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav');
+
+    }
+
+    create ()
+
+    {
+
+        // CORRECTION 2: Initialisation du système de particules AVANT qu'il ne soit utilisé
+
+        // dans le gestionnaire d'événements 'pointerdown'.
+
+        this.particles = this.add.particles("spark");
+
+
+
+        const shapes = ["square", "circle", "diamond"];
+
+        const blocks = this.add.group();
+
+
+
+        for (let i = 0; i < 108; i++) {
+
+            const shape = shapes[i % shapes.length];
+
+            const child = this.add.image(0, 0, shape).setScale(0.3);
+
+
+
+            child.setTint(0xff3eb5); // rose
+
+
+
+            child.setInteractive();
+
+            child.on("pointerover", () => {
+
+                this.tweens.add({
+
+                    targets: child,
+
+                    scale: 0.5,
+
+                    duration: 150,
+
+                    yoyo: true
+
+                });
+
+            });
+
+
+
+            child.on("pointerdown", () => {
+
+                // Le son "pop" ne sera joué que si l'asset a été chargé (correction 1)
+
+                if (this.sound.get('pop')) {
+
+                    this.sound.play('pop');
+
+                }
+
+
+
+                this.particles.createEmitter({
+
+                    x: child.x,
+
+                    y: child.y,
+
+                    speed: { min: -150, max: 150 },
+
+                    lifespan: 500,
+
+                    scale: { start: 0.5, end: 0 },
+
+                    quantity: 25,
+
+                    tint: 0xff3eb5
+
+                });
+
+            });
+
+
+
+            blocks.add(child);
+
+        }
+
+
+
+        Phaser.Actions.GridAlign(blocks.getChildren(), {
+
+            width: 12,
+
+            height: 9,
+
+            cellWidth: 60,
+
+            cellHeight: 60,
+
+            x: 40,
+
+            y: 30
+
         });
+
+
+
+        this.blocks = blocks;
+
+        this.originalPositions = blocks.getChildren().map(b => ({ x: b.x, y: b.y }));
+
+
+
+        // TEXT ANIMATION ZONE
+
+        this.createTextEngine();
+
     }
 
-    createText(text) {
-        // remove old letters
-        this.letters.forEach(l => l.destroy());
+    update(time, delta)
+
+    {
+
+        this.timeSincePhase += delta;
+
+        if (this.timeSincePhase > this.phaseDuration) {
+
+            this.phase = (this.phase + 1) % 4;
+
+            this.timeSincePhase = 0;
+
+        }
+
+
+
+        if (this.input.activePointer.isDown) {
+
+            const mx = this.input.x;
+
+            const my = this.input.y;
+
+
+
+            this.blocks.getChildren().forEach(block => {
+
+                const angle = Phaser.Math.Angle.Between(block.x, block.y, mx, my);
+
+                block.x += Math.cos(angle) * 0.6;
+
+                block.y += Math.sin(angle) * 0.6;
+
+            });
+
+        }
+
+
+
+        this.animateBlocks(time);
+
+    }
+
+    animateBlocks(time)
+
+    {
+
+        const blocks = this.blocks.getChildren();
+
+
+
+        blocks.forEach((block, i) => {
+
+            const orig = this.originalPositions[i];
+
+            let offset = 0;
+
+
+
+            switch (this.phase) {
+
+                case 0:
+
+                    offset = Math.sin(time / 300 + orig.y * 0.12) * 12;
+
+                    break;
+
+                case 1:
+
+                    const dx = orig.x - 400;
+
+                    const dy = orig.y - 300;
+
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+
+                    offset = Math.sin(time / 250 + dist * 0.05) * 18;
+
+                    break;
+
+                case 2:
+
+                    offset = Math.sin(time / 220 + (orig.x + orig.y) * 0.06) * 15;
+
+                    break;
+
+                case 3:
+
+                    offset = Math.sin(time / 150 + i) * Phaser.Math.Between(8, 25);
+
+                    break;
+
+            }
+
+
+
+            block.x = orig.x + offset;
+
+            block.y = orig.y + offset;
+
+        });
+
+    }
+
+    /** TEXT ENGINE **/
+
+    createTextEngine() {
+
+        const input = document.getElementById("text-input");
+
+        const button = document.getElementById("generate-btn");
+
+
+
+        button.addEventListener("click", () => {
+
+            this.generateAnimatedText(input.value.toUpperCase());
+
+        });
+
+    }
+
+    generateAnimatedText(text) {
+
+        if (!text) return;
+
+
+
+        // CORRECTION 3: Utilisation de la taille du jeu pour centrer le texte
+
+        const gameWidth = this.sys.game.config.width;
+
+        const startX = gameWidth / 2;
+
+        const startY = 100;
+
+
+
+        // Remove previous letters
+
+        if (this.letters) {
+
+            this.letters.forEach(l => l.destroy());
+
+        }
+
+
+
         this.letters = [];
 
-        const centerX = this.scale.width / 2;
-        const centerY = this.scale.height / 2;
+
 
         [...text].forEach((char, i) => {
-            const letter = this.add.text(
-                centerX,
-                centerY + i * 40,
-                char,
-                {
-                    fontFamily: 'Arial',
-                    fontSize: '52px',
-                    color: '#000000',
-                    stroke: '#ff3eb5',
-                    strokeThickness: 5
-                }
-            ).setOrigin(0.5);
 
-            letter.baseX = centerX;
-            letter.index = i;
+            const letter = this.add.text(startX, startY + i * 40, char, {
+
+                fontFamily: 'Arial',
+
+                fontSize: '40px',
+
+                // CORRECTION 4: Ajout de la couleur du texte pour qu'il soit visible
+
+                color: '#ff3eb5'
+
+            }).setOrigin(0.5);
+
+
 
             this.letters.push(letter);
+
+
+
+            this.tweens.add({
+
+                targets: letter,
+
+                x: startX + 30,
+
+                angle: 10,
+
+                yoyo: true,
+
+                repeat: -1,
+
+                duration: 800 + i * 30,
+
+                ease: "sine.inout"
+
+            });
+
         });
+
     }
 
-    update(time) {
-        this.letters.forEach(letter => {
-            letter.x =
-                letter.baseX +
-                Math.sin(time * 0.005 + letter.index * 0.4) * 40;
-        });
-    }
 }
 
-new Phaser.Game({
+
+
+const config = {
+
     type: Phaser.AUTO,
-    parent: 'phaser-container',
-    width: Math.floor(window.innerWidth * 0.7),
+
+    // CORRECTION 5: S'assurer que la largeur et la hauteur sont des nombres entiers pour éviter les problèmes d'affichage
+
+    width: Math.floor(window.innerWidth * 0.70),
+
     height: window.innerHeight,
+
     backgroundColor: '#b8ffb8',
-    scene: MainScene
-});
+
+    parent: 'phaser-example',
+
+    scene: Example
+
+};
+
+
+
+new Phaser.Game(config);
+
 </script>
 
+
+
 </body>
+
 </html>
