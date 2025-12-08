@@ -258,18 +258,23 @@ class Example extends Phaser.Scene {
          // this.load.setBaseURL('https://labs.phaser.io'); // 
     this.load.image('spark', 'assets/particles/blue.png');
     this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav.mp3');
+         // New bubble-pop sound
+    this.load.audio('bubblePop', 'assets/audio/SoundEffects/bubble-pop-424583.mp3');
   }
 
     create() {
         this.generateTextures();
         this.createBlocks();
-        this.setupAudio(); // Initialisation des objets Audio
+        this.setupAudio(); // modified
         this.setupInteractions();
         this.createTextEngine();
-        
-        window.addEventListener('resize', this.handleResize.bind(this));
-        this.handleResize();
-    }
+
+          // Bubble pop sound
+    this.bubblePopSound = this.sound.add('bubblePop', { volume: 0.15 });
+
+    window.addEventListener('resize', this.handleResize.bind(this));
+    this.handleResize();
+}
 
     handleResize() {
         const newWidth = window.innerWidth * 0.70;
@@ -400,7 +405,7 @@ class Example extends Phaser.Scene {
             block.on('pointerover', function(){ 
                 self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); 
             });
-            
+      });   
             // Particules au clic (popSound retiré de l'interaction ici)
             block.on('pointerdown', function(){ 
                 // Le popSound est maintenant joué par le bouton Générer
@@ -427,10 +432,15 @@ class Example extends Phaser.Scene {
                     var fleeForce = (200 - distance) / 200 * 5;
                     block.offsetX = (block.offsetX || 0) + Math.cos(angle + Math.PI) * fleeForce;
                     block.offsetY = (block.offsetY || 0) + Math.sin(angle + Math.PI) * fleeForce;
+                } 
+                // Play bubble-pop sound on movement over shape
+                if (!self.bubblePopSound.isPlaying) {
+                    self.bubblePopSound.play();
                 }
-            });
+            }
         });
-    }
+    });
+}
 
     update(time, delta) {
         this.timeSincePhase += delta;
@@ -755,61 +765,6 @@ class Example extends Phaser.Scene {
         }
     }
 }
-    preload() {
-    // Existing assets
-    this.load.image('spark', 'assets/particles/blue.png');
-    this.load.audio('pop', 'assets/audio/SoundEffects/pop.wav.mp3');
-
-    // New bubble-pop sound
-    this.load.audio('bubblePop', 'assets/audio/SoundEffects/bubble-pop-424583.mp3');
-}
-
-create() {
-    // Existing setup
-    this.generateTextures();
-    this.createBlocks();
-    this.setupAudio(); // modified
-    this.setupInteractions();
-    this.createTextEngine();
-    
-    // Bubble pop sound
-    this.bubblePopSound = this.sound.add('bubblePop', { volume: 0.15 });
-
-    window.addEventListener('resize', this.handleResize.bind(this));
-    this.handleResize();
-}
-
-setupInteractions() {
-    var self = this;
-
-    this.blocks.getChildren().forEach(function(block){
-        // Hover animation (unchanged)
-        block.on('pointerover', function(){ 
-            self.tweens.add({targets:block, scale:0.5, duration:150, yoyo:true}); 
-        });
-    });
-
-    this.input.on('pointermove', function(pointer){
-        if(!self.blocks) return;
-
-        self.blocks.getChildren().forEach(function(block){
-            var angle = Phaser.Math.Angle.Between(block.x, block.y, pointer.x, pointer.y);
-            var distance = Phaser.Math.Distance.Between(block.x, block.y, pointer.x, pointer.y);
-            
-            if(distance < 200){
-                var fleeForce = (200 - distance) / 200 * 5;
-                block.offsetX = (block.offsetX || 0) + Math.cos(angle + Math.PI) * fleeForce;
-                block.offsetY = (block.offsetY || 0) + Math.sin(angle + Math.PI) * fleeForce;
-
-                // Play bubble-pop sound on movement over shape
-                if (!self.bubblePopSound.isPlaying) {
-                    self.bubblePopSound.play();
-                }
-            }
-        });
-    });
-}
-
 
 var config = { 
     type: Phaser.AUTO, 
