@@ -106,6 +106,12 @@
     <!-- Mermaid diagram block (si mermaid chargé, il sera rendu ; sinon affichera le texte brut) -->
     <div class="diagram">
       <pre class="language-mermaid">
+
+        <h2>Diagramme de flux</h2>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<div class="mermaid">
 flowchart TD
         A(["testprojet.html"])
         A --> B{"Une simple animation de vagues"}
@@ -164,9 +170,14 @@ flowchart TD
         AF --> AG["Ajout d’un autre son après la génération du texte, comme dans un petit jeu (son de bulle)"]
         AE --> AF["Les formes fuient la souris pendant que le son se joue"]
         AE --> AF["Le fond du texte a été modifié pour être moins agressif visuellement"]
-      </pre>
     </div>
 
+<script>
+  mermaid.initialize({ 
+    startOnLoad: true,
+    theme: "default"
+  });
+  
     <h2>Sources du projet</h2>
     <p class="muted">
       IA : ChatGPT GPT-5.1 et Gemini Pro
