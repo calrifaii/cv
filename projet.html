@@ -1,41 +1,111 @@
-##Projet Phaser – Description
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Projet Phaser – Description</title>
+  <!-- Styles simples pour mise en page -->
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#9aa6b2;
+      --accent:#6ee7b7;
+      --glass: rgba(255,255,255,0.03);
+      font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body{
+      margin:0;
+      padding:32px;
+      background: linear-gradient(180deg,#071025 0%, #081426 60%);
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.5;
+    }
+    .container{
+      max-width:980px;
+      margin:0 auto;
+      background:var(--card);
+      border-radius:12px;
+      padding:28px;
+      box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    h1{ font-size:26px; margin:0 0 12px 0; color:var(--accent) }
+    h2{ font-size:20px; margin:20px 0 8px 0; color:#cfeef0 }
+    p{ margin:0 0 12px 0; color:#d8e7ef }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul{ margin:8px 0 12px 20px; color:#d8e7ef }
+    code, pre{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; background:var(--glass); padding:8px; border-radius:6px; color:#bfe7d7; display:block; white-space:pre-wrap; }
+    .muted{ color:var(--muted); font-size:0.95rem; }
+    .diagram{ margin-top:12px; }
+    footer{ margin-top:22px; font-size:0.9rem; color:var(--muted) }
+  </style>
 
-##Titre du projet
-Développement d’une Animation d’un Effet de Vague en HTML, CSS et JavaScript
+  <!-- Mermaid (pour afficher le diagramme de flux si le navigateur peut charger le CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor:'#071025', secondaryColor:'#0b1220', tertiaryColor:'#0f1724', lineColor:'#1f2b3a', fontFamily: 'Inter, Roboto, Arial' } });
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Projet Phaser – Description</h1>
 
-##Présentation du projet
-Ce projet utilise le framework Phaser 3 pour créer une scène animée composée d’une grille de blocs visuels. L’objectif est de générer un effet visuel dynamique rappelant une vague ou une respiration, grâce à l’utilisation des tweens de Phaser.
+    <h2>Titre du projet</h2>
+    <p><strong>Développement d’une Animation d’un Effet de Vague en HTML, CSS et JavaScript</strong></p>
 
-## Documentation du projet
-Lien utiliser: [Phaser.io](https://phaser.io/examples/v3.85.0/tweens/view/checkerboard-2)
-Modèle utiliser: Chatgbt GPT-5.1
+    <h2>Présentation du projet</h2>
+    <p>
+      Ce projet utilise le framework <strong>Phaser 3</strong> pour créer une scène animée composée d’une grille de blocs visuels.
+      L’objectif est de générer un effet visuel dynamique rappelant une vague ou une respiration, grâce à l’utilisation des tweens de Phaser.
+    </p>
 
+    <h2>Documentation du projet</h2>
+    <p class="muted">
+      Lien utilisé : <a href="https://phaser.io/examples/v3.85.0/tweens/view/checkerboard-2" target="_blank" rel="noopener">Phaser.io — checkerboard-2 example</a><br>
+      Modèle utilisé : ChatGPT GPT-5.1
+    </p>
 
+    <h2>Fonctionnalités principales</h2>
+    <ul>
+      <li><strong>Chargement d’assets</strong> : une image de fond et un sprite carré de 50×50 pixels.</li>
+      <li><strong>Création d’un groupe d’objets</strong> : génération automatique d’environ 108 blocs mis à l’échelle.</li>
+      <li><strong>Alignement en grille</strong> : placement précis des blocs selon une grille de 12 colonnes et 9 lignes.</li>
+      <li><strong>Animation séquentielle</strong> : chaque bloc change d’échelle de façon répétée, avec un léger décalage temporel créant un effet d’onde.</li>
+    </ul>
 
-##Fonctionnalités principales
-- **Chargement d’assets** : une image de fond et un sprite carré de 50x50 pixels.
-- **Création d’un groupe d’objets** : génération automatique de 108 blocs mis à l’échelle.
-- **Alignement en grille** : placement précis des blocs selon une grille de 12 colonnes et 9 lignes.
-- **Animation séquentielle** : chaque bloc change d’échelle de façon répétée, avec un léger décalage temporel créant un effet d’onde.
+    <h2>Comportement visuel</h2>
+    <p>
+      Les blocs s’animent de manière synchronisée par ligne : chaque ligne commence son animation après la précédente,
+      produisant un mouvement fluide et hypnotique.
+      L’effet repose sur des tweens configurés avec :
+    </p>
+    <ul>
+      <li>une durée courte (300 ms),</li>
+      <li>une animation en aller-retour (yoyo),</li>
+      <li>un délai progressif qui se réinitialise à chaque nouvelle ligne.</li>
+    </ul>
 
-##Comportement visuel
-Les blocs s’animent de manière synchronisée par ligne : chaque ligne commence son animation après la précédente, produisant un mouvement fluide et hypnotique.  
-L’effet repose sur des tweens configurés avec :
-- une durée courte (300 ms),
-- une animation en aller-retour (yoyo),
-- un délai progressif qui se réinitialise à chaque nouvelle ligne.
+    <h2>Améliorations possibles</h2>
+    <ul>
+      <li>Modifier l’effet de vague (diagonale, circulaire, aléatoire).</li>
+      <li>Changer la forme ou la couleur des éléments.</li>
+      <li>Ajouter des interactions utilisateur (clic, survol, mouvement souris).</li>
+      <li>Intégrer des particules ou des effets sonores.</li>
+      <li>Ajouter une zone où l’on peut saisir une phrase ou un mot qui s’affichera en animation.</li>
+    </ul>
 
-##Améliorations possibles
-- Modifier l’effet de vague (diagonale, circulaire, aléatoire).
-- Changer la forme ou la couleur des éléments.
-- Ajouter des interactions utilisateur (clic, survol, mouvement souris).
-- Intégrer des particules ou des effets sonores.
-- Ajoute une partie ou on peut ajouter une phrase ou un mot et s'affichera en animation.
+    <h2>Diagramme de flux</h2>
+    <p class="muted">Configuration : theme = redux</p>
 
-##Diagramme de flux
-config:
-      theme: redux
----
+    <!-- Mermaid diagram block (si mermaid chargé, il sera rendu ; sinon affichera le texte brut) -->
+    <div class="diagram">
+      <pre class="language-mermaid">
 flowchart TD
         A(["testprojet.html"])
         A --> B{"Une simple animation de vagues"}
@@ -94,14 +164,31 @@ flowchart TD
         AF --> AG["Ajout d’un autre son après la génération du texte, comme dans un petit jeu (son de bulle)"]
         AE --> AF["Les formes fuient la souris pendant que le son se joue"]
         AE --> AF["Le fond du texte a été modifié pour être moins agressif visuellement"]
+      </pre>
+    </div>
 
+    <h2>Sources du projet</h2>
+    <p class="muted">
+      IA : ChatGPT GPT-5.1 et Gemini Pro
+    </p>
 
-##sources du projet
-IA: Chatgbt GPT-5.1 and Gemini pro
-Prompt 1 pour le testprojet1.html : Ajoute plusieurs formes géométriques différentes à l’écran, chacune avec une animation distincte.
+    <h2>Prompts utilisés</h2>
+    <p><strong>Prompt 1 pour testprojet1.html :</strong></p>
+    <pre>
+Ajoute plusieurs formes géométriques différentes à l’écran, chacune avec une animation distincte.
 Crée une zone de saisie où l’utilisateur peut écrire un texte.
 Lors de la génération, affiche le texte au centre de l’écran avec une animation d’entrée fluide.
 Ajoute un arrière-plan coloré cohérent avec l’animation générale. Donne moi le code complet
+    </pre>
 
-Prompt 2 
-pour le testprojet1.html 
+    <p><strong>Prompt 2 pour testprojet1.html :</strong></p>
+    <pre>
+<!-- (Espace réservé : insérer ici le prompt 2 complet si nécessaire) -->
+    </pre>
+
+    <footer>
+      Document généré pour intégrer la description du projet Phaser. Vous pouvez copier-coller ce HTML dans un fichier <code>projet-phaser.html</code> et l’ouvrir dans votre navigateur.
+    </footer>
+  </div>
+</body>
+</html>
