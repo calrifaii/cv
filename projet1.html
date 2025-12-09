@@ -1,76 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Phase 2 – Shapes & Text</title>
-<style>
-body {
-  margin: 0;
-  background: #050d18;
-  overflow: hidden;
-  font-family: Arial;
-}
-canvas { position: absolute; inset: 0; z-index: 0; }
+  <meta charset="UTF-8">
+  <title>Projet Phaser – Description</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-.ui {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 2;
-}
-.text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  color: white;
-  font-size: 36px;
-  z-index: 2;
-}
-</style>
+  <style>
+    body {
+      margin: 0;
+      padding: 30px;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #0f172a;
+      color: #e5e7eb;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: #020617;
+      padding: 30px;
+      border-radius: 12px;
+    }
+
+    h1 {
+      color: #5eead4;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      color: #c7d2fe;
+      margin-top: 30px;
+    }
+
+    p, li {
+      color: #e5e7eb;
+    }
+
+    ul {
+      margin-left: 20px;
+    }
+
+    .muted {
+      color: #94a3b8;
+      font-size: 0.95em;
+    }
+
+    a {
+      color: #5eead4;
+    }
+
+    pre {
+      background: #020617;
+      border: 1px solid #334155;
+      padding: 15px;
+      border-radius: 8px;
+      color: #a5f3fc;
+      overflow-x: auto;
+    }
+  </style>
+
+  <!-- Mermaid -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "dark",
+        securityLevel: "loose"
+      });
+    });
+  </script>
 </head>
+
 <body>
+  <div class="container">
 
-<canvas id="c"></canvas>
+    <h1>Projet Phaser 1 – Description</h1>
 
-<div class="ui">
-  <input id="input" maxlength="25">
-  <button onclick="gen()">Generate</button>
-</div>
+    <h2>Titre du projet</h2>
+    <p><strong>Générateur interactif</strong></p>
 
-<div id="output" class="text">HELLO</div>
-
-<script>
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-
-const shapes = Array.from({length: 15}, () => ({
-  x: Math.random()*canvas.width,
-  y: Math.random()*canvas.height,
-  r: 20+Math.random()*30,
-  dx: Math.random()-0.5,
-  dy: Math.random()-0.5
-}));
-
-function loop(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  shapes.forEach(s=>{
-    s.x+=s.dx; s.y+=s.dy;
-    ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle="#4ea8ff";
-    ctx.fill();
-  });
-  requestAnimationFrame(loop);
-}
-loop();
-
-function gen(){
-  output.textContent = input.value || "TEXT";
-}
-</script>
+    <h2>Présentation du projet</h2>
+    <p>Le projet devient interactif.
+Des formes animées apparaissent à l’écran avec différentes animations.
+L’utilisateur peut écrire un texte dans une zone dédiée et générer ce texte à l’écran avec une animation.
+L’ensemble est posé sur un fond coloré, ce qui transforme l’animation en une première expérience utilisateur.
+    </p>
 
 </body>
 </html>
