@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phaser Shapes + Text Generator Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.85.0/dist/phaser.js"></script>
+<style>
+/* === STYLES INCHANGÉS === */
+body{margin:0;display:flex;font-family:Inter,Arial,sans-serif;overflow:hidden;background:#e0f7fa}
+#phaser-example{width:70vw;height:100vh;border-right:3px solid #00bcd4}
+#right-panel{width:30vw;height:100vh;background:#fff;padding:20px;box-sizing:border-box;display:flex;flex-direction:column}
+#right-panel h2{text-align:center;color:#00bcd4}
+#text-input{padding:12px;font-size:16px;border-radius:10px;border:2px solid #00bcd4}
+#generate-btn{margin-top:10px;padding:14px;font-size:18px;border:none;border-radius:10px;background:linear-gradient(45deg,#ff5722,#ff9800);color:#fff;cursor:pointer}
+.color-option{height:40px;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;cursor:pointer}
+.color-option.selected{outline:4px solid #ff5722}
+#color-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+[data-color="#FF5722"]{background:#FF5722}
+[data-color="#4CAF50"]{background:#4CAF50}
+[data-color="#2196F3"]{background:#2196F3}
+</style>
+</head>
+
+<body>
+
+<div id="phaser-example"></div>
+
+<div id="right-panel">
+<h2>Générateur d'Animation Pro</h2>
+<input id="text-input" placeholder="Écris un mot…" maxlength="20">
+
+<div id="color-options">
+<div class="color-option selected" data-color="#FF5722" data-anim="PULSE_WAVE">ORANGE</div>
+<div class="color-option" data-color="#4CAF50" data-anim="SPIRAL_FLOW">VERT</div>
+<div class="color-option" data-color="#2196F3" data-anim="RIPPLE_GRID">BLEU</div>
+</div>
+
+<button id="generate-btn">Générer</button>
+</div>
+
+<script>
+class Example extends Phaser.Scene{
+constructor(){
+super();
+this.activeColor="#FF5722";
+this.activeAnim="PULSE_WAVE";
+}
+
+preload(){
+this.load.audio("pop","assets/audio/SoundEffects/pop.wav.mp3");
+this.load.audio("pop1","assets/audio/SoundEffects/pop.wav1.mp3");
+this.load.audio("pop2","assets/audio/SoundEffects/pop.wav2.mp3");
+
+this.load.audio("hoverGreen","assets/audio/SoundEffects/bubble-pop-424583.mp3");
+this.load.audio("hoverOrange","assets/audio/SoundEffects/bubble.pop1.mp3");
+this.load.audio("hoverBlue","assets/audio/SoundEffects/bubble.pop2.mp3");
+}
+
+create(){
+this.setupAudio();
+this.createBlocks();
+this.setupUI();
+}
+
+setupAudio(){
+this.btnGreen=this.sound.add("pop",{volume:0.5});
+this.btnOrange=this.sound.add("pop1",{volume:0.5});
+this.btnBlue=this.sound.add("pop2",{volume:0.5});
+
+this.hoverGreen=this.sound.add("hoverGreen",{volume:0.3});
+this.hoverOrange=this.sound.add("hoverOrange",{volume:0.3});
+this.hoverBlue=this.sound.add("hoverBlue",{volume:0.3});
+}
+
+playGenerateSound(){
+if(this.activeAnim==="SPIRAL_FLOW")this.btnGreen.play();
+if(this.activeAnim==="PULSE_WAVE")this.btnOrange.play();
+if(this.activeAnim==="RIPPLE_GRID")this.btnBlue.play();
+}
+
+playHoverSound(){
+if(this.activeAnim==="SPIRAL_FLOW")this.hoverGreen.play();
+if(this.activeAnim==="PULSE_WAVE")this.hoverOrange.play();
+if(this.activeAnim==="RIPPLE_GRID")this.hoverBlue.play();
+}
+
+createBlocks(){
+this.blocks=this.add.group();
+for(let i=0;i<80;i++){
+let b=this.add.rectangle(
+Phaser.Math.Between(0,800),
+Phaser.Math.Between(0,600),
+10,10,
+Phaser.Display.Color.HexStringToColor(this.activeColor).color
+).setInteractive();
+b.on("pointerover",()=>this.playHoverSound());
+this.blocks.add(b);
+}
+}
+
+setupUI(){
+document.querySelectorAll(".color-option").forEach(o=>{
+o.onclick=()=>{
+document.querySelectorAll(".color-option").forEach(x=>x.classList.remove("selected"));
+o.classList.add("selected");
+this.activeColor=o.dataset.color;
+this.activeAnim=o.dataset.anim;
+this.blocks.getChildren().forEach(b=>b.fillColor=Phaser.Display.Color.HexStringToColor(this.activeColor).color);
+};
+});
+
+document.getElementById("generate-btn").onclick=()=>{
+let txt=document.getElementById("text-input").value;
+if(!txt)return;
+this.playGenerateSound();
+};
+}
+}
+
+new Phaser.Game({
+type:Phaser.AUTO,
+width:window.innerWidth*0.7,
+height:window.innerHeight,
+parent:"phaser-example",
+scene:Example,
+backgroundColor:"#e0f7fa"
+});
+</script>
+
+</body>
+</html>
