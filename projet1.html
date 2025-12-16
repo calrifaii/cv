@@ -2,70 +2,95 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Mémoire et premier son</title>
+  <title>Projet – Mémoire et premier son</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
       margin: 0;
-      padding: 40px;
-      color: #222;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #0f0f0f;
+      color: #f1f1f1;
     }
-    .container {
+
+    .page {
       max-width: 900px;
-      margin: auto;
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      margin: 0 auto;
+      padding: 40px 30px 80px;
     }
+
     h1 {
-      margin-top: 0;
-      font-size: 28px;
+      font-size: 32px;
+      margin-bottom: 10px;
     }
+
     h2 {
-      margin-top: 30px;
-      font-size: 20px;
+      font-size: 22px;
+      margin-top: 40px;
+      margin-bottom: 10px;
     }
+
     p {
-      line-height: 1.6;
+      line-height: 1.7;
+      font-size: 16px;
+      color: #dcdcdc;
     }
-    .box {
-      background: #f1f1f1;
-      padding: 15px;
-      border-radius: 8px;
-      font-family: monospace;
-      white-space: pre-wrap;
+
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+      margin: 30px 0;
     }
+
     .muted {
-      color: #666;
       font-size: 14px;
+      color: #aaaaaa;
+    }
+
+    pre {
+      background: #1b1b1b;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #eaeaea;
+      overflow-x: auto;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <div class="page">
 
-    <h1>Titre du projet : Mémoire et premier son</h1>
+    <h1>Mémoire et premier son</h1>
+
+    <div class="divider"></div>
 
     <h2>Descriptif</h2>
     <p>
-      On améliore le site. Maintenant, le site se <strong>souvient</strong> des textes qu'on a écrits
-      grâce à un système d’historique. La longueur du texte est limitée afin de garder une interface
-      claire et lisible. Un petit son <em>« pop »</em> est également joué lorsque le texte apparaît,
-      rendant l’interaction plus vivante.
+      Dans cette étape du projet, le site est amélioré pour devenir plus interactif et plus cohérent.
+      Il est désormais capable de garder en mémoire les textes précédemment écrits grâce à un
+      historique visible. La longueur du texte est volontairement limitée afin de conserver une
+      interface propre et lisible. Un son discret de type <em>« pop »</em> accompagne l’apparition
+      du texte, renforçant l’expérience utilisateur.
     </p>
 
-    <h2>Sources du projet</h2>
-    <p class="muted">IA utilisée : <strong>Gemini Pro</strong></p>
+    <div class="divider"></div>
 
-    <h2>Prompt (commande)</h2>
-    <div class="box">
-"Améliore le code : limite le texte à 25 lettres.
-Ajoute une liste à droite qui garde en mémoire les textes écrits.
-Ajoute un son 'pop' quand on clique."
-    </div>
+    <h2>Sources du projet</h2>
+    <p class="muted">
+      IA utilisée : Gemini Pro
+    </p>
+
+    <div class="divider"></div>
+
+    <h2>Prompt</h2>
+    <pre>
+Garde le même code et améliore:
+- Limite le texte à 25 lettres
+- Ajoute une liste à droite qui garde en mémoire les textes écrits
+- Ajoute un son "pop" quand on clique
+Donne moi le code complet
+    </pre>
 
   </div>
 
